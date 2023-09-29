@@ -32,9 +32,11 @@ The template is organized into four main folders:
 
 ## Data Requirements
 
+The scripts are setup to run the data files produced using the GEPD questionnaires programmed on Survey Solutions. 
+
 ### School Survey
 
-The scripts are setup to run the data files produced using the GEPD questionnaire  programmed on Survey Solutions.  It is expected that the following data files will be present in the `01_GEPD_raw_data/School` folder in Stata format:
+ It is expected that the following data files will be present in the `01_GEPD_raw_data/School` folder in Stata format:
 
 | ID | Name |
 | --- | --- |
@@ -62,6 +64,7 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 
 
 #### School Data Codebook
+
 | Name | File |  Type | Label |
 |  --- | --- | --- | --- |
 |  interview__id | F1 | discrete | Unique 32-character long identifier of the interview |
@@ -1490,3 +1493,204 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 |  m8_cov_q2 | F21 | discrete | When school was closed to students and you were studying from home, how often did your school or teachers ... |
 |  interview__id | F21 | discrete | Unique 32-character long identifier of the interview |
 |  fourth_grade_assessment__id | F21 | discrete | Id in "fourth_grade_assessment" |
+
+## Survey of Public Officials
+
+| ID | Name |
+| --- | --- |
+| F1 | public_officials.dta |
+
+### Survey of Public Officials Codebook
+
+| Name | File |  Type | Label |
+|  --- | --- | --- | --- |
+|  interview__id | F1 | discrete | Unique 32-character long identifier of the interview |
+|  interview__key | F1 | discrete | Interview key (identifier in XX-XX-XX-XX format) |
+|  assignment__id | F1 | discrete | Assignment id (identifier in numeric format) |
+|  sssys_irnd | F1 | discrete | Random number in the range 0..1 associated with interview |
+|  has__errors | F1 | discrete | Errors count in the interview |
+|  interview__status | F1 | discrete | Status of the interview |
+|  m1s0q2_name | F1 | discrete | Tier of government |
+|  office_preload | F1 | discrete | The school district office to be visited |
+|  position_preload | F1 | discrete | What is your position |
+|  location | F1 | discrete | Organization location |
+|  m1s0q1_name_other | F1 | discrete | Enumerator Name |
+|  m1s0q1_number_other | F1 | contin | Please enter the Enumerator's Number |
+|  info_correct | F1 | discrete | Is the above information correct? |
+|  m1s0q2_name_incorrect | F1 | discrete | Tier of government |
+|  office_preload_incorrect | F1 | discrete | The school district office to be visited |
+|  m1s0q8 | F1 | discrete | current time |
+|  m1s0q9__Latitude | F1 | contin | Current Location: Latitude |
+|  m1s0q9__Longitude | F1 | contin | Current Location: Longitude |
+|  m1s0q9__Accuracy | F1 | contin | Current Location: Accuracy |
+|  m1s0q9__Altitude | F1 | contin | Current Location: Altitude |
+|  m1s0q9__Timestamp | F1 | contin | Current Location: Timestamp |
+|  randomization | F1 | discrete | Please select whether you need a set of random numbers for selecting public offi |
+|  public_officials_list_photo | F1 | discrete | picture of list of public officials |
+|  list_total | F1 | contin | How many public officials are on the list? |
+|  needed_total | F1 | contin | How many public officials need to be selected? |
+|  inter_officials | F1 | discrete | Interviewed Officials |
+|  m1s2q2 | F1 | discrete | Did the respondent agree to be interviewed |
+|  respondent_phone_number | F1 | contin | Respondent Phone Number |
+|  m1s2q3 | F1 | discrete | If refused, reason for refusal |
+|  director_hr | F1 | discrete | Are you the director of Human Resources |
+|  info_position_correct | F1 | discrete | Is the information listed above on the position correct? |
+|  DEM1q2 | F1 | discrete | What is your position |
+|  DEM1q1 | F1 | discrete | What is your occupational category? |
+|  DEM1q4__1 | F1 | discrete | Which of the following activities is your organization responsible for, if any?:Finance and planning |
+|  DEM1q4__2 | F1 | discrete | Which of the following activities is your organization responsible for, if any?:Hiring of principals and teachers |
+|  DEM1q4__3 | F1 | discrete | Which of the following activities is your organization responsible for, if any?:Monitoring of school performance |
+|  DEM1q5__1 | F1 | discrete | Which of the following activities are you responsible for, if any?:Finance and planning |
+|  DEM1q5__2 | F1 | discrete | Which of the following activities are you responsible for, if any?:Hiring of principals and teachers |
+|  DEM1q5__3 | F1 | discrete | Which of the following activities are you responsible for, if any?:Monitoring of school performance |
+|  DEM1q5__4 | F1 | discrete | Which of the following activities are you responsible for, if any?:None of the above |
+|  DEM1q6 | F1 | contin | What is your age? |
+|  DEM1q7 | F1 | contin | How many years have you been in your current position? |
+|  DEM1q8 | F1 | contin | How many years have you been in your current organization? |
+|  DEM1q9 | F1 | contin | How many years have you been in the civil service? |
+|  DEM1q10 | F1 | contin | How many organizations have you worked in in the civil service |
+|  DEM1q11n | F1 | discrete | On what type of contract are you employed? |
+|  DEM1q12n | F1 | discrete | Which of the following best describes your rank and responsibilities? |
+|  DEM1q13n | F1 | contin | How many full-time staff members that you manage directly report to you? |
+|  DEM1q14n | F1 | contin | What is your monthly net salary? |
+|  DEM1q11 | F1 | discrete | What is the highest educational qualification you have attained? |
+|  DEM1q15n | F1 | discrete | Have you ever worked in the private sector? |
+|  DEM1q12 | F1 | discrete | Would you like to move into the private sector in the next two years? |
+|  DEM1q13 | F1 | discrete | If your total public sector wage is represented as 100, what relative number wou |
+|  DEM1q14__1 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Wage |
+|  DEM1q14__2 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Conditions of service apart from wage (e.g. holiday allowance or leave, health insurance provision, or transportation allowance) |
+|  DEM1q14__3 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Culture |
+|  DEM1q14__4 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Office space/working environment |
+|  DEM1q14__5 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Work is not interesting |
+|  DEM1q14__6 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Role does not match skill set |
+|  DEM1q14__7 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Poor training and development opportunities |
+|  DEM1q14__8 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Limited promotion opportunities |
+|  DEM1q14__9 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Limited responsibility/opportunity to have impact |
+|  DEM1q14__10 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Political interference |
+|  DEM1q14__97 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Other (don’t specify) |
+|  DEM1q14__900 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Don’t know |
+|  DEM1q14__998 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:Refused to answer |
+|  DEM1q14__12 | F1 | discrete | Which of the following issues are most likely to make you want to change jobs?:None of the above |
+|  DEM1q15 | F1 | discrete | What is the gender of the respondent? |
+|  NLG1q1 | F1 | discrete | Does your organization have a clear set of performance indicators and targets th |
+|  NLG1q2 | F1 | discrete | Do you think your organisation’s targets are measurable? |
+|  NLG1q3 | F1 | discrete | To what extent are your daily tasks derived from, and consistent with, your orga |
+|  NLG2q1 | F1 | discrete | Does your organization track how well schools are performing towards achieving t |
+|  NLG2q2 | F1 | discrete | Do you regularly have access to a functioning (electronic or equivalent) integra |
+|  NLG2q3 | F1 | discrete | How is the overall performance of schools reviewed (using MIS data or other mean |
+|  NLG3q1 | F1 | discrete | Does your unit/department receive rewards (financially or non-financially, such |
+|  NLG3q2 | F1 | discrete | Does your organization reward its employees (financially or non-financially, suc |
+|  NLG3q3 | F1 | discrete | Does information on school performance inform the ultimate budgets (or more broa |
+|  NLG4q1 | F1 | discrete | What is the most common means through which you or your organisation receive fee |
+|  NLG4q2 | F1 | discrete | To what extent is feedback from parents/teachers/other stakeholders used in eval |
+|  NLG4q3 | F1 | discrete | To what extent is feedback from parents/teachers/other stakeholders used in maki |
+|  ACM2q1 | F1 | discrete | In your experience, is the organizational responsibility for student learning as |
+|  ACM2q2 | F1 | discrete | In your experience, is the organizational responsibility for teacher supervision |
+|  ACM2q3 | F1 | discrete | In your experience, is the organizational responsibility for procuring inputs cl |
+|  ACM3q1 | F1 | discrete | Does your organization make public its achievements of its performance targets? |
+|  ACM3q2 | F1 | discrete | To what extent does your organization have a culture of making its activities tr |
+|  ACM3q3 | F1 | discrete | To what extent do you think transparency is beneficial? Do the benefits outweigh |
+|  ACM4q1 | F1 | discrete | What would happen if an official reported false information about a school’s lea |
+|  ACM4q2 | F1 | discrete | What would happen if an official helped hire a teacher for private gain rather t |
+|  ACM4q3 | F1 | discrete | What would happen if an official distorted the procurement process for private b |
+|  QB1q2 | F1 | contin | What is the average class size in a typical 4th-grade class of the country? |
+|  QB1q1 | F1 | contin | What percent of their time do you think teachers are absent without providing ju |
+|  QB1q3 | F1 | discrete | To what extent do you agree that any gaps in your knowledge and skills are being |
+|  QB2q1 | F1 | discrete | In your view, how often do employees of this organization trust one another to f |
+|  QB2q2 | F1 | discrete | If a member of the public offered an officer a large amount of money or an expen |
+|  QB2q3 | F1 | discrete | How does your organization encourage innovation and the adoption of new practice |
+|  QB3q1 | F1 | discrete | Which of the following methods were used in the selection process for your curre |
+|  QB3q2 | F1 | discrete | How would you characterize recent promotions into your organization? |
+|  QB3q3 | F1 | discrete | To what extent do you feel that the financial or non-financial (e.g. recognition |
+|  QB4q1 | F1 | discrete | To what extent would you say you are satisfied with your experience of working i |
+|  QB4q2 | F1 | contin | Imagine that when you started your motivation was 100. What number would you say |
+|  QB4q4a | F1 | discrete | It is acceptable for a teacher to be absent if the assigned curriculum has been |
+|  QB4q4b | F1 | discrete | It is acceptable for a teacher to be absent if students are left with work to do |
+|  QB4q4c | F1 | discrete | It is acceptable for a teacher to be absent if the teacher is doing something us |
+|  QB4q4d | F1 | discrete | Students deserve more attention if they attend school regularly. |
+|  QB4q4e | F1 | discrete | Students deserve more attention if they come to school with materials. |
+|  QB4q4f | F1 | discrete | Students deserve more attention if they are motivated to learn. |
+|  QB4q4g | F1 | discrete | To be honest, students can’t really change how intelligent they are. |
+|  QB4q4h | F1 | discrete | Students can always substantially change how intelligent they are. |
+|  IDM1q1 | F1 | discrete | To what extent would you agree that hiring decisions in your organization are mo |
+|  IDM1q2 | F1 | discrete | To what extent would you agree that promotion decisions in your organization are |
+|  IDM1q3 | F1 | contin | In what proportion of cases is the underperformance of teachers and mismanagemen |
+|  IDM2q1 | F1 | discrete | How are policy decisions taken on where to build more schools or which schools t |
+|  IDM2q2 | F1 | discrete | How much would you say politics affects the design and development of the school |
+|  IDM2q3 | F1 | discrete | How are policy decisions on how many teachers to hire taken? |
+|  IDM3q1 | F1 | contin | In the past 12 months, on what proportion of the programs or projects at your or |
+|  IDM3q2 | F1 | contin | In the past 12 months, on what proportion of contracts issued by your organizati |
+|  IDM3q3 | F1 | contin | In your organization, what proportion of public procurements is subject to polit |
+|  IDM4q1 | F1 | discrete | To what extent would you say that being a union member affects a teacher’s abili |
+|  IDM4q2 | F1 | discrete | To what extent would you say that public servants who are members of a union rec |
+|  IDM4q3 | F1 | discrete | To what extent would you say the development of new educational practices that a |
+|  ORG1q1a | F1 | discrete | Head of the Education Ministry/Department |
+|  ORG1q1b | F1 | discrete | Finance director |
+|  ORG1q1c | F1 | discrete | Planning director |
+|  ORG1q1d | F1 | discrete | School supervision director |
+|  ORG1q1e | F1 | discrete | M&amp;E director |
+|  ORG1q2a | F1 | discrete | Head of the Education Ministry/Department |
+|  ORG1q2a_other | F1 | discrete | Specify Other |
+|  ORG1q2b | F1 | discrete | Finance director |
+|  ORG1q2b_other | F1 | discrete | Specify Other |
+|  ORG1q2c | F1 | discrete | Planning director |
+|  ORG1q2c_other | F1 | discrete | Specify Other |
+|  ORG1q2d | F1 | discrete | School supervision director |
+|  ORG1q2d_other | F1 | discrete | Specify Other |
+|  ORG1q2e | F1 | discrete | M&amp;E director |
+|  ORG1q2e_other | F1 | discrete | Specify Other |
+|  ORG1q3__1 | F1 | discrete | Are the following positions in the administration currently filled?:Head of the Education Ministry/Department |
+|  ORG1q3__2 | F1 | discrete | Are the following positions in the administration currently filled?:Finance director |
+|  ORG1q3__3 | F1 | discrete | Are the following positions in the administration currently filled?:Planning director |
+|  ORG1q3__4 | F1 | discrete | Are the following positions in the administration currently filled?:School supervision director |
+|  ORG1q3__5 | F1 | discrete | Are the following positions in the administration currently filled?:M&amp;E director |
+|  ORG1q4a | F1 | contin | Head of the Education Ministry/Department |
+|  ORG1q4b | F1 | contin | Finance director |
+|  ORG1q4c | F1 | contin | Planning director |
+|  ORG1q4d | F1 | contin | School supervision director |
+|  ORG1q4e | F1 | contin | M&amp;E director |
+|  ORG1q5 | F1 | contin | How many vacancies are open for non-director positions? |
+|  ORG1q6 | F1 | contin | How long do non-director vacancies usually stay open for before they are filled? |
+|  ORG2q1 | F1 | contin | During a typical working day (8 hours from 9am to 5pm), how many hours is there |
+|  ORG2q2 | F1 | contin | Out of the five [5] working days, how many days is the phone network working for |
+|  ORG2q3 | F1 | contin | During a typical working day (8 hours from 9am to 5pm), how many hours is thereO |
+|  ORG2q4 | F1 | contin | Out of every ten [10] officers, how many have access to a computer (desktop or l |
+|  ORG2q5 | F1 | contin | Out of every ten [10] officers, how many can use a computer to write a memo? |
+|  ORG2q6 | F1 | contin | Out of every ten [10] officers, how many can use a computer to create a PowerPoi |
+|  ORG2q7 | F1 | contin | Out of every ten [10] officers, how many can use a computer to create an Excel s |
+|  ORG2q8 | F1 | contin | Out of every ten [10] officers, how many have access to a vehicle (privately own |
+|  ORG3q1 | F1 | discrete | Is there someone monitoring that all basic inputs are available to the students |
+|  ORG3q2 | F1 | discrete | Who has responsibility for monitoring basic inputs to schools ? |
+|  ORG3q3 | F1 | discrete | Is there someone monitoring that all basic infrastructure is available in school |
+|  ORG3q4 | F1 | discrete | Who has responsibility for monitoring basic infrastructure in schools in your di |
+|  ORG4q1__1 | F1 | discrete | Which of the following public consultation and/or communication methods does you:No public consultation/communication methods |
+|  ORG4q1__2 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Social networks, chat rooms, online forums etc. |
+|  ORG4q1__3 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Meetings, forum, focus groups with members of the public |
+|  ORG4q1__4 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Publications or management reports |
+|  ORG4q1__5 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Public hearings |
+|  ORG4q1__900 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Don’t know |
+|  ORG4q1__998 | F1 | discrete | Which of the following public consultation and/or communication methods does you:Refused to answer |
+|  ORG4q2__1 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:School web site |
+|  ORG4q2__2 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Government web site |
+|  ORG4q2__3 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Publications (paper) |
+|  ORG4q2__4 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Publications (electronic) |
+|  ORG4q2__5 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Public meetings |
+|  ORG4q2__97 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Other (please specify) |
+|  ORG4q2__900 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Don’t know |
+|  ORG4q2__998 | F1 | discrete | How is information relating to your organization made publicly available? (Selec:Refused to answer |
+|  ORG4q2_other | F1 | discrete | Specify Other |
+|  ORG4q3 | F1 | discrete | How often is this information updated? |
+|  ENUMq1 | F1 | contin | Calculate the total duration of the interview. |
+|  ENUMq2 | F1 | discrete | Where was the interview conducted? |
+|  ENUMq3 | F1 | discrete | Was the interview completely private, or was there somebody else in the room dur |
+|  ENUMq4 | F1 | discrete | Did the respondent appear knowledgeable about the work environment, and their or |
+|  ENUMq5 | F1 | discrete | To what extent was the respondent willing to reveal basic and confidential/sensi |
+|  ENUMq6 | F1 | discrete | During the interview, did the respondent seem patient? |
+|  ENUMq7 | F1 | discrete | How do you think the interview went? |
+|  ENUMq8 | F1 | discrete | Note any particular challenge encountered whilst conducting the interview. |
+|  random_list__id | F2 | discrete | Id in random_list |
+|  interview__key | F2 | discrete | Interview key (identifier in XX-XX-XX-XX format) |
+|  random_weight | F2 | contin | random_weight |
+|  random_weight_min | F2 | contin | random_weight_min |
+|  public_official_code | F2 | contin | public_official_code |
+|  interview__id | F2 | discrete | Unique 32-character long identifier of the interview |
