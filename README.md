@@ -12,10 +12,13 @@ The data are licensed under a Creative Commons/CC-BY-4.0 license.
 
 The template is organized into four main folders: 
 
-    * `01_GEPD_raw_data` contains the raw data files downloaded from your GEPD Survey Solutions Server.  This folder contains three subfolders: a `School` folder for school data, a `Public_Officials` folder for data from the Survey of Public Officials, and an `Expert_Survey` folder for data from the Expert Policy Survey.  
-    * `02_programs` contains the scripts that will be used to clean and process the raw data. There are separate sub-folders for each of the three data sources: `School`, `Public_Officials`, and `Expert_Survey`. 
-    * `03_GEPD_anonymized_data` contains the cleaned and anonymized data files. There are separate sub-folders for each of the three data sources: `School`, `Public_Officials`, and `Expert_Survey`.   
-    * `04_GEPD_Indicators` contains the set of final GEPD indicators
+1. `01_GEPD_raw_data` contains the raw data files downloaded from your GEPD Survey Solutions Server.  This folder contains three subfolders: a `School` folder for school data, a `Public_Officials` folder for data from the Survey of Public Officials, and an `Expert_Survey` folder for data from the Expert Policy Survey.  
+
+2. `02_programs` contains the scripts that will be used to clean and process the raw data. There are separate sub-folders for each of the three data sources: `School`, `Public_Officials`, and `Expert_Survey`. 
+
+3. `03_GEPD_anonymized_data` contains the cleaned and anonymized data files. There are separate sub-folders for each of the three data sources: `School`, `Public_Officials`, and `Expert_Survey`.   
+
+4. `04_GEPD_Indicators` contains the set of final GEPD indicators
 
 ## Instructions
 
