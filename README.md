@@ -5,7 +5,7 @@
 
 ## License
 
-The files are licensed under a Creative Commons/CC-BY-4.0 license. 
+The files are licensed under a [Creative Commons/CC-BY-4.0 license](https://creativecommons.org/licenses/by/4.0/). 
 
 You are free to:
 
