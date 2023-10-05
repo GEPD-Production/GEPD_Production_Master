@@ -35,6 +35,8 @@ The template is organized into four main folders:
 
 ## Instructions
 
+Clone this repository and save locally to your computer.
+
 1. Download the raw data files from your GEPD Survey Solutions Server and place them in the `01_GEPD_raw_data` folder.
 
 2. Open the `02_programs` folder and run the `01_GEPD_data_cleaning.do` script. This will clean the raw data files and save the cleaned data files in the `03_GEPD_anonymized_data` folder.
@@ -45,6 +47,7 @@ The template is organized into four main folders:
 
 5. Open the `02_programs` folder and run the `03_GEPD_quality_control.do` script. This will check the quality of the final GEPD indicators and save the results in the `04_GEPD_Indicators` folder.
 
+Do not, under any circumstances, push the raw data files to github.  The raw data files will contain personally identifiable information, and should not be stored in a public location such as github.
 
 ## Data Requirements
 
