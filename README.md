@@ -67,19 +67,16 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 | F6 | ecd_assessment.dta |
 | F7 | fourth_grade_assessment.dta |
 | F8 | random_list.dta |
-| F9 | roster_english_p_gbn.dta |
-| F10 | roster_english_t_gbn.dta |
-| F11 | roster_bullying_gbn.dta |
-| F12 | before_after_closure.dta |
-| F13 | climatebeliefs.dta |
-| F14 | teacherimpact.dta |
-| F15 | direct_instruction_etri.dta |
-| F16 | planning_lesson_etri.dta |
-| F17 | ability_to_use_etri.dta |
-| F18 | digital_use_inschool_etri.dta |
-| F19 | use_outsideschool_etri.dta |
-| F20 | proficiency_ict_etri.dta |
-| F21 | schoolcovid_roster.dta |
+| F9 | before_after_closure.dta |
+| F10 | climatebeliefs.dta |
+| F11 | teacherimpact.dta |
+| F12 | direct_instruction_etri.dta |
+| F13 | planning_lesson_etri.dta |
+| F14 | ability_to_use_etri.dta |
+| F15 | digital_use_inschool_etri.dta |
+| F16 | use_outsideschool_etri.dta |
+| F17 | proficiency_ict_etri.dta |
+| F18 | schoolcovid_roster.dta |
 
 
 #### School Data Codebook
