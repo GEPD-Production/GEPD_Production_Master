@@ -78,6 +78,15 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 | F17 | proficiency_ict_etri.dta |
 | F18 | schoolcovid_roster.dta |
 
+## Survey of Public Officials
+
+| ID | Name |
+| --- | --- |
+| F1 | public_officials.dta |
+
+## Codebook
+
+Below are column names and descriptions for variables found in the input GEPD data.
 
 #### School Data Codebook
 
@@ -1509,12 +1518,6 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 |  m8_cov_q2 | F21 | discrete | When school was closed to students and you were studying from home, how often did your school or teachers ... |
 |  interview__id | F21 | discrete | Unique 32-character long identifier of the interview |
 |  fourth_grade_assessment__id | F21 | discrete | Id in "fourth_grade_assessment" |
-
-## Survey of Public Officials
-
-| ID | Name |
-| --- | --- |
-| F1 | public_officials.dta |
 
 ### Survey of Public Officials Codebook
 
