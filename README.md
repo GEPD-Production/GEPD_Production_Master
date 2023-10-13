@@ -5,7 +5,20 @@
 
 ## License
 
-The data are licensed under a Creative Commons/CC-BY-4.0 license. 
+The files are licensed under a [Creative Commons/CC-BY-4.0 license](https://creativecommons.org/licenses/by/4.0/). 
+
+You are free to:
+
+Share — copy and redistribute the material in any medium or format for any purpose, even commercially.
+Adapt — remix, transform, and build upon the material for any purpose, even commercially.
+
+The licensor cannot revoke these freedoms as long as you follow the license terms.
+
+Under the following terms:
+
+Attribution - You must give appropriate credit , provide a link to the license, and indicate if changes were made . You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+
+No additional restrictions - You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
 
 
 ## Organization
@@ -22,6 +35,8 @@ The template is organized into four main folders:
 
 ## Instructions
 
+Clone this repository and save locally to your computer.
+
 1. Download the raw data files from your GEPD Survey Solutions Server and place them in the `01_GEPD_raw_data` folder.
 
 2. Open the `02_programs` folder and run the `01_GEPD_data_cleaning.do` script. This will clean the raw data files and save the cleaned data files in the `03_GEPD_anonymized_data` folder.
@@ -32,6 +47,7 @@ The template is organized into four main folders:
 
 5. Open the `02_programs` folder and run the `03_GEPD_quality_control.do` script. This will check the quality of the final GEPD indicators and save the results in the `04_GEPD_Indicators` folder.
 
+Do not, under any circumstances, push the raw data files to github.  The raw data files will contain personally identifiable information, and should not be stored in a public location such as github.
 
 ## Data Requirements
 
@@ -51,20 +67,26 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 | F6 | ecd_assessment.dta |
 | F7 | fourth_grade_assessment.dta |
 | F8 | random_list.dta |
-| F9 | roster_english_p_gbn.dta |
-| F10 | roster_english_t_gbn.dta |
-| F11 | roster_bullying_gbn.dta |
-| F12 | before_after_closure.dta |
-| F13 | climatebeliefs.dta |
-| F14 | teacherimpact.dta |
-| F15 | direct_instruction_etri.dta |
-| F16 | planning_lesson_etri.dta |
-| F17 | ability_to_use_etri.dta |
-| F18 | digital_use_inschool_etri.dta |
-| F19 | use_outsideschool_etri.dta |
-| F20 | proficiency_ict_etri.dta |
-| F21 | schoolcovid_roster.dta |
+| F9 | before_after_closure.dta |
+| F10 | climatebeliefs.dta |
+| F11 | teacherimpact.dta |
+| F12 | direct_instruction_etri.dta |
+| F13 | planning_lesson_etri.dta |
+| F14 | ability_to_use_etri.dta |
+| F15 | digital_use_inschool_etri.dta |
+| F16 | use_outsideschool_etri.dta |
+| F17 | proficiency_ict_etri.dta |
+| F18 | schoolcovid_roster.dta |
 
+## Survey of Public Officials
+
+| ID | Name |
+| --- | --- |
+| F1 | public_officials.dta |
+
+## Codebook
+
+Below are column names and descriptions for variables found in the input GEPD data.
 
 #### School Data Codebook
 
@@ -1496,12 +1518,6 @@ The scripts are setup to run the data files produced using the GEPD questionnair
 |  m8_cov_q2 | F21 | discrete | When school was closed to students and you were studying from home, how often did your school or teachers ... |
 |  interview__id | F21 | discrete | Unique 32-character long identifier of the interview |
 |  fourth_grade_assessment__id | F21 | discrete | Id in "fourth_grade_assessment" |
-
-## Survey of Public Officials
-
-| ID | Name |
-| --- | --- |
-| F1 | public_officials.dta |
 
 ### Survey of Public Officials Codebook
 
