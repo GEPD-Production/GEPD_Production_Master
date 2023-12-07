@@ -17,7 +17,7 @@ gl processed_dir ${clone}/03_GEPD_processed_data/
 frame create school
 frame change school
 
-use "${data_dir}\School\EPDash.dta" 
+use "${data_dir}\\School\\EPDash.dta" 
 
 ********
 *read in the school weights
@@ -68,34 +68,56 @@ save "${processed_dir}\\School\\Confidential\\Merged\\school.dta" , replace
 
 frame create teachers
 frame change teachers
-use "${data_dir}raw\School\questionnaire_roster.dta" 
+use "${data_dir}\\School\\questionnaire_roster.dta" 
 
 
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code territory supervisory_authority sample_status strata ipw, from(school)
+frget school_code ${strata} urban_rural public strata_prob ipw, from(school)
 
 order school_code
 sort school_code
 
-save "${data_dir}confidential\School\ETRI_teachers.dta" , replace
+********
+* Addtional Cleaning will likely be required here
+********
+
+save "${processed_dir}\\School\\Confidential\\Merged\\teachers.dta" , replace
 
 
 ***************
 ***************
-* Teacher G5 File
+* 1st Grade File
 ***************
 ***************
 
-frame create teachers_g5
-frame change teachers_g5
-use "${data_dir}raw\School\etri_roster.dta" 
-
+frame create first_grade
+frame change first_grade
+use "${data_dir}\\School\\ecd_assessment.dta" 
 
 
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code territory supervisory_authority sample_status strata ipw, from(school)
+frget school_code ${strata} urban_rural public strata_prob ipw, from(school)
 
 order school_code
 sort school_code
 
-save "${data_dir}confidential\School\ETRI_G5_teachers.dta" , replace
+save "${processed_dir}\\School\\Confidential\\Merged\\first_grade_assessment.dta" , replace
+
+***************
+***************
+* 4th Grade File
+***************
+***************
+
+frame create fourth_grade
+frame change fourth_grade
+use "${data_dir}\\School\\fourth_grade_assessment.dta" 
+
+
+frlink m:1 interview__key interview__id, frame(school)
+frget school_code ${strata} urban_rural public strata_prob ipw, from(school)
+
+order school_code
+sort school_code
+
+save "${processed_dir}\\School\\Confidential\\Merged\\fourth_grade_assessment.dta" , replace
