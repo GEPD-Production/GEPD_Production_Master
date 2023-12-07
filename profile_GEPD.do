@@ -92,84 +92,16 @@ quietly {
   *-----------------------------------------------------------------------------
 
 
-  *-----------------------------------------------------------------------------
-  * 3) Check if can access WB network path and WB datalibweb
-  *-----------------------------------------------------------------------------
-  * Network drive is always the same for everyone, but may not be available
-  * if the user is not connected to the World Bank intranet
-  global network 	"//wbgfscifs01/GEDEDU/"
-  cap cd "${network}"
-  if _rc == 0     global network_is_available 1
-  else            global network_is_available 0
-
-  * Datalibweb is only available in Stata for internal World Bank users
-  * but external users can access it through SOL (TODO add link here)
-  cap which datalibweb
-  if _rc == 0     global datalibweb_is_available 1
-  else            global datalibweb_is_available 0
-
-  * Both the network path and datalibweb are only used to update the repo (task 04),
-  * it is not a problem for users external to WBG attempting to replicate main results
-  *-----------------------------------------------------------------------------
 
 
-  *-----------------------------------------------------------------------------
-  * 4) Download and install required user written ado's
-  *-----------------------------------------------------------------------------
-  * Fill this list will all user-written commands this project requires
-  * that can be installed automatically from ssc
-  local user_commands wbopendata carryforward _gwtmean mdensity estout grqreg missings adecomp repest
 
-  * Loop over all the commands to test if they are already installed, if not, then install
-  foreach command of local user_commands {
-    cap which `command'
-    if _rc == 111 ssc install `command'
-  }
-
-  * Check for EduAnalyticsToolkit package
-  /* EDUKIT is the shortname of the the public repo EduAnalyticsToolkit.
-     For info on the repo: https://github.com/worldbank/EduAnalyticsToolkit
-     Though it is not required for calculating Learning Poverty,
-     having the package installed and up-to-date allows to generate automatic
-     documentation of all datasets in markdown. */
-  cap edukit
-  if _rc != 0 {
-    noi disp as res _newline "{phang}You don't have the EduAnalytics Toolkit package installed. Please see this link for info on how to install it: https://github.com/worldbank/EduAnalyticsToolkit{p_end}"
-    global use_edukit_save = 0
-  }
-  else if `r(version)' < 1.0 {
-    noi disp as res _newline "{phang}You have an outdated version of the EduAnalytics Toolkit package installed. Please see this link for info on how to update it: https://github.com/worldbank/EduAnalyticsToolkit{p_end}"
-    global use_edukit_save = 0
-  }
-  else {
-    noi disp as res _newline "{phang}You have an up-to-date version of the EduAnalytics Toolkit package installed. Thus, automatically generated markdown files will be created to document the most relevant datasets.{p_end}"
-    global use_edukit_save = 1
-  }
-  if $use_edukit_save == 0 noi disp as res "{phang}This will not prevent the replication of the main results, but will skip the creation of markdown documentation.{p_end}"
-
-
-  * Load other auxiliary programs, that are found in this Repo
-
-  * Preferred list selects 1 observation per country from rawfull (unique proficiency)
-  * and trims the dataset on the wide sense (keep 1 enrollment, 1 population only)
-  do "${clone}/01_data/012_programs/01261_preferred_list.do"
-
-  * Population weights creates frequency weights for aggregations of global numbers
-  do "${clone}/01_data/012_programs/01262_population_weights.do"
-
-  * Make sure the ado for running the simulations is loaded
-  do "${clone}/02_simulation/022_programs/simulate_learning_poverty.ado"
-
-  * Tables for paper defines programs that export tables to csv
-  do "${clone}/03_export_tables/032_programs/03211_outline_tables.do"
-  *-----------------------------------------------------------------------------
 
 
   *-----------------------------------------------------------------------------
   * 5) Flag that profile was successfully loaded
   *-----------------------------------------------------------------------------
   noi disp as result _n `"{phang}`this_repo' clone sucessfully set up (${clone}).{p_end}"'
-  global LP_profile_is_loaded = 1
+  global GEPD_profile_is_loaded = 1
   *-----------------------------------------------------------------------------
 
 }
