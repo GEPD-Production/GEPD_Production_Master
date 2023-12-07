@@ -21,10 +21,14 @@ if _rc != 0 {
 * Please configure the following parameters before executing this task
 *-------------------------------------------------------------------------------
 * Execution parameters
-global master_seed  17893   // Ensures reproducibility
-global weights_file_name "GEPD_TCD_weights_2023-05-31.csv" // Name of the file with the sampling
-global strata Region // Strata for sampling
-global school_code_name "school_code" // Name of the school code variable in the weights file
+global master_seed  17893   
+* Ensures reproducibility
+global weights_file_name "GEPD_TCD_weights_2023-05-31.csv" 
+* Name of the file with the sampling
+global strata "region" 
+* Strata for sampling
+global school_code_name "school_code" 
+* Name of the school code variable in the weights file
 *-------------------------------------------------------------------------------
 
 
