@@ -1,8 +1,7 @@
 clear all
 
 *set the paths
-# gl data_dir blah blah blah
-# gl temp_dir
+# gl data_dir ${clone}/01_GEPD_raw_data/
 
 
 
@@ -18,7 +17,7 @@ clear all
 frame create school
 frame change school
 
-use "${data_dir}\School\EPDash_STATA_Clean.dta" 
+use "${data_dir}\School\EPDash.dta" 
 
 drop region
 
@@ -28,12 +27,12 @@ drop region
 
 frame create weights
 frame change weights
-import delimited "${data_dir}\Sampling\school_weights_revised_2022-10-24.csv" 
+import delimited "${data_dir}\Sampling\${weights_file_name}"
 
-gen school_emis_preload=code_etablissement 
-gen school_code=code_etablissement
+gen school_emis_preload=${school_code_name} 
+gen school_code=code_etablissem${school_code_name} ent
 
-keep school_code region urban_rural lire urban_rural  ownership ipw
+keep school_code ${strata} urban_rural public strata_prob ipw
 destring school_code, replace force
 destring ipw, replace force
 duplicates drop school_code, force
