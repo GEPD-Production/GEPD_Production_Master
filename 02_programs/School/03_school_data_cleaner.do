@@ -34,46 +34,30 @@ use "${wrk_dir}/school.dta"
 ************
 *Teacher absence
 ************
-cap frame create teacher_absence
-frame change teacher_absence
-*Load the teacher_absence data
-use "${wrk_dir}/TCD_teacher_level.dta"
+cap frame create teachers
+frame change teachers
+*Load the teachers data
+use "${wrk_dir}/teachers.dta"
 
 cap drop school_absence_rate
 cap drop sch_absence_rate 
 cap drop absence_rate
-************
-*Teacher questionnaire
-************
-cap frame create teacher_questionnaire
-frame change teacher_questionnaire
-*Load the teacher_questionnaire data
-use "${wrk_dir}/TCD_teacher_level.dta"
-*Link this file with teacher_gender to get teacher gender
-
-************
-*Teacher knowledge
-************
-cap frame create teacher_assessment
-frame change teacher_assessment
-*Load the teacher_assessment data
-use "${wrk_dir}/TCD_teacher_level.dta"
 
 
 ************
 *4th grade assessment
 ************
-cap frame create learning
-frame change learning
-*Load the 4th grade assessment data
+cap frame create fourth_grade_assessment
+frame change fourth_grade_assessment
+*Load the 4th fourth_grade_assessment assessment data
 use "${wrk_dir}/fourth_grade_assessment.dta"
 
 
 ************
 *ECD assessment
 ************
-cap frame create ecd
-frame change ecd
+cap frame create first_grade_assessment
+frame change first_grade_assessment
 *Load the ecd data
 use "${wrk_dir}/first_grade_assessment.dta"
 
@@ -90,8 +74,7 @@ set type double
 * - not in school 
 * - in school but absent from the class 
 * - Loading teacher_absence dataset
-frame change teacher_absence
-*Error: File has missing school codes, and unique codes do not match with R files
+frame change teachers
 
 *Generate school absence variable
 gen school_absence_rate = (m2sbq6_efft==6 | teacher_available==2) if !missing(m2sbq6_efft)
@@ -110,72 +93,34 @@ replace school_absence_rate = principal_absence if missing(school_absence_rate)
 *Generating teacher presence rate- whether in school or classroom
 gen presence_rate = 100-absence_rate
 
-frame put *, into(final_teacher_absence)
-frame change final_teacher_absence
-*Create data copies for female and male teacher absence rate calculations
-frame copy final_teacher_absence sub_final_tabsence_male
-frame copy final_teacher_absence sub_final_tabsence_female
 
-frame change final_teacher_absence
-*Error: This file has missing school codes
-
-ds, has(type numeric)
-local numvars_efft "`r(varlist)'"
-ds, has(type string)
-local stringvars_efft "`r(varlist)'"
-local stringvars_efft : list stringvars_efft- not
-
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_abs_weight)
 svy: mean absence_rate
 
 *males
-frame change sub_final_tabsence_male
-keep if m2saq3==1
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
-svy: mean absence_rate
+
+svy: mean absence_rate if m2saq3==1
 
 *females
-frame change sub_final_tabsence_female
-keep if m2saq3==2
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
-svy: mean absence_rate
+svy: mean absence_rate if m2saq3==2
 
 *********************************************
 ***** Student Attendance ***********
 *********************************************
-
+frame change school
 *Percent of 4th grade students who are present during an unannounced visit.
-frame copy school student_attendance
-frame change student_attendance
 
 gen student_attendance=m4scq4_inpt/m4scq12_inpt
 *fix an issue where sometimes enumerators will get these two questions mixed up.
 replace student_attendance=m4scq12_inpt/m4scq4_inpt if m4scq4_inpt>m4scq12_inpt & !missing(student_attendance)
 replace student_attendance=1 if student_attendance>1 & !missing(student_attendance)
 replace student_attendance=100*student_attendance
-keep hashed_school_code hashed_school_district hashed_school_province interview__id interview__key rural ipw STRATUM  m4scq4_inpt m4scq12_inpt m4scq4n_girls m4scq13_girls student_attendance
 
-frame put *, into(final_student_attendance)
-frame change final_student_attendance
 
-*Create data copies for female and male teacher absence rate calculations
-frame copy final_student_attendance sub_final_stattd_male
-frame copy final_student_attendance sub_final_stattd_female
-frame change final_student_attendance
-
-ds
-local vars_attd "`r(varlist)'"
-local vars_attd : list vars_attd- not
-
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
+svyset school_code [pw=school_weight], strata($strata) singleunit(scaled) 
 svy: mean student_attendance
 
 *Boys attendance
-frame change sub_final_stattd_male
-
-frame copy sub_final_stattd_male sub_final_stattd_male_10
-frame change sub_final_stattd_male_10
-
 gen boys_num_attending = (m4scq4_inpt-m4scq4n_girls)
 gen boys_on_list = (m4scq12_inpt-m4scq13_girls)
 gen student_attendance_male = boys_num_attending/boys_on_list
@@ -184,25 +129,17 @@ replace student_attendance_male=0 if student_attendance_male<0  & !missing(stude
 replace student_attendance_male=1 if (student_attendance_male>1 & !missing(student_attendance_male)) | (boys_on_list==0 & boys_num_attending>boys_on_list)
 replace student_attendance_male=100*student_attendance_male
 
-ds
-local vars_attd_m "`r(varlist)'"
-local vars_attd_m : list vars_attd_m- not
 
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
+svyset school_code [pw=school_weight], strata($strata) singleunit(scaled) 
 svy: mean student_attendance_male
 
 *Girls attendance
-frame change sub_final_stattd_female
 gen student_attendance_female = m4scq4n_girls/m4scq13_girls
 *fix an issue where sometimes enumerators will get these two questions mixed up.
 replace student_attendance_female=1 if student_attendance_female>1 & !missing(student_attendance_female)
 replace student_attendance_female=100*student_attendance_female
 
-ds
-local vars_attd_f "`r(varlist)'"
-local vars_attd_f : list vars_attd_f- not
-
-svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
+svyset school_code [pw=school_weight], strata($strata) singleunit(scaled) 
 svy: mean student_attendance_female
 
 
@@ -211,9 +148,10 @@ svy: mean student_attendance_female
 **********************************************************
 *School survey. Fraction correct on teacher assessment. In the future, we will align with SDG criteria for minimum proficiency.
 
-frame change teacher_assessment
-rename g4_teacher_number questionnaire_selected__id
-*this file has 3 missing values of school_code
+frame change teachers
+
+cap drop *content_knowledge 
+cap drop *content_proficiency 
 
 *recode assessment variables to be 1 if student got it correct and zero otherwise
 de m5s1q* m5s2q* m5s1q* m5s2q*, varlist
@@ -255,58 +193,24 @@ foreach var in content_proficiency content_knowledge literacy_content_knowledge 
 	replace `var' = `var'*100
 }
 
-frame put *, into(final_teacher_assessment)
-frame change final_teacher_assessment
-egen m5_teach_count = count(school_code), by(school_code)
-bysort school_code: egen m5_teach_count_math=count(school_code) if typetest==1
+egen m5_teach_count = count(content_knowledge), by(school_code)
+bysort school_code: egen m5_teach_count_math=count(math_content_knowledge) if typetest==1
 
-*Saving a version of the teacher assessment file at teacher level for linking with gender
-frame copy final_teacher_assessment main_teacher_assessment
-frame change main_teacher_assessment
-*Linking files to get teacher gender variable
-frlink m:1 school_code questionnaire_selected__id, frame(teacher_gender)
-*Error: both teacher_gender and teacher asssessment files have missing school_code- creating errors in matching unique combinations of values of school_code and questionnaire_selected__id- 12 rows have missing gender values in main_teacher_assessment file
-frget m2saq3, from(teacher_gender)
-*Creating copies for gender analysis
-*Error:Missing gender values means answers will not be accurate
-frame copy main_teacher_assessment sub_final_tassess_male
-frame copy main_teacher_assessment sub_final_tassess_female
 
-frame change final_teacher_assessment
 
-ds, has(type numeric)
-local numvars_cont "`r(varlist)'"
-ds, has(type string)
-local stringvars_cont "`r(varlist)'"
-local stringvars_cont : list stringvars_cont- not
-
-collapse (mean) `numvars_cont' (firstnm) `stringvars_cont', by(school_code)
-*Saving copy of result for future indicators use
-frame copy final_teacher_assessment master_teacher_assessment
-frame change final_teacher_assessment
-export excel using "final_indicator_CONT", sheet("CONT") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_content_weight)
 foreach var in content_proficiency  {
 svy: mean `var'
 }
 
 *For male teachers
-frame change sub_final_tassess_male
-collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 1, by(school_code)
-export excel using "final_indicator_CONT_M", sheet("CONT_M") cell(A1) firstrow(variables) replace
-svyset [pw=ipw]
 foreach var in content_proficiency  {
-svy: mean `var'
+svy: mean `var' if m2saq3 == 1
 }
 
 *For female teachers
-frame change sub_final_tassess_female
-collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 2, by(school_code)
-export excel using "final_indicator_CONT_F", sheet("CONT_F") cell(A1) firstrow(variables) replace
-svyset [pw=ipw]
 foreach var in content_proficiency  {
-svy: mean `var'
+svy: mean `var' if m2saq3 == 2
 }
 
 
@@ -315,11 +219,10 @@ svy: mean `var'
 ************
 
 *Proficiency in math > 82%
-*Proficiency in literacy > 92%
-*Overall proficiency >86.6%
+*Proficiency in literacy > 83.3%
+*Overall proficiency >82.9%
 *Scoring questions m8saq2 and m8saq3, in which students identify letters/words that enumerator calls out is tricky, because enumerators would not always follow instructions to say out loud the same letters/words. In order to account for this, will assume if 80% of the class has a the exact same response, then this is the letter/word called out. If there is a deviation from what 80% of the class says, then it is wrong.
-frame copy learning grade4
-frame change grade4
+frame change fourth_grade_assessment
 de m8saq* m8sbq* m8saq* m8sbq*, varlist
 *There are no incorrect values of variables- but just as a check, replacing any possible "No response" value of 99 with 0
 foreach var in `r(varlist)' {
@@ -327,126 +230,205 @@ replace `var'=0 if `var'==99 & !missing(`var')
 }
 *create indicator for % correct on 4th grade assessment
 
+* Define bin_var function
+capture program drop bin_var
+program define bin_var
+    args varname correct_value
+	gen score_temp = 0
+    replace score_temp = 1 if `varname' == `correct_value'
+	replace `varname' = score_temp
+	drop score_temp
+end
+
+* Define call_out_scorer function
+capture program drop call_out_scorer
+program define call_out_scorer
+    args varname threshold
+    gen score_temp = 0
+    replace score_temp = 1 if `varname' >= `threshold'
+	drop score_temp
+end
+
+* Recode assessment variables to be 1 if student got it correct and zero otherwise
+qui de m8saq5* m8saq6* m8sbq2* m8sbq3* m8sbq4* m8sbq5* m8sbq6*, varlist
+foreach var in `r(varlist)' {
+    bin_var `"`var'"' 1
+}
+
+* Now handle the special cases
+replace m8saq4_id = 4 if m8saq4_id == 5
+bin_var m8saq7a_gir 3
+bin_var m8saq7b_gir 3
+bin_var m8saq7c_gir 2
+bin_var m8saq7d_gir 3
+bin_var m8saq7e_gir 4
+bin_var m8saq7f_gir 1
+bin_var m8saq7g_gir 2
+bin_var m8saq7h_gir 2
+bin_var m8saq7i_gir 4
+bin_var m8saq7j_gir 1
+bin_var m8saq7k_gir 3
+
+* Grade lonely giraffe question
+* This part is not clear in Stata, as Stata does not have a group_by equivalent
+
+* Call out scorer
+qui de m8saq2_id* m8saq3_id* m8sbq1_number_sense*
+foreach var in `r(varlist)' {
+    call_out_scorer `"`var'"' 0.8
+}
+
+* Subtract some letters not assessed and make out of 3 points
+egen m8saq2_id = rowtotal(m8saq2_id*) 
+replace m8saq2_id = (m8saq2_id - 7) / 3
+egen m8saq3_id = rowtotal(m8saq3_id*) 
+replace m8saq3_id = (m8saq3_id - 7) / 3
+
+* More recoding
+replace m8saq2_id = 0 if m8saq2_id < 0
+replace m8saq3_id = 0 if m8saq3_id < 0
+
+* Recode m8saq2_id and m8saq3_id to be 1 if greater than 1, otherwise keep the same
+replace m8saq2_id = 1 if m8saq2_id > 1
+replace m8saq3_id = 1 if m8saq3_id > 1
+
+* Recode m8saq4_id to be itself divided by 4 if not equal to 99, otherwise 0
+replace m8saq4_id = m8saq4_id / 4 if m8saq4_id != 99
+replace m8saq4_id = 0 if m8saq4_id == 99
+
+* Recode m8saq7_word_choice using bin_var function
+bin_var m8saq7_word_choice 2
+
+* Recode m8sbq1_number_sense to be itself minus 7 divided by 3
+egen m8sbq1_number_sense = rowtotal(m8sbq1_number_sense*) 
+replace m8sbq1_number_sense = (m8sbq1_number_sense - 7) / 3
+
+* Recode m8sbq1_number_sense to be 0 if less than 0, otherwise keep the same
+replace m8sbq1_number_sense = 0 if m8sbq1_number_sense < 0
+
+* Recode m8sbq1_number_sense to be 1 if greater than 1, otherwise keep the same
+replace m8sbq1_number_sense = 1 if m8sbq1_number_sense > 1
+
+* Drop variables starting with "m8saq2_id__", "m8saq3_id__", "m8sbq1_number_sense__"
+ds m8saq2_id__* m8saq3_id__* m8sbq1_number_sense__*
+drop `r(varlist)'
+
 ****Literacy****
 *calculate # of literacy items correct
-egen literacy_student_knowledge_new=rowmean(m8saq*)
-replace literacy_student_knowledge_new = 100*literacy_student_knowledge_new
+egen literacy_student_knowledge=rowmean(m8saq*)
+replace literacy_student_knowledge = 100*literacy_student_knowledge
 ****Math****
 *calculate # of math items correct
-egen math_student_knowledge_new=rowmean(m8sbq*)
-replace math_student_knowledge_new = 100*math_student_knowledge_new
+egen math_student_knowledge=rowmean(m8sbq*)
+replace math_student_knowledge = 100*math_student_knowledge
 
 *calculate % correct for literacy, math, and total
-gen student_knowledge_new=(math_student_knowledge_new+literacy_student_knowledge_new)/2
-gen student_proficient=100*(student_knowledge_new>=86.6) if !missing(student_knowledge_new)
-gen literacy_student_proficient= 100*(literacy_student_knowledge_new>=92) if !missing(literacy_student_knowledge_new)
-gen math_student_proficient= 100*(math_student_knowledge_new>=82) if !missing(math_student_knowledge_new)
+gen student_knowledge=(math_student_knowledge+literacy_student_knowledge)/2
+gen student_proficient=100*(student_knowledge>=82.9) if !missing(student_knowledge)
+gen literacy_student_proficient= 100*(literacy_student_knowledge>=83.3) if !missing(literacy_student_knowledge)
+gen math_student_proficient= 100*(math_student_knowledge>=82) if !missing(math_student_knowledge)
 
-frame put *, into(final_4gradestudent_assessment)
-*Creating copies with datasets for male and female student analysis
-frame copy final_4gradestudent_assessment sub_final_4gradestudent_male
-frame copy final_4gradestudent_assessment sub_final_4gradestudent_female
 
-frame change final_4gradestudent_assessment
-
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province, by(school_code)
-export excel using "final_indicator_LERN", sheet("LERN") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
-foreach var in student_proficient {
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || fourth_grade_assessment__id, weight(g4_stud_weight_component)
+foreach var in student_knowledge student_proficient {
 svy: mean `var'
 }
 *For male students
-frame change sub_final_4gradestudent_male
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==1, by(school_code)
-export excel using "final_indicator_LERN_M", sheet("LERN_M") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
-foreach var in student_proficient {
-svy: mean `var'
+foreach var in student_knowledge student_proficient {
+svy: mean `var' if m8s1q3==1
 }
 
 *For female teachers
-frame change sub_final_4gradestudent_female
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==0, by(school_code)
-export excel using "final_indicator_LERN_F", sheet("LERN_F") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
-foreach var in student_proficient  {
-svy: mean `var'
+foreach var in student_knowledge student_proficient  {
+svy: mean `var' if m8s1q3==2
 }
 
 *******************
 *ECD assessment
 *******************
-frame copy ecd ecd_assess
-frame change ecd_assess
+frame change first_grade_assessment
 *create indicator for % correct on ECD assessment
 *There are no wrong values in the dataset- all variables are already set in [0,1] range
 
+*#rename this variable to avoid dropping when I run anonymization program later
+ rename   m6s2q6a_name_writing m6s2q6a_nm_writing
+ rename   m6s2q6b_name_writing m6s2q6b_nm_writing_response
+
+* Recode variables ending with specified suffixes using bin_var function
+foreach suffix in comprehension letters words sentence nm_writing print produce_set number_ident number_compare simple_add backward_digit perspective conflict_resol {
+    ds *`suffix'
+    foreach var in `r(varlist)' {
+        bin_var `var' 1
+    }
+}
+
+* Recode variables ending with "head_shoulders" to be 1 if equal to 2, otherwise 0
+ds *head_shoulders
+foreach var in `r(varlist)' {
+    bin_var `var' 2
+}
+
+* Recode variables ending with "vocabn" based on conditions
+ds *vocabn
+foreach var in `r(varlist)' {
+    replace `var' = . if `var' == 98
+    replace `var' = 0 if inlist(`var', 99, 77)
+    replace `var' = 1 if `var' >= 10 & `var' != 98 & `var' != 99
+    replace `var' = `var' / 10 if `var' < 10 & `var' != 98 & `var' != 99
+}
+
+* Recode variables ending with "counting" based on conditions
+ds *counting
+foreach var in `r(varlist)' {
+    replace `var' = . if `var' == 98
+    replace `var' = 0 if inlist(`var', 99, 77)
+    replace `var' = 1 if `var' >= 30 & `var' != 98 & `var' != 99
+    replace `var' = `var' / 30 if `var' < 30 & `var' != 98 & `var' != 99
+}
+
+ 
 ****Literacy****
 *calculate # of literacy items correct
-egen ecd_lit_student_knowledge_new=rowmean(*vocabn *comprehension *letters *words *sentence *nm_writing *_print)
+egen ecd_lit_student_knowledge=rowmean(*vocabn *comprehension *letters *words *sentence *nm_writing *_print)
 
 ****Math****
 *calculate # of math items correct
-egen ecd_math_student_knowledge_new=rowmean(*counting *produce_set *number_ident *number_compare *simple_add)
+egen ecd_math_student_knowledge=rowmean(*counting *produce_set *number_ident *number_compare *simple_add)
 
 ****Executive Functioning****
 *calculate # of executive functioning items correct
-egen ecd_exec_student_knowledge_new=rowmean(*backward_digit *head_shoulders)
+egen ecd_exec_student_knowledge=rowmean(*backward_digit *head_shoulders)
 
 ****Socio-Emotional****
 *calculate # of socio emotional items correct
-egen ecd_soc_student_knowledge_new=rowmean(*perspective *conflict_resol)
+egen ecd_soc_student_knowledge=rowmean(*perspective *conflict_resol)
 
 *calculate % correct for literacy, math, exec functioning, socio emotional and total
-gen ecd_student_knowledge_new=(ecd_lit_student_knowledge_new+ecd_math_student_knowledge_new+ecd_exec_student_knowledge_new+ecd_soc_student_knowledge_new)/4
-gen ecd_student_proficiency_new=(ecd_student_knowledge_new>=.80) if !missing(ecd_student_knowledge_new)
-gen ecd_math_student_proficiency_new=(ecd_math_student_knowledge_new>=.80) if !missing(ecd_math_student_knowledge_new)
-gen ecd_lit_student_proficiency_new=(ecd_lit_student_knowledge_new>=.80) if !missing(ecd_lit_student_knowledge_new)
-gen ecd_exec_student_proficiency_new=(ecd_exec_student_knowledge_new>=.80) if !missing(ecd_exec_student_knowledge_new)
-gen ecd_soc_student_proficiency_new=(ecd_soc_student_knowledge_new>=.80) if !missing(ecd_soc_student_knowledge_new)
+gen ecd_student_knowledge=(ecd_lit_student_knowledge+ecd_math_student_knowledge+ecd_exec_student_knowledge+ecd_soc_student_knowledge)/4
+gen ecd_student_proficiency=(ecd_student_knowledge>=.80) if !missing(ecd_student_knowledge)
+gen ecd_math_student_proficiency=(ecd_math_student_knowledge>=.80) if !missing(ecd_math_student_knowledge)
+gen ecd_lit_student_proficiency=(ecd_lit_student_knowledge>=.80) if !missing(ecd_lit_student_knowledge)
+gen ecd_exec_student_proficiency=(ecd_exec_student_knowledge>=.80) if !missing(ecd_exec_student_knowledge)
+gen ecd_soc_student_proficiency=(ecd_soc_student_knowledge>=.80) if !missing(ecd_soc_student_knowledge)
 
-foreach var in ecd_lit_student_knowledge_new ecd_math_student_knowledge_new ecd_soc_student_knowledge_new ecd_exec_student_knowledge_new ecd_student_knowledge_new ecd_student_proficiency_new ecd_math_student_proficiency_new ecd_lit_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new  {
+foreach var in ecd_lit_student_knowledge ecd_math_student_knowledge ecd_soc_student_knowledge ecd_exec_student_knowledge ecd_student_knowledge ecd_student_proficiency ecd_math_student_proficiency ecd_lit_student_proficiency ecd_exec_student_proficiency ecd_soc_student_proficiency  {
 replace `var' = `var'*100
 }
                                   
-frame put *, into(final_ecdstudent_assessment)
-*Creating copies with datasets for male and female student analysis
-frame copy final_ecdstudent_assessment sub_final_ecdstudent_male
-frame copy final_ecdstudent_assessment sub_final_ecdstudent_female
 
-frame change final_ecdstudent_assessment
 
-ds, has(type numeric)
-local numvars_lcap "`r(varlist)'"
-ds, has(type string)
-local stringvars_lcap "`r(varlist)'"
-local stringvars_lcap : list stringvars_lcap- not
-
-collapse (mean) `numvars_lcap' (firstnm) `stringvars_lcap', by(school_code)
-export excel using "final_indicator_LCAP", sheet("LCAP") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
-svy: mean ecd_student_proficiency_new
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || ecd_assessment__id, weight(g1_stud_weight_component)
+svy: mean ecd_student_proficiency
 
 *For male students
-frame change sub_final_ecdstudent_male
-collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==1, by(school_code)
-export excel using "final_indicator_LCAP_M", sheet("LCAP_M") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
-svy: mean ecd_student_proficiency_new
+svy: mean ecd_student_proficiency if m6s1q3==1
 
 
 *For female students
-frame change sub_final_ecdstudent_female
-collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==2, by(school_code)
-export excel using "final_indicator_LCAP_F", sheet("LCAP_F") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
-svy: mean ecd_student_proficiency_new
+svy: mean ecd_student_proficiency if m6s1q3==2
 
 
 *********************************************
@@ -505,7 +487,7 @@ frame change final_school_inputs
 keep `preamble_info_school' `inpt_list' `inpt_out' 
 export excel using "final_indicator_INPT", sheet("INPT") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean inputs
 
 
@@ -594,7 +576,7 @@ local infr_out drinking_water toilet_exists toilet_separate toilet_private toile
 keep `preamble_info_school' `infr_list' `infr_out' 
 export excel using "final_indicator_INFR", sheet("INFR") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean drinking_water functioning_toilet internet class_electricity disability_accessibility infrastructure
 
 *********************************************
@@ -658,7 +640,7 @@ local opmn_outpt vignette_1_resp vignette_1_finance vignette_1_address vignette_
 keep `preamble_info_school' `opmn_input' `opmn_outpt'
 export excel using "final_indicator_OPMN", sheet("OPMN") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean operational_management
 
 *********************************************
@@ -715,7 +697,7 @@ ds school_code, not
 collapse (firstnm) `r(varlist)', by(school_code)
 export excel using "final_indicator_ILDR", sheet("ILDR") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean instructional_leadership
 
 *********************************************
@@ -774,7 +756,7 @@ frame change pknw_actual_combined
 
 frame copy school school_data_pknw_f
 frame change school_data_pknw_f
-collapse (firstnm) m7sfq5_pknw (firstnm) m7sfq6_pknw (firstnm) m7sfq7_pknw (firstnm) m7sfq9_pknw_filter (firstnm) m7sfq10_pknw (firstnm) m7sfq11_pknw (firstnm) m7_teach_count_pknw ipw (first) province, by(school_code)
+collapse (firstnm) m7sfq5_pknw (firstnm) m7sfq6_pknw (firstnm) m7sfq7_pknw (firstnm) m7sfq9_pknw_filter (firstnm) m7sfq10_pknw (firstnm) m7sfq11_pknw (firstnm) m7_teach_count_pknw school_weight (first) province, by(school_code)
 replace school_code =".a" if missing(school_code)
 frlink 1:1 school_code, frame(pknw_actual_combined)
 frget *, from(pknw_actual_combined)
@@ -803,7 +785,7 @@ frame put *, into(final_principal_know)
 frame change final_principal_know
 export excel using "final_indicator_PKNW", sheet("PKNW") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean principal_knowledge_score
 
 ********************************************
@@ -869,7 +851,7 @@ collapse (firstnm) `r(varlist)', by(school_code)
 
 export excel using "final_indicator_PMAN", sheet("PMAN") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean principal_management
 
 *********************************************
@@ -964,7 +946,7 @@ collapse (firstnm) `r(varlist)', by(school_code)
 
 export excel using "final_indicator_TATT", sheet("TATT") cell(A1) firstrow(variables) replace
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean teacher_attraction
 
 *********************************************
@@ -1008,7 +990,7 @@ collapse (mean) numvars_sd (first) stringvars_sd, by(interview__id)
 ds school_code, not
 collapse (firstnm) `r(varlist)', by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean teacher_selection_deployment
 
 *********************************************
@@ -1103,7 +1085,7 @@ collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
 ds school_code, not
 collapse (firstnm) `r(varlist)', by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean teacher_support
 
 *********************************************
@@ -1151,7 +1133,7 @@ collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
 ds school_code, not
 collapse (firstnm) `r(varlist)', by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean teaching_evaluation
 
 *********************************************
@@ -1207,7 +1189,7 @@ collapse (mean) numvars_tmna (first) stringvars_tmna, by(interview__id)
 ds school_code, not
 collapse (firstnm) `r(varlist)', by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean teacher_monitoring
 
 *********************************************
@@ -1299,7 +1281,7 @@ local stringvars_tinm "`r(varlist)'"
 
 collapse (mean) numvars_tinm (first) stringvars_tinm, by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean intrinsic_motivation
 
 *********************************************
@@ -1315,7 +1297,7 @@ egen standards_monitoring_infrastructure = rowmean(m1scq14_imon__*)
 gen standards_monitoring=(standards_monitoring_input*6+standards_monitoring_infrastructure*4)/2
 collapse (firstnm) _all, by(school_code)
 
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean standards_monitoring
 
 *********************************************
@@ -1351,7 +1333,7 @@ replace parents_involved = 0 if missing(m1scq3_imon)
 gen sch_monitoring=1+1.5*monitoring_inputs+1.5*monitoring_infrastructure+parents_involved
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean sch_monitoring
 
 *********************************************
@@ -1371,7 +1353,7 @@ gen principal_supervision_scfn = !(m7sfq15g_pknw__0==1 | m7sfq15g_pknw__98==1)
 gen sch_management_clarity=1+(infrastructure_scfn+materials_scfn)/2+ (hiring_scfn + supervision_scfn)/2 + student_scfn +(principal_hiring_scfn+ principal_supervision_scfn)/2
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean sch_management_clarity
 
 *********************************************
@@ -1403,7 +1385,7 @@ replace principal_salary_score = 5 if principal_salary >=1.5 & principal_salary<
 gen sch_management_attraction=(principal_satisfaction+principal_salary_score)/2
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean sch_management_attraction
 
 *********************************************
@@ -1431,7 +1413,7 @@ replace sch_selection_deployment = 3 if (!(m7sgq2_ssld==6 | m7sgq2_ssld==7 |miss
 replace sch_selection_deployment = 2 if m7sgq1_ssld__6==1 | m7sgq1_ssld__7==1
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean sch_selection_deployment
 
 *********************************************
@@ -1463,7 +1445,7 @@ gen principal_offered = (m7sgq7_ssup==2 | m7sgq7_ssup==3 | m7sgq7_ssup==4 | m7sg
 gen sch_support=1+prinicipal_trained+principal_training+principal_used_skills+principal_offered
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean sch_support
 
 *********************************************
@@ -1492,7 +1474,7 @@ gen principal_positive_consequences = 1 if m7sgq12_sevl__1==1 | m7sgq12_sevl__2=
 gen principal_evaluation=1+principal_formally_evaluated+principal_evaluation_multiple+principal_negative_consequences+principal_positive_consequences
 
 collapse (firstnm) _all, by(school_code)
-svyset [pw=ipw]
+svyset [pw=school_weight]
 svy: mean principal_evaluation
 
 ****************************************************************************END**************************************************************************************************
