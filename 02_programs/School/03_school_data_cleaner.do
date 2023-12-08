@@ -1,5 +1,6 @@
 *Clean data files for GEPD school indicators
-*Written by Kanika Verma
+*Written originally by Kanika Verma
+*Updated by Brian Stacy on December 8, 2023.
 
 clear all
 
@@ -9,9 +10,9 @@ gl processed_dir ${clone}/03_GEPD_processed_data/
 
 
 *save some useful locals
-local preamble_info_individual hashed_school_code hashed_school_district hashed_school_province interview__id questionnaire_selected__id interview__key rural ipw STRATUM province
-local preamble_info_school hashed_school_code hashed_school_district hashed_school_province interview__id interview__key rural ipw STRATUM province
-local not hashed_school_code
+local preamble_info_individual school_code 
+local preamble_info_school school_code 
+local not school_code
 local not1 interview__id
 
 *Set working directory on your computer here
@@ -38,9 +39,9 @@ frame change teacher_absence
 *Load the teacher_absence data
 use "${wrk_dir}/TCD_teacher_level.dta"
 
-frlink m:1 interview__id, frame(school)
-
-
+cap drop school_absence_rate
+cap drop sch_absence_rate 
+cap drop absence_rate
 ************
 *Teacher questionnaire
 ************
@@ -58,7 +59,6 @@ frame change teacher_assessment
 *Load the teacher_assessment data
 use "${wrk_dir}/TCD_teacher_level.dta"
 
-drop literacy_content_knowledge cloze grammar read_passage math_content_knowledge arithmetic_number_relations geometry interpret_data
 
 ************
 *4th grade assessment
@@ -125,25 +125,20 @@ ds, has(type string)
 local stringvars_efft "`r(varlist)'"
 local stringvars_efft : list stringvars_efft- not
 
-collapse (mean) `numvars_efft' (firstnm) `stringvars_efft', by(hashed_school_code)
-export excel using "final_indicator_EFFT", sheet("EFFT") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
 svy: mean absence_rate
 
+*males
 frame change sub_final_tabsence_male
-rename absence_rate absence_rate_male
-collapse (mean) `numvars_efft' (first) `stringvars_efft' if m2saq3==1 , by(hashed_school_code)
-export excel using "final_indicator_EFFT_M", sheet("EFFT") cell(A1) firstrow(variables) replace
-svyset [pw=ipw]
-svy: mean absence_rate_male
+keep if m2saq3==1
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
+svy: mean absence_rate
 
+*females
 frame change sub_final_tabsence_female
-rename absence_rate absence_rate_female
-collapse (mean) `numvars_efft' (first) `stringvars_efft' if m2saq3==2, by(hashed_school_code)
-export excel using "final_indicator_EFFT_F", sheet("EFFT") cell(A1) firstrow(variables) replace
-svyset [pw=ipw]
-svy: mean absence_rate_female
+keep if m2saq3==2
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled)   || unique_teach_id
+svy: mean absence_rate
 
 *********************************************
 ***** Student Attendance ***********
@@ -172,10 +167,7 @@ ds
 local vars_attd "`r(varlist)'"
 local vars_attd : list vars_attd- not
 
-collapse (firstnm) `vars_attd', by(hashed_school_code)
-export excel using "final_indicator_ATTD", sheet("ATTD") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
 svy: mean student_attendance
 
 *Boys attendance
@@ -196,10 +188,7 @@ ds
 local vars_attd_m "`r(varlist)'"
 local vars_attd_m : list vars_attd_m- not
 
-collapse (firstnm) `vars_attd_m' , by(hashed_school_code)
-export excel using "final_indicator_ATTD_M", sheet("ATTD_M") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
 svy: mean student_attendance_male
 
 *Girls attendance
@@ -213,10 +202,7 @@ ds
 local vars_attd_f "`r(varlist)'"
 local vars_attd_f : list vars_attd_f- not
 
-collapse (firstnm) `vars_attd_f' , by(hashed_school_code)
-export excel using "final_indicator_ATTD_F", sheet("ATTD_F") cell(A1) firstrow(variables) replace
-
-svyset [pw=ipw]
+svyset school_code [pw=ipw], strata($strata) singleunit(scaled) 
 svy: mean student_attendance_female
 
 
@@ -227,7 +213,7 @@ svy: mean student_attendance_female
 
 frame change teacher_assessment
 rename g4_teacher_number questionnaire_selected__id
-*this file has 3 missing values of hashed_school_code
+*this file has 3 missing values of school_code
 
 *recode assessment variables to be 1 if student got it correct and zero otherwise
 de m5s1q* m5s2q* m5s1q* m5s2q*, varlist
@@ -271,15 +257,15 @@ foreach var in content_proficiency content_knowledge literacy_content_knowledge 
 
 frame put *, into(final_teacher_assessment)
 frame change final_teacher_assessment
-egen m5_teach_count = count(hashed_school_code), by(hashed_school_code)
-bysort hashed_school_code: egen m5_teach_count_math=count(hashed_school_code) if typetest==1
+egen m5_teach_count = count(school_code), by(school_code)
+bysort school_code: egen m5_teach_count_math=count(school_code) if typetest==1
 
 *Saving a version of the teacher assessment file at teacher level for linking with gender
 frame copy final_teacher_assessment main_teacher_assessment
 frame change main_teacher_assessment
 *Linking files to get teacher gender variable
-frlink m:1 hashed_school_code questionnaire_selected__id, frame(teacher_gender)
-*Error: both teacher_gender and teacher asssessment files have missing hashed_school_code- creating errors in matching unique combinations of values of hashed_school_code and questionnaire_selected__id- 12 rows have missing gender values in main_teacher_assessment file
+frlink m:1 school_code questionnaire_selected__id, frame(teacher_gender)
+*Error: both teacher_gender and teacher asssessment files have missing school_code- creating errors in matching unique combinations of values of school_code and questionnaire_selected__id- 12 rows have missing gender values in main_teacher_assessment file
 frget m2saq3, from(teacher_gender)
 *Creating copies for gender analysis
 *Error:Missing gender values means answers will not be accurate
@@ -294,7 +280,7 @@ ds, has(type string)
 local stringvars_cont "`r(varlist)'"
 local stringvars_cont : list stringvars_cont- not
 
-collapse (mean) `numvars_cont' (firstnm) `stringvars_cont', by(hashed_school_code)
+collapse (mean) `numvars_cont' (firstnm) `stringvars_cont', by(school_code)
 *Saving copy of result for future indicators use
 frame copy final_teacher_assessment master_teacher_assessment
 frame change final_teacher_assessment
@@ -307,7 +293,7 @@ svy: mean `var'
 
 *For male teachers
 frame change sub_final_tassess_male
-collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 1, by(hashed_school_code)
+collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 1, by(school_code)
 export excel using "final_indicator_CONT_M", sheet("CONT_M") cell(A1) firstrow(variables) replace
 svyset [pw=ipw]
 foreach var in content_proficiency  {
@@ -316,7 +302,7 @@ svy: mean `var'
 
 *For female teachers
 frame change sub_final_tassess_female
-collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 2, by(hashed_school_code)
+collapse content_proficiency content_knowledge literacy_content_knowledge math_content_knowledge ipw (first) province if m2saq3 == 2, by(school_code)
 export excel using "final_indicator_CONT_F", sheet("CONT_F") cell(A1) firstrow(variables) replace
 svyset [pw=ipw]
 foreach var in content_proficiency  {
@@ -363,7 +349,7 @@ frame copy final_4gradestudent_assessment sub_final_4gradestudent_female
 
 frame change final_4gradestudent_assessment
 
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province, by(hashed_school_code)
+collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province, by(school_code)
 export excel using "final_indicator_LERN", sheet("LERN") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -372,7 +358,7 @@ svy: mean `var'
 }
 *For male students
 frame change sub_final_4gradestudent_male
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==1, by(hashed_school_code)
+collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==1, by(school_code)
 export excel using "final_indicator_LERN_M", sheet("LERN_M") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -382,7 +368,7 @@ svy: mean `var'
 
 *For female teachers
 frame change sub_final_4gradestudent_female
-collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==0, by(hashed_school_code)
+collapse student_proficient student_knowledge_new literacy_student_proficient literacy_student_knowledge_new math_student_proficient math_student_knowledge_new ipw (first) province if student_male ==0, by(school_code)
 export excel using "final_indicator_LERN_F", sheet("LERN_F") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -439,7 +425,7 @@ ds, has(type string)
 local stringvars_lcap "`r(varlist)'"
 local stringvars_lcap : list stringvars_lcap- not
 
-collapse (mean) `numvars_lcap' (firstnm) `stringvars_lcap', by(hashed_school_code)
+collapse (mean) `numvars_lcap' (firstnm) `stringvars_lcap', by(school_code)
 export excel using "final_indicator_LCAP", sheet("LCAP") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -447,7 +433,7 @@ svy: mean ecd_student_proficiency_new
 
 *For male students
 frame change sub_final_ecdstudent_male
-collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==1, by(hashed_school_code)
+collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==1, by(school_code)
 export excel using "final_indicator_LCAP_M", sheet("LCAP_M") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -456,7 +442,7 @@ svy: mean ecd_student_proficiency_new
 
 *For female students
 frame change sub_final_ecdstudent_female
-collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==2, by(hashed_school_code)
+collapse ecd_student_proficiency_new ecd_lit_student_proficiency_new ecd_math_student_proficiency_new ecd_exec_student_proficiency_new ecd_soc_student_proficiency_new ipw (first) province if m6s1q3 ==2, by(school_code)
 export excel using "final_indicator_LCAP_F", sheet("LCAP_F") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -496,16 +482,16 @@ frame put *, into(main_school_inputs)
 frame change main_school_inputs
 frame copy teacher_questionnaire school_teacher_ques_INPT
 frame change school_teacher_ques_INPT
-collapse (mean) m3sbq4_inpt, by(hashed_school_code)
+collapse (mean) m3sbq4_inpt, by(school_code)
 rename m3sbq4_inpt used_ict_pct
 
 frame change main_school_inputs
-frlink m:1 hashed_school_code, frame(school_teacher_ques_INPT)
+frlink m:1 school_code, frame(school_teacher_ques_INPT)
 frget used_ict_pct, from(school_teacher_ques_INPT)
-*Error: Missing values of hashed_school_code in school frame- hence used_ict_pct will be missing for some rows in new frame (13 rows)
+*Error: Missing values of school_code in school frame- hence used_ict_pct will be missing for some rows in new frame (13 rows)
 gen used_ict=(used_ict_pct>=0.5 & used_ict_num>=3) if !missing(used_ict_num) & !missing(used_ict_pct)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 gen inputs = textbooks+blackboard_functional + pens_etc + share_desk +  0.5*used_ict + 0.5*access_ict
 
 frame put *, into(final_school_inputs)
@@ -567,8 +553,8 @@ gen class_electricity = (m1sbq11_infr==1) if !missing(m1sbq11_infr)
 *Accessibility for people with disabilities
 frame put *, into(main_school_infr)
 frame change main_school_infr
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 gen disab_road_access = 1 if m1s0q2_infr==1
 replace disab_road_access = 0 if m1s0q2_infr!=1 & !missing(m1s0q2_infr)
 
@@ -627,8 +613,8 @@ svy: mean drinking_water functioning_toilet internet class_electricity disabilit
 
 frame copy school school_opmn
 frame change school_opmn
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 gen vignette_1_resp = cond(m7sbq1_opmn==0 & (m7sbq4_opmn==4 | m7sbq4_opmn==98),0,0.5,.)
 replace vignette_1_resp=. if missing(m7sbq1_opmn) & missing(m7sbq1_opmn)
 replace vignette_1_resp = 0.5 if !m7sbq1_opmn==0 & (m7sbq4_opmn==4 | m7sbq4_opmn==98)
@@ -725,8 +711,8 @@ local stringvars_ildr "`r(varlist)'"
 local stringvars_ildr : list stringvars_ildr- not1
 
 collapse (mean) `numvars_ildr' (firstnm) `stringvars_ildr', by(interview__id)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 export excel using "final_indicator_ILDR", sheet("ILDR") cell(A1) firstrow(variables) replace
 
 svyset [pw=ipw]
@@ -755,28 +741,28 @@ svy: mean instructional_leadership
 
 frame copy master_teacher_assessment pknw_actual_cont_temp
 frame change pknw_actual_cont_temp
-keep hashed_school_code m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer
-replace hashed_school_code = ".a" if missing(hashed_school_code)
+keep school_code m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer
+replace school_code = ".a" if missing(school_code)
 frame put *,into(pknw_actual_cont)
 
 frame copy teacher_questionnaire pknw_actual_exper_temp
 frame change pknw_actual_exper_temp
-keep hashed_school_code m3sb_tnumber m3saq5 m3saq6
+keep school_code m3sb_tnumber m3saq5 m3saq6
 gen experience=2019-m3saq5
 keep if experience<3
-egen teacher_count_experience_less3 = count(hashed_school_code), by(hashed_school_code)
-collapse (first) teacher_count_experience_less3, by(hashed_school_code)
-replace hashed_school_code = ".a" if missing(hashed_school_code)
+egen teacher_count_experience_less3 = count(school_code), by(school_code)
+collapse (first) teacher_count_experience_less3, by(school_code)
+replace school_code = ".a" if missing(school_code)
 frame put *,into(pknw_actual_exper)
 
 frame copy master_school_inputs pknw_actual_school_inpts
 frame change pknw_actual_school_inpts
-keep hashed_school_code blackboard_functional m4scq5_inpt m4scq4_inpt
-replace hashed_school_code = ".a" if missing(hashed_school_code)
+keep school_code blackboard_functional m4scq5_inpt m4scq4_inpt
+replace school_code = ".a" if missing(school_code)
 	
-frlink 1:1 hashed_school_code, frame(pknw_actual_cont)
+frlink 1:1 school_code, frame(pknw_actual_cont)
 frget * , from(pknw_actual_cont)
-frlink 1:1 hashed_school_code, frame(pknw_actual_exper)
+frlink 1:1 school_code, frame(pknw_actual_exper)
 frget * , from(pknw_actual_exper)
 
 replace teacher_count_experience_less3 = 0 if missing(teacher_count_experience_less3)
@@ -788,9 +774,9 @@ frame change pknw_actual_combined
 
 frame copy school school_data_pknw_f
 frame change school_data_pknw_f
-collapse (firstnm) m7sfq5_pknw (firstnm) m7sfq6_pknw (firstnm) m7sfq7_pknw (firstnm) m7sfq9_pknw_filter (firstnm) m7sfq10_pknw (firstnm) m7sfq11_pknw (firstnm) m7_teach_count_pknw ipw (first) province, by(hashed_school_code)
-replace hashed_school_code =".a" if missing(hashed_school_code)
-frlink 1:1 hashed_school_code, frame(pknw_actual_combined)
+collapse (firstnm) m7sfq5_pknw (firstnm) m7sfq6_pknw (firstnm) m7sfq7_pknw (firstnm) m7sfq9_pknw_filter (firstnm) m7sfq10_pknw (firstnm) m7sfq11_pknw (firstnm) m7_teach_count_pknw ipw (first) province, by(school_code)
+replace school_code =".a" if missing(school_code)
+frlink 1:1 school_code, frame(pknw_actual_combined)
 frget *, from(pknw_actual_combined)
 
 gen add_triple_digit_pknw = 1 if ((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count_pknw)
@@ -878,8 +864,8 @@ keep `preamble_info_school' `pman_inpt' `pman_out'
 frame put *, into(final_principal_management)
 frame change final_principal_management
 
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 export excel using "final_indicator_PMAN", sheet("PMAN") cell(A1) firstrow(variables) replace
 
@@ -973,8 +959,8 @@ local stringvars_tatt : list stringvars_tatt- not1
 
 collapse (mean) `numvars_tatt' (firstnm) `stringvars_tatt', by(interview__id)
 
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 export excel using "final_indicator_TATT", sheet("TATT") cell(A1) firstrow(variables) replace
 
@@ -1019,8 +1005,8 @@ ds, has(type string)
 local stringvars_sd "`r(varlist)'"
 
 collapse (mean) numvars_sd (first) stringvars_sd, by(interview__id)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 svyset [pw=ipw]
 svy: mean teacher_selection_deployment
@@ -1114,8 +1100,8 @@ ds, has(type string)
 local stringvars_ts "`r(varlist)'"
 
 collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 svyset [pw=ipw]
 svy: mean teacher_support
@@ -1138,7 +1124,7 @@ local tevl m3sbq7_tmna__1 m3sbq7_tmna__2 m3sbq7_tmna__3 m3sbq7_tmna__4 m3sbq7_tm
 
 local preamble_info_teacher interview__id questionnaire_roster__id teacher_number available teacher_position teacher_grd1 teacher_grd2 teacher_grd3 teacher_grd4 teacher_grd5 teacher_language teacher_math teacher_both_subj teacher_education teacher_year_began teacher_age
 
-keep hashed_school_code `preamble_info_teacher' `tevl' m3sbq6_tmna m3sbq8_tmna__1
+keep school_code `preamble_info_teacher' `tevl' m3sbq6_tmna m3sbq8_tmna__1
 
 gen formally_evaluated = 1 if m3sbq6_tmna==1
 replace formally_evaluated = 0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
@@ -1162,8 +1148,8 @@ ds, has(type string)
 local stringvars_ts "`r(varlist)'"
 
 collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 svyset [pw=ipw]
 svy: mean teaching_evaluation
@@ -1180,7 +1166,7 @@ svy: mean teaching_evaluation
 
 frame copy teacher_questionnaire_TATT teacher_questionnaire_TMNA2
 frame change teacher_questionnaire_TMNA2
-keep interview__id hashed_school_code questionnaire_roster__id teacher_number m3seq4_tatt m3seq5_tatt__1 m3sbq1_tatt__1 m3sbq1_tatt__2 m3sbq1_tatt__3 m3sbq1_tatt__97
+keep interview__id school_code questionnaire_roster__id teacher_number m3seq4_tatt m3seq5_tatt__1 m3sbq1_tatt__1 m3sbq1_tatt__2 m3sbq1_tatt__3 m3sbq1_tatt__97
 save teacher_questionnaire_TMNA2
 
 frame copy teacher_questionnaire_TATT teacher_questionnaire_TMNA
@@ -1188,7 +1174,7 @@ frame change teacher_questionnaire_TMNA
 ds `tevl', not
 keep `r(varlist)'
 
-merge m:m hashed_school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TMNA2
+merge m:m school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TMNA2
 
 gen attendance_evaluated = 1 if m3sbq6_tmna==1 & m3sbq8_tmna__1==1
 replace attendance_evaluated = 0 if m3sbq6_tmna==1 & m3sbq8_tmna__1!=1
@@ -1218,8 +1204,8 @@ ds, has(type string)
 local stringvars_tmna "`r(varlist)'"
 
 collapse (mean) numvars_tmna (first) stringvars_tmna, by(interview__id)
-ds hashed_school_code, not
-collapse (firstnm) `r(varlist)', by(hashed_school_code)
+ds school_code, not
+collapse (firstnm) `r(varlist)', by(school_code)
 
 svyset [pw=ipw]
 svy: mean teacher_monitoring
@@ -1240,13 +1226,13 @@ local intrinsic_motiv_q_all m3scq1_tinm m3scq2_tinm m3scq3_tinm m3scq4_tinm m3sc
 
 frame copy teacher_questionnaire_TMNA teacher_questionnaire_TINM2
 frame change teacher_questionnaire_TINM2
-keep hashed_school_code `preamble_info_teacher' m3sdq2_tmna
+keep school_code `preamble_info_teacher' m3sdq2_tmna
 save teacher_questionnaire_TINM2
 
 frame copy teacher_questionnaire teacher_questionnaire_TINM
 frame change teacher_questionnaire_TINM
 
-merge m:m hashed_school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TINM2
+merge m:m school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TINM2
 *(De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if the ~
 gen SE_PRM_TINM_1 = 100 if m3scq1_tinm>=4 & !missing(m3scq1_tinm)
 replace SE_PRM_TINM_1 = 0 if m3scq1_tinm<4 & !missing(m3scq1_tinm)
@@ -1311,7 +1297,7 @@ local numvars_tinm "`r(varlist)'"
 ds, has(type string)
 local stringvars_tinm "`r(varlist)'"
 
-collapse (mean) numvars_tinm (first) stringvars_tinm, by(hashed_school_code)
+collapse (mean) numvars_tinm (first) stringvars_tinm, by(school_code)
 
 svyset [pw=ipw]
 svy: mean intrinsic_motivation
@@ -1327,7 +1313,7 @@ frame change school_data_ISTD
 egen standards_monitoring_input = rowmean(m1scq13_imon__*)
 egen standards_monitoring_infrastructure = rowmean(m1scq14_imon__*)
 gen standards_monitoring=(standards_monitoring_input*6+standards_monitoring_infrastructure*4)/2
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 
 svyset [pw=ipw]
 svy: mean standards_monitoring
@@ -1364,7 +1350,7 @@ replace parents_involved = 0 if missing(m1scq3_imon)
 
 gen sch_monitoring=1+1.5*monitoring_inputs+1.5*monitoring_infrastructure+parents_involved
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean sch_monitoring
 
@@ -1384,7 +1370,7 @@ gen principal_hiring_scfn = !(m7sfq15f_pknw__0==1 | m7sfq15f_pknw__98==1)
 gen principal_supervision_scfn = !(m7sfq15g_pknw__0==1 | m7sfq15g_pknw__98==1)
 gen sch_management_clarity=1+(infrastructure_scfn+materials_scfn)/2+ (hiring_scfn + supervision_scfn)/2 + student_scfn +(principal_hiring_scfn+ principal_supervision_scfn)/2
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean sch_management_clarity
 
@@ -1416,7 +1402,7 @@ replace principal_salary_score = 4 if principal_salary >=1 & principal_salary<=1
 replace principal_salary_score = 5 if principal_salary >=1.5 & principal_salary<=5 & !missing(principal_salary)
 gen sch_management_attraction=(principal_satisfaction+principal_salary_score)/2
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean sch_management_attraction
 
@@ -1444,7 +1430,7 @@ replace sch_selection_deployment = 4 if !(m7sgq2_ssld==6 | m7sgq2_ssld==7 | miss
 replace sch_selection_deployment = 3 if (!(m7sgq2_ssld==6 | m7sgq2_ssld==7 |missing(m7sgq2_ssld)) & (m7sgq1_ssld__1==1 | m7sgq1_ssld__4==1 | m7sgq1_ssld__5==1 | m7sgq1_ssld__97==1))
 replace sch_selection_deployment = 2 if m7sgq1_ssld__6==1 | m7sgq1_ssld__7==1
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean sch_selection_deployment
 
@@ -1476,7 +1462,7 @@ replace principal_used_skills = 0 if m7sgq5_ssup!=1 & !missing(m7sgq5_ssup) & m7
 gen principal_offered = (m7sgq7_ssup==2 | m7sgq7_ssup==3 | m7sgq7_ssup==4 | m7sgq7_ssup==5)
 gen sch_support=1+prinicipal_trained+principal_training+principal_used_skills+principal_offered
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean sch_support
 
@@ -1505,7 +1491,7 @@ gen principal_negative_consequences = 1 if m7sgq11_sevl__1==1 | m7sgq11_sevl__2=
 gen principal_positive_consequences = 1 if m7sgq12_sevl__1==1 | m7sgq12_sevl__2==1 | m7sgq12_sevl__3==1 | m7sgq12_sevl__4==1 | m7sgq12_sevl__97==1
 gen principal_evaluation=1+principal_formally_evaluated+principal_evaluation_multiple+principal_negative_consequences+principal_positive_consequences
 
-collapse (firstnm) _all, by(hashed_school_code)
+collapse (firstnm) _all, by(school_code)
 svyset [pw=ipw]
 svy: mean principal_evaluation
 
