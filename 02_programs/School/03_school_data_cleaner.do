@@ -441,8 +441,7 @@ svy: mean ecd_student_proficiency if m6s1q3==2
 * - Fraction of students in class with a desk 
 * - Used ICT in class and have access to ICT in the school
 
-frame copy school school_inputs
-frame change school_inputs
+frame change school
 
 gen blackboard_functional= 1 if m4scq10_inpt==1 & m4scq9_inpt==1 & m4scq8_inpt==1
 replace blackboard_functional = 0 if (m4scq10_inpt==0 | m4scq9_inpt==0 | m4scq8_inpt==0)
@@ -454,40 +453,28 @@ gen pens_etc = (share_pencil>=0.9 & share_exbook>=0.9) if !missing(share_pencil)
 gen textbooks = (share_textbook>=0.9) if !missing(share_textbook)
 gen share_desk = 1-(m4scq11_inpt/m4scq4_inpt)
 gen used_ict_num =0 if m1sbq12_inpt==0
-replace used_ict_num = m1sbq14_inpt if m1sbq12_inpt>=1 & !missing(m1sbq12_inpt)
+replace used_ict_num = m1sbq13a_inpt_etri if m1sbq12_inpt>=1 & !missing(m1sbq12_inpt)
 
 gen access_ict = 0 if m1sbq12_inpt==0 | m1sbq13_inpt==0
 replace access_ict =1 if m1sbq12_inpt>=1 & m1sbq13_inpt==1 & !missing(m1sbq12_inpt)
 replace access_ict = 0.5 if m1sbq12_inpt>=1 & m1sbq13_inpt==0 & !missing(m1sbq12_inpt)
 
-frame put *, into(main_school_inputs)
-frame change main_school_inputs
-frame copy teacher_questionnaire school_teacher_ques_INPT
+
+frame copy teachers school_teacher_ques_INPT
 frame change school_teacher_ques_INPT
 collapse (mean) m3sbq4_inpt, by(school_code)
 rename m3sbq4_inpt used_ict_pct
 
-frame change main_school_inputs
+frame change school
 frlink m:1 school_code, frame(school_teacher_ques_INPT)
 frget used_ict_pct, from(school_teacher_ques_INPT)
-*Error: Missing values of school_code in school frame- hence used_ict_pct will be missing for some rows in new frame (13 rows)
+
 gen used_ict=(used_ict_pct>=0.5 & used_ict_num>=3) if !missing(used_ict_num) & !missing(used_ict_pct)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
+
 gen inputs = textbooks+blackboard_functional + pens_etc + share_desk +  0.5*used_ict + 0.5*access_ict
 
-frame put *, into(final_school_inputs)
-frame change final_school_inputs
-frame copy final_school_inputs master_school_inputs
-frame change final_school_inputs
-*Create lists of variables to be selected for export
-local inpt_out share_textbook share_pencil share_exbook used_ict_num used_ict_pct blackboard_functional textbooks pens_etc share_desk used_ict access_ict inputs
-local inpt_list *_inpt 
-frame change final_school_inputs
-keep `preamble_info_school' `inpt_list' `inpt_out' 
-export excel using "final_indicator_INPT", sheet("INPT") cell(A1) firstrow(variables) replace
 
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean inputs
 
 
@@ -502,13 +489,12 @@ svy: mean inputs
 *Internet
 *School is accessible for those with disabilities (road access, a school ramp for wheelchairs, an entrance wide enough for wheelchairs, ramps to classrooms where needed, accessible toilets, and disability screening for seeing, hearing, and learning disabilities with partial credit for having 1 or 2 or the 3).)
 
-frame copy school school_infr
-frame change school_infr
+frame change school
 
-de *_infr m4scq10_inpt m4scq8_inpt m1sbq15_inpt, varlist
+ds *_infr m4scq10_inpt m4scq8_inpt m1sbq15_inpt, has(type numeric)
 *Replacing values if enumerators have entered value 99- "No response" code to 0- this is treated as incorrect answer
 foreach var in `r(varlist)' {
-replace `var'=0 if `var'==99 & !missing(`var')
+replace `var'=0 if `var'==99 & !missing(`var') 
 }
 *Drinking water
 gen drinking_water = (m1sbq9_infr==1 | m1sbq9_infr==2 | m1sbq9_infr==5 | m1sbq9_infr==6) if !missing(m1sbq9_infr)
@@ -533,14 +519,10 @@ replace visibility = 0 if m4scq10_inpt==0 & m4scq8_inpt==1
 gen class_electricity = (m1sbq11_infr==1) if !missing(m1sbq11_infr)
 
 *Accessibility for people with disabilities
-frame put *, into(main_school_infr)
-frame change main_school_infr
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
+
 gen disab_road_access = 1 if m1s0q2_infr==1
 replace disab_road_access = 0 if m1s0q2_infr!=1 & !missing(m1s0q2_infr)
 
-*Error: check
 gen disab_school_ramp = 1 if m1s0q3_infr == 0
 replace disab_school_ramp = 1 if m1s0q4_infr==1 & m1s0q3_infr==1
 replace disab_school_ramp = 0 if m1s0q4_infr==0 & m1s0q3_infr==1
@@ -548,7 +530,6 @@ replace disab_school_ramp = 0 if m1s0q4_infr==0 & m1s0q3_infr==1
 gen disab_school_entr = 1 if m1s0q5_infr==1
 replace disab_class_entr = 0 if m1s0q5_infr!=1 & !missing(m1s0q5_infr)
 
-*Error: Wrong code here- correction made but check
 gen disab_class_ramp =1 if m4scq1_infr==0
 replace disab_class_ramp = 1 if m4scq2_infr==1 & m4scq1_infr==1
 replace disab_class_ramp = 0 if m4scq2_infr==0 & m4scq1_infr==1
@@ -560,7 +541,6 @@ gen coed_toilet = 0 if m1sbq1_infr==7
 replace coed_toilet = m1sbq6_infr if m1sbq1_infr!=7 & !missing(m1sbq1_infr)
 gen disability_accessibility = (disab_road_access+disab_school_ramp+disab_school_entr+disab_class_ramp+disab_class_entr+coed_toilet+disab_screening)/7
                           
-*Wrong code here- correction made but check
 gen internet = 1 if m1sbq15_inpt==2
 replace internet = .5 if m1sbq15_inpt==1
 replace internet = 0 if m1sbq15_inpt==0 | missing(m1sbq15_inpt)
@@ -569,14 +549,9 @@ frame put *, into(school_infr_final)
 frame change school_infr_final
 gen infrastructure = drinking_water+ functioning_toilet+ internet + class_electricity+ disability_accessibility
 
-*Create variables lists to retain
-local infr_list m1sbq9_infr m1sbq1_infr m1sbq2_infr m1sbq4_infr m1sbq5_infr m1sbq7_infr m1sbq8_infr m4scq10_inpt m4scq8_inpt m4scq10_inpt m4scq8_inpt m1sbq11_infr m1sbq11_infr m1s0q2_infr m1s0q3_infr m1s0q4_infr m1s0q5_infr m4scq1_infr m4scq2_infr m4scq2_infr m4scq3_infr m1sbq17_infr__1 m1sbq17_infr__2 m1sbq17_infr__3 m1sbq1_infr m1sbq6_infr m1sbq1_infr m1sbq15_inpt
-local infr_out drinking_water toilet_exists toilet_separate toilet_private toilet_usable toilet_handwashing toilet_soap functioning_toilet visibility class_electricity disab_road_access disab_school_ramp disab_school_entr disab_class_ramp disab_class_entr disab_screening coed_toilet disability_accessibility internet
 
-keep `preamble_info_school' `infr_list' `infr_out' 
-export excel using "final_indicator_INFR", sheet("INFR") cell(A1) firstrow(variables) replace
 
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean drinking_water functioning_toilet internet class_electricity disability_accessibility infrastructure
 
 *********************************************
