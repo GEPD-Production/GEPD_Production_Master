@@ -14,6 +14,14 @@ if _rc {
 }
 
 *-------------------------------------------------------------------------------
+* Set some parameters for the project
+*-------------------------------------------------------------------------------
+
+global country "TCD"
+global country_name  "Chad"
+global year  "2023"
+
+*-------------------------------------------------------------------------------
 * Run all tasks in this project
 *-------------------------------------------------------------------------------
 * TASK: calculates GEPD School Indicators by combining multiple data sources

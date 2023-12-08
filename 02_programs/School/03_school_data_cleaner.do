@@ -3,18 +3,20 @@
 
 clear all
 
-*Country name and year of survey
-local country "PER"
-local country_name  "Peru"
-local year  "2019"
+*set the paths
+gl data_dir ${clone}/01_GEPD_raw_data/
+gl processed_dir ${clone}/03_GEPD_processed_data/
+
+
+*save some useful locals
 local preamble_info_individual hashed_school_code hashed_school_district hashed_school_province interview__id questionnaire_selected__id interview__key rural ipw STRATUM province
 local preamble_info_school hashed_school_code hashed_school_district hashed_school_province interview__id interview__key rural ipw STRATUM province
 local not hashed_school_code
 local not1 interview__id
 
 *Set working directory on your computer here
-gl wrk_dir "/Users/kanikaverma/Desktop/WB internship/Data anonymized/GEPD_anonymized_data/Data/`country'/`country'_`year'_GEPD/`country'_`year'_GEPD_v01_M/Data/School/data"
-cd "/Users/kanikaverma/Desktop/WB internship/Data anonymized/GEPD_anonymized_data/Data/`country'/`country'_`year'_GEPD/`country'_`year'_GEPD_v01_M/Data/School/data"
+gl wrk_dir "${processed_dir}\\School\\Confidential\\Merged\\"
+gl save_dir "${processed_dir}\\School\\Confidential\\Cleaned\\"
 
 ********************************************
 * Create indicators and necessary variables
@@ -26,7 +28,7 @@ cd "/Users/kanikaverma/Desktop/WB internship/Data anonymized/GEPD_anonymized_dat
 cap frame create school
 frame change school
 *Load the school data
-use "${wrk_dir}/school_dta_anon.dta"
+use "${wrk_dir}/school.dta"
 
 ************
 *Teacher absence
@@ -34,17 +36,10 @@ use "${wrk_dir}/school_dta_anon.dta"
 cap frame create teacher_absence
 frame change teacher_absence
 *Load the teacher_absence data
-use "${wrk_dir}/teacher_roster_anon.dta"
+use "${wrk_dir}/TCD_teacher_level.dta"
 
 frlink m:1 interview__id, frame(school)
-frget hashed_school_code hashed_school_province hashed_school_district rural STRATUM ipw province, from(school)
 
-*Creating unique teacher gender file to get teacher gender variable
-frame copy teacher_absence teacher_gender
-frame change teacher_gender
-keep questionnaire_selected__id hashed_school_code m2saq3
-duplicates drop
-keep if !missing(hashed_school_code)
 
 ************
 *Teacher questionnaire
@@ -52,7 +47,7 @@ keep if !missing(hashed_school_code)
 cap frame create teacher_questionnaire
 frame change teacher_questionnaire
 *Load the teacher_questionnaire data
-use "${wrk_dir}/teacher_questionnaire_anon.dta"
+use "${wrk_dir}/TCD_teacher_level.dta"
 *Link this file with teacher_gender to get teacher gender
 
 ************
@@ -61,7 +56,7 @@ use "${wrk_dir}/teacher_questionnaire_anon.dta"
 cap frame create teacher_assessment
 frame change teacher_assessment
 *Load the teacher_assessment data
-use "${wrk_dir}/teacher_assessment_dta_anon.dta"
+use "${wrk_dir}/TCD_teacher_level.dta"
 
 drop literacy_content_knowledge cloze grammar read_passage math_content_knowledge arithmetic_number_relations geometry interpret_data
 
@@ -71,7 +66,7 @@ drop literacy_content_knowledge cloze grammar read_passage math_content_knowledg
 cap frame create learning
 frame change learning
 *Load the 4th grade assessment data
-use "${wrk_dir}/assess_4th_grade_anon_anon.dta"
+use "${wrk_dir}/fourth_grade_assessment.dta"
 
 
 ************
@@ -80,7 +75,7 @@ use "${wrk_dir}/assess_4th_grade_anon_anon.dta"
 cap frame create ecd
 frame change ecd
 *Load the ecd data
-use "${wrk_dir}/ecd_dta_anon.dta"
+use "${wrk_dir}/first_grade_assessment.dta"
 
 set type double
 
