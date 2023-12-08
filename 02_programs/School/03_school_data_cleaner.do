@@ -528,7 +528,7 @@ replace disab_school_ramp = 1 if m1s0q4_infr==1 & m1s0q3_infr==1
 replace disab_school_ramp = 0 if m1s0q4_infr==0 & m1s0q3_infr==1
 
 gen disab_school_entr = 1 if m1s0q5_infr==1
-replace disab_class_entr = 0 if m1s0q5_infr!=1 & !missing(m1s0q5_infr)
+replace disab_school_entr = 0 if m1s0q5_infr!=1 & !missing(m1s0q5_infr)
 
 gen disab_class_ramp =1 if m4scq1_infr==0
 replace disab_class_ramp = 1 if m4scq2_infr==1 & m4scq1_infr==1
@@ -568,10 +568,8 @@ svy: mean drinking_water functioning_toilet internet class_electricity disabilit
 *0.5 point is awarded if the school can fully fund the repair, 0.25 points is awarded if the school must get partial help from the community, and 0 points are awarded if the full cost must be born by the community 
 *1 point is awarded if the problem is fully resolved in a timely manner, with partial credit given if problem can only be partly resolved
 
-frame copy school school_opmn
-frame change school_opmn
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
+frame change school
+
 gen vignette_1_resp = cond(m7sbq1_opmn==0 & (m7sbq4_opmn==4 | m7sbq4_opmn==98),0,0.5,.)
 replace vignette_1_resp=. if missing(m7sbq1_opmn) & missing(m7sbq1_opmn)
 replace vignette_1_resp = 0.5 if !m7sbq1_opmn==0 & (m7sbq4_opmn==4 | m7sbq4_opmn==98)
@@ -605,17 +603,8 @@ replace vignette_2_address = 0 if m7scq2_opmn==5 | m7scq2_opmn==98
 gen vignette_2= vignette_2_resp + vignette_2_finance + vignette_2_address
 gen operational_management=1+vignette_1+vignette_2
 
-frame put *, into(school_operational_management)
-frame change school_operational_management
 
-*Create local variable list to export
-local opmn_input m7sbq1_opmn m7sbq4_opmn m7sbq2_opmn m7sbq3_opmn m7scq1_opmn m7scq2_opmn
-local opmn_outpt vignette_1_resp vignette_1_finance vignette_1_address vignette_1 vignette_2_resp vignette_2_finance vignette_2_address vignette_2 operational_management
-
-keep `preamble_info_school' `opmn_input' `opmn_outpt'
-export excel using "final_indicator_OPMN", sheet("OPMN") cell(A1) firstrow(variables) replace
-
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean operational_management
 
 *********************************************
@@ -628,8 +617,7 @@ svy: mean operational_management
 * - Received actionable feedback from that observation 
 * - Teacher had a lesson plan and discussed it with another person
 
-frame copy teacher_questionnaire school_instruc
-frame change school_instruc
+frame change teachers
 
 gen classroom_observed = 1 if m3sdq15_ildr ==1
 replace classroom_observed = 0 if m3sdq15_ildr!=1 & !missing(m3sdq15_ildr)
@@ -642,9 +630,9 @@ replace discussion_30_min = 0 if m3sdq20_ildr!=1 & !missing(m3sdq20_ildr)
 *Make sure there was discussion and lasted more than 30 min
 gen discussed_observation = 1 if classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3
 replace discussed_observation = 0 if !(classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3)
-gen feedback_observation = 1 if (m3sdq21_ildr==1 & (m3sdq22_ildr__1==1 | m3sdq22_ildr__2==1 | m3sdq22_ildr__3==1 | m3sdq22_ildr__4==1 | m3sdq22_ildr__5==1))
-replace feedback_observation = 0 if !(m3sdq21_ildr==1 & (m3sdq22_ildr__1==1 | m3sdq22_ildr__2==1 | m3sdq22_ildr__3==1 | m3sdq22_ildr__4==1 | m3sdq22_ildr__5==1))
-replace feedback_observation=. if missing(m3sdq21_ildr) & missing(m3sdq22_ildr__1)
+gen feedback_observation = 1 if (m3sdq21_ildr==1 & (m3sdq22_ildr_1==1 | m3sdq22_ildr_2==1 | m3sdq22_ildr_3==1 | m3sdq22_ildr_4==1 | m3sdq22_ildr_5==1))
+replace feedback_observation = 0 if !(m3sdq21_ildr==1 & (m3sdq22_ildr_1==1 | m3sdq22_ildr_2==1 | m3sdq22_ildr_3==1 | m3sdq22_ildr_4==1 | m3sdq22_ildr_5==1))
+replace feedback_observation=. if missing(m3sdq21_ildr) & missing(m3sdq22_ildr_1)
 
 gen lesson_plan = 1 if m3sdq23_ildr==1
 replace lesson_plan = 0 if m3sdq23_ildr!=1 & !missing(m3sdq23_ildr)
@@ -659,20 +647,8 @@ replace feedback_observation=. if missing(m3sdq15_ildr) & missing(m3sdq19_ildr)
 gen instructional_leadership = 1+0.5*classroom_observed + 0.5*classroom_observed_recent + discussed_observation + feedback_observation + lesson_plan_w_feedback
 replace instructional_leadership= (1.5 + lesson_plan_w_feedback) if classroom_observed!=1 & !missing(classroom_observed)
 
-frame put *, into (final_school_instruc_leader)
-frame change final_school_instruc_leader
-ds, has(type numeric)
-local numvars_ildr "`r(varlist)'"
-ds, has(type string)
-local stringvars_ildr "`r(varlist)'"
-local stringvars_ildr : list stringvars_ildr- not1
 
-collapse (mean) `numvars_ildr' (firstnm) `stringvars_ildr', by(interview__id)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-export excel using "final_indicator_ILDR", sheet("ILDR") cell(A1) firstrow(variables) replace
-
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean instructional_leadership
 
 *********************************************
@@ -696,27 +672,28 @@ svy: mean instructional_leadership
 *   - In the selected 4th grade classroom, how many of the pupils have the relevant textbooks? 
 *   Must identify whether or not blackboard was working in a selected 4th grade classroom.
 
-frame copy master_teacher_assessment pknw_actual_cont_temp
+frame copy teachers pknw_actual_cont_temp
 frame change pknw_actual_cont_temp
+keep if !missing(m5s1q1f_grammer)
 keep school_code m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer
-replace school_code = ".a" if missing(school_code)
+collapse m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer, by(school_code)
 frame put *,into(pknw_actual_cont)
 
-frame copy teacher_questionnaire pknw_actual_exper_temp
+frame copy teachers pknw_actual_exper_temp
 frame change pknw_actual_exper_temp
+keep if !missing(m3saq5)
 keep school_code m3sb_tnumber m3saq5 m3saq6
-gen experience=2019-m3saq5
+gen experience=$year - m3saq5
 keep if experience<3
 egen teacher_count_experience_less3 = count(school_code), by(school_code)
 collapse (first) teacher_count_experience_less3, by(school_code)
-replace school_code = ".a" if missing(school_code)
 frame put *,into(pknw_actual_exper)
 
-frame copy master_school_inputs pknw_actual_school_inpts
+frame copy school pknw_actual_school_inpts
 frame change pknw_actual_school_inpts
 keep school_code blackboard_functional m4scq5_inpt m4scq4_inpt
-replace school_code = ".a" if missing(school_code)
-	
+
+frame change school
 frlink 1:1 school_code, frame(pknw_actual_cont)
 frget * , from(pknw_actual_cont)
 frlink 1:1 school_code, frame(pknw_actual_exper)
@@ -726,15 +703,8 @@ replace teacher_count_experience_less3 = 0 if missing(teacher_count_experience_l
 gen m5s2q1c_number_new = m5s2q1c_number*m5_teach_count
 gen m5s2q1e_number_new=m5s2q1e_number*m5_teach_count,
 gen m5s1q1f_grammer_new=m5s1q1f_grammer*m5_teach_count
-frame put *, into(pknw_actual_combined)
-frame change pknw_actual_combined
 
-frame copy school school_data_pknw_f
-frame change school_data_pknw_f
-collapse (firstnm) m7sfq5_pknw (firstnm) m7sfq6_pknw (firstnm) m7sfq7_pknw (firstnm) m7sfq9_pknw_filter (firstnm) m7sfq10_pknw (firstnm) m7sfq11_pknw (firstnm) m7_teach_count_pknw school_weight (first) province, by(school_code)
-replace school_code =".a" if missing(school_code)
-frlink 1:1 school_code, frame(pknw_actual_combined)
-frget *, from(pknw_actual_combined)
+
 
 gen add_triple_digit_pknw = 1 if ((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count_pknw)
 replace add_triple_digit_pknw = 0 if !((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count_pknw)
@@ -756,11 +726,7 @@ replace principal_knowledge_score = 3 if principal_knowledge_avg>0.7 & principal
 replace principal_knowledge_score = 2 if principal_knowledge_avg>0.6 & principal_knowledge_avg<=0.7
 replace principal_knowledge_score = 1 if principal_knowledge_avg<=0.6 & !missing(principal_knowledge_avg)
 
-frame put *, into(final_principal_know)
-frame change final_principal_know
-export excel using "final_indicator_PKNW", sheet("PKNW") cell(A1) firstrow(variables) replace
-
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean principal_knowledge_score
 
 ********************************************
