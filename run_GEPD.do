@@ -7,7 +7,7 @@
 *==============================================================================*
 
 * Check that project profile was loaded, otherwise stops code
-cap assert ${LP_profile_is_loaded} == 1
+cap assert ${GEPD_profile_is_loaded} == 1
 if _rc {
   noi disp as error "Please execute the profile initialization do in the root of this project and try again."
   exit 601
