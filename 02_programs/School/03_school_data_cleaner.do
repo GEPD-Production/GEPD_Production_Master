@@ -704,16 +704,32 @@ gen m5s2q1c_number_new = m5s2q1c_number*m5_teach_count
 gen m5s2q1e_number_new=m5s2q1e_number*m5_teach_count,
 gen m5s1q1f_grammer_new=m5s1q1f_grammer*m5_teach_count
 
+* create a new indicator, m7sfq5_pknw, which contains the number of non-missing responses to questions starting with m7sfq5_pknw__*
+gen m7sfq5_pknw = 0
+ds m7sfq5_pknw__*
+foreach var in `r(varlist)' {
+replace m7sfq5_pknw = m7sfq5_pknw + (!missing(`var'))
+}
+* do the same for m7sfq6_pknw, m7sfq7_pknw
+gen m7sfq6_pknw = 0
+ds m7sfq6_pknw__*
+foreach var in `r(varlist)' {
+replace m7sfq6_pknw = m7sfq6_pknw + (!missing(`var'))
+}
+gen m7sfq7_pknw = 0
+ds m7sfq7_pknw__*
+foreach var in `r(varlist)' {
+replace m7sfq7_pknw = m7sfq7_pknw + (!missing(`var'))
+}
 
-
-gen add_triple_digit_pknw = 1 if ((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count_pknw)
-replace add_triple_digit_pknw = 0 if !((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count_pknw)
-gen multiply_double_digit_pknw = 1 if ((1-abs(m7sfq6_pknw-m5s2q1e_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq6_pknw-m5s2q1e_number_new <= 1)) & !missing(m7sfq6_pknw) & !missing(m5s2q1e_number_new) & !missing(m7_teach_count_pknw)
-replace multiply_double_digit_pknw = 0 if !((1-abs(m7sfq6_pknw-m5s2q1e_number_new)/m7_teach_count_pknw>= 0.8) | (m7sfq6_pknw-m5s2q1e_number_new <= 1)) & !missing(m7sfq6_pknw) & !missing(m5s2q1e_number_new) & !missing(m7_teach_count_pknw)
-gen complete_sentence_pknw = 1 if ((1-abs(m7sfq7_pknw-m5s1q1f_grammer_new)/m7_teach_count_pknw>= 0.8) | (m7sfq7_pknw-m5s1q1f_grammer_new <= 1)) & !missing(m7sfq7_pknw) & !missing(m5s1q1f_grammer_new) & !missing(m7_teach_count_pknw)
-replace complete_sentence_pknw = 0 if !((1-abs(m7sfq7_pknw-m5s1q1f_grammer_new)/m7_teach_count_pknw>= 0.8) | (m7sfq7_pknw-m5s1q1f_grammer_new <= 1)) & !missing(m7sfq7_pknw) & !missing(m5s1q1f_grammer_new) & !missing(m7_teach_count_pknw)
-gen experience_pknw = 1 if ((1-abs(m7sfq9_pknw_filter-teacher_count_experience_less3)/m7_teach_count_pknw>= 0.8) | (m7sfq9_pknw_filter-teacher_count_experience_less3 <= 1)) & !missing(m7sfq9_pknw_filter) & !missing(teacher_count_experience_less3) & !missing(m7_teach_count_pknw)
-replace experience_pknw = 0 if !((1-abs(m7sfq9_pknw_filter-teacher_count_experience_less3)/m7_teach_count_pknw>= 0.8) | (m7sfq9_pknw_filter-teacher_count_experience_less3 <= 1)) & !missing(m7sfq9_pknw_filter) & !missing(teacher_count_experience_less3) & !missing(m7_teach_count_pknw)
+gen add_triple_digit_pknw = 1 if ((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count)
+replace add_triple_digit_pknw = 0 if !((1-abs(m7sfq5_pknw-m5s2q1c_number_new)/m7_teach_count>= 0.8) | (m7sfq5_pknw-m5s2q1c_number_new <= 1)) & !missing(m7sfq5_pknw) & !missing(m5s2q1c_number_new) & !missing(m7_teach_count)
+gen multiply_double_digit_pknw = 1 if ((1-abs(m7sfq6_pknw-m5s2q1e_number_new)/m7_teach_count>= 0.8) | (m7sfq6_pknw-m5s2q1e_number_new <= 1)) & !missing(m7sfq6_pknw) & !missing(m5s2q1e_number_new) & !missing(m7_teach_count)
+replace multiply_double_digit_pknw = 0 if !((1-abs(m7sfq6_pknw-m5s2q1e_number_new)/m7_teach_count>= 0.8) | (m7sfq6_pknw-m5s2q1e_number_new <= 1)) & !missing(m7sfq6_pknw) & !missing(m5s2q1e_number_new) & !missing(m7_teach_count)
+gen complete_sentence_pknw = 1 if ((1-abs(m7sfq7_pknw-m5s1q1f_grammer_new)/m7_teach_count>= 0.8) | (m7sfq7_pknw-m5s1q1f_grammer_new <= 1)) & !missing(m7sfq7_pknw) & !missing(m5s1q1f_grammer_new) & !missing(m7_teach_count)
+replace complete_sentence_pknw = 0 if !((1-abs(m7sfq7_pknw-m5s1q1f_grammer_new)/m7_teach_count>= 0.8) | (m7sfq7_pknw-m5s1q1f_grammer_new <= 1)) & !missing(m7sfq7_pknw) & !missing(m5s1q1f_grammer_new) & !missing(m7_teach_count)
+gen experience_pknw = 1 if ((1-abs(m7sfq9_pknw_filter-teacher_count_experience_less3)/m7_teach_count>= 0.8) | (m7sfq9_pknw_filter-teacher_count_experience_less3 <= 1)) & !missing(m7sfq9_pknw_filter) & !missing(teacher_count_experience_less3) & !missing(m7_teach_count)
+replace experience_pknw = 0 if !((1-abs(m7sfq9_pknw_filter-teacher_count_experience_less3)/m7_teach_count>= 0.8) | (m7sfq9_pknw_filter-teacher_count_experience_less3 <= 1)) & !missing(m7sfq9_pknw_filter) & !missing(teacher_count_experience_less3) & !missing(m7_teach_count)
 gen textbooks_pknw = 1 if ((1-abs(m7sfq10_pknw-m4scq5_inpt)/m4scq4_inpt>= 0.8) | (m7sfq10_pknw-m4scq5_inpt <= 3)) & !missing(m7sfq10_pknw) & !missing(m4scq5_inpt) & !missing(m4scq4_inpt)
 replace textbooks_pknw = 0 if !((1-abs(m7sfq10_pknw-m4scq5_inpt)/m4scq4_inpt>= 0.8) | (m7sfq10_pknw-m4scq5_inpt <= 3)) & !missing(m7sfq10_pknw) & !missing(m4scq5_inpt) & !missing(m4scq4_inpt)
 gen blackboard_pknw = 1 if m7sfq11_pknw==blackboard_functional & !missing(m7sfq11_pknw) & !missing(blackboard_functional)
@@ -746,8 +762,7 @@ svy: mean principal_knowledge_score
 * - 1.33 point for working with local authorities, 0.5 points for organizing remedial classes, 0.25 for just informing parents
 *Create variables for whether school goals exists, are clear, are relevant to learning, and are measured in an appropriate way.
 
-frame copy school school_data_PMAN
-frame change school_data_PMAN
+frame change school
 *For goals
 gen school_goals_exist = 1 if m7sdq1_pman==1
 replace school_goals_exist= 0 if m7sdq1_pman!=1 & !missing(m7sdq1_pman)
@@ -780,19 +795,7 @@ replace problem_solving_stomach = 0 if ((!inlist(m7seq3_pman,1,2,3,4,98)) | miss
 gen problem_solving=1+(4/3)*problem_solving_proactive+(4/3)*problem_solving_info_collect+(4/3)*problem_solving_stomach
 gen principal_management = (goal_setting+problem_solving)/2
 
-local pman_out school_goals_exist school_goals_exist school_goals_clear school_goals_relevant_total school_goals_relevant school_goals_measured problem_solving_proactive problem_solving_info_collect problem_solving_stomach goal_setting problem_solving principal_management
-local pman_inpt m7sdq1_pman m7sdq3_pman__1 m7sdq3_pman__2 m7sdq3_pman__3 m7sdq3_pman__4 m7sdq3_pman__5 m7sdq4_pman__1 m7sdq4_pman__2 m7sdq4_pman__3 m7sdq4_pman__4 m7sdq4_pman__5 m7sdq4_pman__6 m7sdq4_pman__7 m7sdq4_pman__8 m7sdq4_pman__97 m7sdq5_pman m7seq1_pman m7seq2_pman__1 m7seq2_pman__2 m7seq2_pman__3 m7seq2_pman__4 m7seq3_pman
-keep `preamble_info_school' `pman_inpt' `pman_out'
-
-frame put *, into(final_principal_management)
-frame change final_principal_management
-
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-export excel using "final_indicator_PMAN", sheet("PMAN") cell(A1) firstrow(variables) replace
-
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean principal_management
 
 *********************************************
@@ -810,8 +813,7 @@ svy: mean principal_management
 *create function to clean teacher attitudes questions.  Need to reverse the order for scoring for some questions.  
 *Should have thought about this, when programming in Survey Solutions and scale 1-5.
 
-frame copy teacher_questionnaire teacher_questionnaire_TATT
-frame change teacher_questionnaire_TATT
+frame change teachers
 
 gen teacher_satisfied_job = . if m3seq1_tatt==99
 replace teacher_satisfied_job= 5 if m3seq1_tatt==1
@@ -833,37 +835,37 @@ replace better_teachers_promoted = 0 if m3seq3_tatt!=1 & !missing(m3seq3_tatt)
 gen teacher_bonus = 1 if m3seq4_tatt==1
 replace teacher_bonus = 0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_attend =1 if m3seq5_tatt__1==1 & m3seq4_tatt==1 
-replace teacher_bonus_attend =0 if m3seq5_tatt__1!=1 & !missing(m3seq5_tatt__1) & m3seq4_tatt==1 
+gen teacher_bonus_attend =1 if m3seq5_tatt_1==1 & m3seq4_tatt==1 
+replace teacher_bonus_attend =0 if m3seq5_tatt_1!=1 & !missing(m3seq5_tatt_1) & m3seq4_tatt==1 
 replace teacher_bonus_attend =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_student_perform =1 if m3seq5_tatt__2==1 & m3seq4_tatt==1 
-replace teacher_bonus_student_perform =0 if m3seq5_tatt__2!=1 & !missing(m3seq5_tatt__2) & m3seq4_tatt==1 
+gen teacher_bonus_student_perform =1 if m3seq5_tatt_2==1 & m3seq4_tatt==1 
+replace teacher_bonus_student_perform =0 if m3seq5_tatt_2!=1 & !missing(m3seq5_tatt_2) & m3seq4_tatt==1 
 replace teacher_bonus_student_perform =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_extra_duty =1 if m3seq5_tatt__3==1 & m3seq4_tatt==1 
-replace teacher_bonus_extra_duty =0 if m3seq5_tatt__3!=1 & !missing(m3seq5_tatt__3) & m3seq4_tatt==1 
+gen teacher_bonus_extra_duty =1 if m3seq5_tatt_3==1 & m3seq4_tatt==1 
+replace teacher_bonus_extra_duty =0 if m3seq5_tatt_3!=1 & !missing(m3seq5_tatt_3) & m3seq4_tatt==1 
 replace teacher_bonus_extra_duty =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_hard_staff =1 if m3seq5_tatt__4==1 & m3seq4_tatt==1 
-replace teacher_bonus_hard_staff =0 if m3seq5_tatt__4!=1 & !missing(m3seq5_tatt__4) & m3seq4_tatt==1 
+gen teacher_bonus_hard_staff =1 if m3seq5_tatt_4==1 & m3seq4_tatt==1 
+replace teacher_bonus_hard_staff =0 if m3seq5_tatt_4!=1 & !missing(m3seq5_tatt_4) & m3seq4_tatt==1 
 replace teacher_bonus_hard_staff =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_subj_shortages =1 if m3seq5_tatt__5==1 & m3seq4_tatt==1 
-replace teacher_bonus_subj_shortages =0 if m3seq5_tatt__5!=1 & !missing(m3seq5_tatt__5) & m3seq4_tatt==1 
+gen teacher_bonus_subj_shortages =1 if m3seq5_tatt_5==1 & m3seq4_tatt==1 
+replace teacher_bonus_subj_shortages =0 if m3seq5_tatt_5!=1 & !missing(m3seq5_tatt_5) & m3seq4_tatt==1 
 replace teacher_bonus_subj_shortages =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_add_qualif =1 if m3seq5_tatt__6==1 & m3seq4_tatt==1 
-replace teacher_bonus_add_qualif =0 if m3seq5_tatt__6!=1 & !missing(m3seq5_tatt__6) & m3seq4_tatt==1 
+gen teacher_bonus_add_qualif =1 if m3seq5_tatt_6==1 & m3seq4_tatt==1 
+replace teacher_bonus_add_qualif =0 if m3seq5_tatt_6!=1 & !missing(m3seq5_tatt_6) & m3seq4_tatt==1 
 replace teacher_bonus_add_qualif =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
-gen teacher_bonus_school_perform =1 if m3seq5_tatt__7==1 & m3seq4_tatt==1 
-replace teacher_bonus_school_perform =0 if m3seq5_tatt__7!=1 & !missing(m3seq5_tatt__7) & m3seq4_tatt==1 
+gen teacher_bonus_school_perform =1 if m3seq5_tatt_7==1 & m3seq4_tatt==1 
+replace teacher_bonus_school_perform =0 if m3seq5_tatt_7!=1 & !missing(m3seq5_tatt_7) & m3seq4_tatt==1 
 replace teacher_bonus_school_perform =0 if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
 *Error- m3seq5_other_tatt absent in teacher_questionnaire
-*gen teacher_bonus_other = m3seq5_other_tatt if m3seq5_tatt__97==1 & m3seq4_tatt==1 
-*replace teacher_bonus_other =. if m3seq5_tatt__97!=1 & !missing(m3seq5_tatt__97) & m3seq4_tatt==1 
+*gen teacher_bonus_other = m3seq5_other_tatt if m3seq5_tatt_97==1 & m3seq4_tatt==1 
+*replace teacher_bonus_other =. if m3seq5_tatt_97!=1 & !missing(m3seq5_tatt_97) & m3seq4_tatt==1 
 *replace teacher_bonus_other =. if m3seq4_tatt!=1 & !missing(m3seq4_tatt)
 
 gen salary_delays = m3seq7_tatt if m3seq6_tatt==1
@@ -871,23 +873,8 @@ replace salary_delays = 0 if m3seq6_tatt!=1 & !missing(m3seq6_tatt)
 replace salary_delays = 12 if salary_delays>12 & !missing(salary_delays)
 gen teacher_attraction=(1+(0.8*teacher_satisfied_job)+(.8*teacher_satisfied_status)+(.8*better_teachers_promoted)+(.8*teacher_bonus)+(.8*(1-salary_delays/12)))
 
-frame put * , into(final_teacher_TATT)
-frame change final_teacher_TATT
 
-ds, has(type numeric)
-local numvars_tatt "`r(varlist)'"
-ds, has(type string)
-local stringvars_tatt "`r(varlist)'"
-local stringvars_tatt : list stringvars_tatt- not1
-
-collapse (mean) `numvars_tatt' (firstnm) `stringvars_tatt', by(interview__id)
-
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-export excel using "final_indicator_TATT", sheet("TATT") cell(A1) firstrow(variables) replace
-
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
 svy: mean teacher_attraction
 
 *********************************************
@@ -906,33 +893,21 @@ svy: mean teacher_attraction
 * - 1 point. Teachers deployed based on years of experience or job title hierarchy 
 * - 2 points. Teacher deployed based on performance assessed by school authority, colleagues, or external evaluator, results of interview.
 
-frame copy teacher_questionnaire teacher_questionnaire_TSDP
-frame change teacher_questionnaire_TSDP
+frame change teachers
 
-gen teacher_selection = 2 if (m3sdq1_tsdp__5==1 | m3sdq1_tsdp__6==1 | m3sdq1_tsdp__8==1 | m3sdq1_tsdp__9==1)
-replace teacher_selection = 1 if (m3sdq1_tsdp__1==1 | m3sdq1_tsdp__2==1 | m3sdq1_tsdp__3==1 | m3sdq1_tsdp__4==1 | m3sdq1_tsdp__7==1)
-replace teacher_selection = 0 if (m3sdq1_tsdp__1==0 & m3sdq1_tsdp__2==0 & m3sdq1_tsdp__3==0 & m3sdq1_tsdp__4==0 & m3sdq1_tsdp__5==0 & m3sdq1_tsdp__6==0 & m3sdq1_tsdp__7==0 & m3sdq1_tsdp__8==0 & m3sdq1_tsdp__9==0)
+gen teacher_selection = 0 if (m3sdq1_tsdp_1==0 & m3sdq1_tsdp_2==0 & m3sdq1_tsdp_3==0 & m3sdq1_tsdp_4==0 & m3sdq1_tsdp_5==0 & m3sdq1_tsdp_6==0 & m3sdq1_tsdp_7==0 & m3sdq1_tsdp_8==0 & m3sdq1_tsdp_9==0)
+replace teacher_selection = 1 if (m3sdq1_tsdp_1==1 | m3sdq1_tsdp_2==1 | m3sdq1_tsdp_3==1 | m3sdq1_tsdp_4==1 | m3sdq1_tsdp_7==1)
+replace teacher_selection = 2 if (m3sdq1_tsdp_5==1 | m3sdq1_tsdp_6==1 | m3sdq1_tsdp_8==1 | m3sdq1_tsdp_9==1)
 
-gen teacher_deployment = 2 if (m3seq8_tsdp__3==1 | m3seq8_tsdp__4==1 | m3seq8_tsdp__5==1)
-gen teacher_deployment = 1 if (m3seq8_tsdp__1==1 | m3seq8_tsdp__2==1 | m3seq8_tsdp__97==1)
-gen teacher_deployment = 0 if ((m3seq8_tsdp__1==0 & m3seq8_tsdp__2==0 & m3seq8_tsdp__3==0 & m3seq8_tsdp__4==0 & m3seq8_tsdp__5==0) | ( m3seq8_tsdp__99==1))
+gen teacher_deployment = 0 if ((m3seq8_tsdp_1==0 & m3seq8_tsdp_2==0 & m3seq8_tsdp_3==0 & m3seq8_tsdp_4==0 & m3seq8_tsdp_5==0) | ( m3seq8_tsdp_99==1))
+replace teacher_deployment = 1 if (m3seq8_tsdp_1==1 | m3seq8_tsdp_2==1 | m3seq8_tsdp_97==1)
+replace teacher_deployment = 2 if (m3seq8_tsdp_3==1 | m3seq8_tsdp_4==1 | m3seq8_tsdp_5==1)
 
 gen teacher_selection_deployment=1+teacher_selection+teacher_deployment
 
-frame put * , into(teacher_questionnaire_TSDP_final)
-frame change teacher_questionnaire_TSDP_final
 
-ds, has(type numeric)
-local numvars_sd "`r(varlist)'"
-ds, has(type string)
-local stringvars_sd "`r(varlist)'"
-
-collapse (mean) numvars_sd (first) stringvars_sd, by(interview__id)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-svyset [pw=school_weight]
-svy: mean teacher_selection_deployment
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean teacher_selection_deployment teacher_selection teacher_deployment
 
 *********************************************
 ***** Teacher Teaching Support ***********
@@ -960,53 +935,45 @@ svy: mean teacher_selection_deployment
 
 *Add in question on teach opportunities so share ways of teaching
 
-frame copy teacher_questionnaire teacher_questionnaire_ILDR
-frame change teacher_questionnaire_ILDR
-keep interview__id m3sdq14_ildr
-gen opportunities_teachers_share = 1 if m3sdq14_ildr==1
-replace opportunities_teachers_share = 0 if m3sdq14_ildr!=1 & !missing(m3sdq14_ildr)
-duplicates drop
+frame change teachers
 
-frame copy teacher_questionnaire teacher_questionnaire_TSUP
-frame change teacher_questionnaire_TSUP
+gen opportunities_teachers_share = 0 if m3sdq14_ildr!=1 & !missing(m3sdq14_ildr)
+replace opportunities_teachers_share = 1 if m3sdq14_ildr==1
 
-gen pre_training_exists = 1 if m3sdq3_tsup==1
-replace pre_training_exists = 0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
+gen pre_training_exists = 0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
+replace pre_training_exists = 1 if m3sdq3_tsup==1
 replace pre_training_exists = pre_training_exists/2
 
-gen pre_training_useful =1 if m3sdq4_tsup==1 & m3sdq3_tsup==1 
+gen pre_training_useful =0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
 replace pre_training_useful =0 if m3sdq4_tsup!=1 & !missing(m3sdq4_tsup) & m3sdq3_tsup==1 
-replace pre_training_useful =0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
+replace pre_training_useful =1 if m3sdq4_tsup==1 & m3sdq3_tsup==1 
 replace pre_training_useful = pre_training_useful/2
 
-gen pre_training_practicum =1 if m3sdq6_tsup==1 & m3sdq3_tsup==1 
+gen pre_training_practicum =0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
 replace pre_training_practicum =0 if m3sdq6_tsup!=1 & !missing(m3sdq6_tsup) & m3sdq3_tsup==1 
-replace pre_training_practicum =0 if m3sdq3_tsup!=1 & !missing(m3sdq3_tsup)
+replace pre_training_practicum =1 if m3sdq6_tsup==1 & m3sdq3_tsup==1 
 replace pre_training_practicum = pre_training_practicum/2
 
-gen pre_training_practicum_lngth = 0.5 if (m3sdq6_tsup==1 & m3sdq7_tsup>=3 & m3sdq8_tsup>=1 & !missing(m3sdq7_tsup) & !missing(m3sdq8_tsup))
-gen pre_training_practicum_lngth = 0 if (m3sdq6_tsup==1 & (m3sdq7_tsup<3 | m3sdq8_tsup<1)) & & !missing(m3sdq7_tsup) & !missing(m3sdq8_tsup)
-gen pre_training_practicum_lngth = 0 if m3sdq6_tsup==2
 gen pre_training_practicum_lngth = 0 if m3sdq3_tsup==0
+replace pre_training_practicum_lngth = 0 if m3sdq6_tsup==2
+replace pre_training_practicum_lngth = 0 if (m3sdq6_tsup==1 & (m3sdq7_tsup<3 | m3sdq8_tsup<1)) & !missing(m3sdq7_tsup) & !missing(m3sdq8_tsup)
+replace pre_training_practicum_lngth = 0.5 if (m3sdq6_tsup==1 & m3sdq7_tsup>=3 & m3sdq8_tsup>=1 & !missing(m3sdq7_tsup) & !missing(m3sdq8_tsup))
 replace pre_training_practicum_lngth = 0 if missing(pre_training_practicum_lngth)
 
-gen in_service_exists = 1 if m3sdq9_tsup==1
-replace in_service_exists = 0 if m3sdq9_tsup!=1 & !missing(m3sdq9_tsup)
+gen in_service_exists = 0 if m3sdq9_tsup!=1 & !missing(m3sdq9_tsup)
+replace in_service_exists = 1 if m3sdq9_tsup==1
 
-gen in_servce_lngth = 1 if m3sdq9_tsup==1 & m3sdq10_tsup>2 & !missing(m3sdq10_tsup)
-gen in_servce_lngth = 0 if m3sdq9_tsup==1 & m3sdq10_tsup<=2 & !missing(m3sdq10_tsup)
-gen in_servce_lngth = 0 if m3sdq6_tsup==2
 gen in_servce_lngth = 0 if m3sdq3_tsup==0
+replace in_servce_lngth = 0 if m3sdq6_tsup==2
+replace in_servce_lngth = 0 if m3sdq9_tsup==1 & m3sdq10_tsup<=2 & !missing(m3sdq10_tsup)
+replace in_servce_lngth = 1 if m3sdq9_tsup==1 & m3sdq10_tsup>2 & !missing(m3sdq10_tsup)
 replace in_servce_lngth = 0 if missing(in_servce_lngth)
 
-gen in_service_classroom = 1 if m3sdq9_tsup==1 & m3sdq13_tsup>=3 & !missing(m3sdq13_tsup)
-gen in_service_classroom = 0.5 if (m3sdq9_tsup==1 & m3sdq13_tsup==2)
-gen in_service_classroom = 0 if (m3sdq9_tsup==1 & m3sdq13_tsup==1)
 gen in_service_classroom = 0 if m3sdq9_tsup==0
+replace in_service_classroom = 0 if (m3sdq9_tsup==1 & m3sdq13_tsup==1)
+replace in_service_classroom = 0.5 if (m3sdq9_tsup==1 & m3sdq13_tsup==2)
+replace in_service_classroom = 1 if m3sdq9_tsup==1 & m3sdq13_tsup>=3 & !missing(m3sdq13_tsup)
 replace in_service_classroom = 0 if missing(in_service_classroom)
-
-frlink m:1 interview__id m3sdq14_ildr frame(teacher_questionnaire_ILDR)
-frget opportunities_teachers_share from(teacher_questionnaire_ILDR)
 
 gen pre_service=pre_training_exists+pre_training_useful
 gen practicum=pre_training_practicum+pre_training_practicum_lngth,
@@ -1014,20 +981,10 @@ gen in_service=0.5*in_service_exists+0.25*in_servce_lngth+0.25*in_service_classr
 gen teacher_support=1+pre_service+practicum+in_service+opportunities_teachers_share
 * mutate(teacher_support=if_else(teacher_support>5,5,teacher_support)) #need to fix
 
-frame put * , into(teacher_questionnaire_TSUP_final)
-frame change teacher_questionnaire_TSUP_final
 
-ds, has(type numeric)
-local numvars_ts "`r(varlist)'"
-ds, has(type string)
-local stringvars_ts "`r(varlist)'"
 
-collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-svyset [pw=school_weight]
-svy: mean teacher_support
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean teacher_support pre_service practicum in_service opportunities_teachers_share
 
 *********************************************
 ***** Teacher Teaching Evaluation ***********
@@ -1039,43 +996,26 @@ svy: mean teacher_support
 * - 1 Point. Consequences exist if teacher receives 2 or more negative evaluations 
 * - 1 Point. Rewards exist if teacher receives 2 or more positive evaluations
 
-frame copy teacher_questionnaire teacher_questionnaire_TEVL
-frame change teacher_questionnaire_TEVL
+frame change teachers
 
-*list of teacher evaluation questions
-local tevl m3sbq7_tmna__1 m3sbq7_tmna__2 m3sbq7_tmna__3 m3sbq7_tmna__4 m3sbq7_tmna__5 m3sbq7_tmna__6 m3sbq7_tmna__97 m3sbq8_tmna__2 m3sbq8_tmna__3 m3sbq8_tmna__4 m3sbq8_tmna__5 m3sbq8_tmna__6 m3sbq8_tmna__7 m3sbq8_tmna__8 m3sbq8_tmna__97 m3sbq8_tmna__98 m3sbq9_tmna__1 m3sbq9_tmna__2 m3sbq9_tmna__3 m3sbq9_tmna__4 m3sbq9_tmna__7 m3sbq9_tmna__97 m3sbq9_tmna__98 m3bq10_tmna__1 m3bq10_tmna__2 m3bq10_tmna__3 m3bq10_tmna__4 m3bq10_tmna__7 m3bq10_tmna__97 m3bq10_tmna__98
 
-local preamble_info_teacher interview__id questionnaire_roster__id teacher_number available teacher_position teacher_grd1 teacher_grd2 teacher_grd3 teacher_grd4 teacher_grd5 teacher_language teacher_math teacher_both_subj teacher_education teacher_year_began teacher_age
+gen formally_evaluated = 0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
+replace formally_evaluated = 1 if m3sbq6_tmna==1
 
-keep school_code `preamble_info_teacher' `tevl' m3sbq6_tmna m3sbq8_tmna__1
+gen evaluation_content =0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
+replace evaluation_content =(m3sbq8_tmna_1+m3sbq8_tmna_2+ m3sbq8_tmna_3 + m3sbq8_tmna_5 + m3sbq8_tmna_6)/5 if m3sbq6_tmna==1
 
-gen formally_evaluated = 1 if m3sbq6_tmna==1
-replace formally_evaluated = 0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
+gen negative_consequences = 0
+replace negative_consequences = . if (missing(m3sbq9_tmna_1) & missing(m3sbq9_tmna_2) & missing(m3sbq9_tmna_3) & missing(m3sbq9_tmna_4) & missing(m3sbq9_tmna_97))
+replace negative_consequences = 1 if (m3sbq9_tmna_1==1 | m3sbq9_tmna_2==1 | m3sbq9_tmna_3==1 | m3sbq9_tmna_4==1 | m3sbq9_tmna_97==1)
 
-gen evaluation_content =(m3sbq8_tmna__1+m3sbq8_tmna__2+ m3sbq8_tmna__3 + m3sbq8_tmna__5 + m3sbq8_tmna__6)/5 if m3sbq6_tmna==1
-replace teacher_bonus_subj_shortages =0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
-
-gen negative_consequences = 1 if (m3sbq9_tmna__1==1 | m3sbq9_tmna__2==1 | m3sbq9_tmna__3==1 | m3sbq9_tmna__4==1 | m3sbq9_tmna__97==1)
-replace negative_consequences = . if (missing(m3sbq9_tmna__1) & missing(m3sbq9_tmna__2) & missing(m3sbq9_tmna__3) & missing(m3sbq9_tmna__4) & missing(m3sbq9_tmna__97))
-
-gen positive_consequences = 1 if (m3bq10_tmna__1==1 | m3bq10_tmna__2==1 | m3bq10_tmna__3==1 | m3bq10_tmna__4==1 | m3bq10_tmna__97==1)
-replace negative_consequences = . if missing(m3bq10_tmna__1) & missing(m3bq10_tmna__2) & missing(m3bq10_tmna__3) & missing(m3bq10_tmna__4) & missing(m3bq10_tmna__97)
+gen positive_consequences = 0 
+replace positive_consequences = . if missing(m3bq10_tmna_1) & missing(m3bq10_tmna_2) & missing(m3bq10_tmna_3) & missing(m3bq10_tmna_4) & missing(m3bq10_tmna_97)
+replace positive_consequences = 1 if (m3bq10_tmna_1==1 | m3bq10_tmna_2==1 | m3bq10_tmna_3==1 | m3bq10_tmna_4==1 | m3bq10_tmna_97==1)
 gen teaching_evaluation=1+formally_evaluated+evaluation_content+negative_consequences+positive_consequences
 
-frame put *, into(teacher_questionnaire_TEVL_final)
-frame change teacher_questionnaire_TEVL_final
-
-ds, has(type numeric)
-local numvars_ts "`r(varlist)'"
-ds, has(type string)
-local stringvars_ts "`r(varlist)'"
-
-collapse (mean) numvars_ts (first) stringvars_ts, by(interview__id)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-svyset [pw=school_weight]
-svy: mean teaching_evaluation
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean teaching_evaluation formally_evaluated evaluation_content negative_consequences positive_consequences
 
 *********************************************
 ***** Teacher  Monitoring and Accountability ***********
@@ -1087,51 +1027,30 @@ svy: mean teaching_evaluation
 * - 1 Point. There are consequences for chronic absence (more than 30% absence). 
 * - 1 Point. One minus the fraction of teachers that had to miss class because of any of the following: collect paycheck, school administrative procedure, errands or request of the school district office, other administrative tasks.
 
-frame copy teacher_questionnaire_TATT teacher_questionnaire_TMNA2
-frame change teacher_questionnaire_TMNA2
-keep interview__id school_code questionnaire_roster__id teacher_number m3seq4_tatt m3seq5_tatt__1 m3sbq1_tatt__1 m3sbq1_tatt__2 m3sbq1_tatt__3 m3sbq1_tatt__97
-save teacher_questionnaire_TMNA2
+frame change teachers
 
-frame copy teacher_questionnaire_TATT teacher_questionnaire_TMNA
-frame change teacher_questionnaire_TMNA
-ds `tevl', not
-keep `r(varlist)'
 
-merge m:m school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TMNA2
+gen attendance_evaluated = 0 if m3sbq6_tmna!=1
+replace attendance_evaluated = 0 if m3sbq6_tmna==1 & m3sbq8_tmna_1!=1
+replace attendance_evaluated = 1 if m3sbq6_tmna==1 & m3sbq8_tmna_1==1
 
-gen attendance_evaluated = 1 if m3sbq6_tmna==1 & m3sbq8_tmna__1==1
-replace attendance_evaluated = 0 if m3sbq6_tmna==1 & m3sbq8_tmna__1!=1
-replace attendance_evaluated = 0 if m3sbq6_tmna!=1
+gen attendance_rewarded = 0 if m3seq4_tatt!=1
+replace attendance_rewarded = 0 if m3seq4_tatt==1 & m3seq5_tatt_1!=1
+replace attendance_rewarded = 1 if m3seq4_tatt==1 & m3seq5_tatt_1==1
 
-gen attendance_rewarded = 1 if m3seq4_tatt==1 & m3seq5_tatt__1==1
-replace attendance_rewarded = 0 if m3seq4_tatt==1 & m3seq5_tatt__1!=1
-replace attendance_rewarded = 0 if m3seq4_tatt!=1
+gen attendence_sanctions = 0 if !(missing(m3sbq2_tmna_1) & missing(m3sbq2_tmna_2) & missing(m3sbq2_tmna_3) & missing(m3sbq2_tmna_4) & missing(m3sbq2_tmna_97))
+replace attendence_sanctions = . if missing(m3sbq2_tmna_1) & missing(m3sbq2_tmna_2) & missing(m3sbq2_tmna_3) & missing(m3sbq2_tmna_4) & missing(m3sbq2_tmna_97)
+replace attendence_sanctions = 1 if (m3sbq2_tmna_1==1 | m3sbq2_tmna_2==1 | m3sbq2_tmna_3==1 | m3sbq2_tmna_4==1 | m3sbq2_tmna_97==1)
 
-gen attendence_sanctions = 1 if (m3sbq2_tmna__1==1 | m3sbq2_tmna__2==1 | m3sbq2_tmna__3==1 | m3sbq2_tmna__4==1 | m3sbq2_tmna__97==1)
-replace negative_consequences = . if missing(m3sbq2_tmna__1) & missing(m3sbq2_tmna__2) & missing(m3sbq2_tmna__3) & missing(m3sbq2_tmna__4) & missing(m3sbq2_tmna__97)
-replace negative_consequences = 0 if !(m3sbq2_tmna__1==1 | m3sbq2_tmna__2==1 | m3sbq2_tmna__3==1 | m3sbq2_tmna__4==1 | m3sbq2_tmna__97==1) & !(missing(m3sbq2_tmna__1) & missing(m3sbq2_tmna__2) & missing(m3sbq2_tmna__3) & missing(m3sbq2_tmna__4) & missing(m3sbq2_tmna__97))
+gen miss_class_admin=0 if (m3sbq1_tatt_1==0 & m3sbq1_tatt_2==0 & m3sbq1_tatt_3==0 & m3sbq1_tatt_97==0)
+replace miss_class_admin = 1 if (m3sbq1_tatt_1==1 | m3sbq1_tatt_2==1 | m3sbq1_tatt_3==1 | m3sbq1_tatt_97==1)
 
-gen miss_class_admin = 1 if (m3sbq1_tatt__1==1 | m3sbq1_tatt__2==1 | m3sbq1_tatt__3==1 | m3sbq1_tatt__97==1)
-replace miss_class_admin=0 if (m3sbq1_tatt__1==0 & m3sbq1_tatt__2==0 & m3sbq1_tatt__3==0 & m3sbq1_tatt__97==0)
-*Error: Variable m3sbq1_tatt__97 is missing in file teacher_questionnaire
-*replace miss_class_admin= 0 if regexm(m3sbq1_tatt__97, "salud")
 
 gen teacher_monitoring=1+attendance_evaluated + 1*attendance_rewarded + 1*attendence_sanctions + (1-miss_class_admin)
 
-put *, into(teacher_questionnaire_TMNA_final)
-frame change teacher_questionnaire_TMNA_final
 
-ds, has(type numeric)
-local numvars_tmna "`r(varlist)'"
-ds, has(type string)
-local stringvars_tmna "`r(varlist)'"
-
-collapse (mean) numvars_tmna (first) stringvars_tmna, by(interview__id)
-ds school_code, not
-collapse (firstnm) `r(varlist)', by(school_code)
-
-svyset [pw=school_weight]
-svy: mean teacher_monitoring
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean teacher_monitoring attendance_evaluated attendance_rewarded attendence_sanctions miss_class_admin
 
 *********************************************
 ***** Teacher  Intrinsic Motivation ***********
@@ -1143,102 +1062,90 @@ svy: mean teacher_monitoring
 * ensuring that the teacher is motivated to focus on all children and not just some. Average score (1 (worst) - 5 (best)) on items 
 * given to teachers on intrinsic motivation.
 
+
+frame change teachers
+
 local intrinsic_motiv_q_rev m3scq1_tinm m3scq2_tinm m3scq3_tinm m3scq4_tinm m3scq5_tinm m3scq6_tinm m3scq7_tinm m3scq10_tinm
 local intrinsic_motiv_q m3scq11_tinm m3scq14_tinm
 local intrinsic_motiv_q_all m3scq1_tinm m3scq2_tinm m3scq3_tinm m3scq4_tinm m3scq5_tinm m3scq6_tinm m3scq7_tinm m3scq10_tinm m3scq11_tinm m3scq14_tinm
 
-frame copy teacher_questionnaire_TMNA teacher_questionnaire_TINM2
-frame change teacher_questionnaire_TINM2
-keep school_code `preamble_info_teacher' m3sdq2_tmna
-save teacher_questionnaire_TINM2
-
-frame copy teacher_questionnaire teacher_questionnaire_TINM
-frame change teacher_questionnaire_TINM
-
-merge m:m school_code interview__id questionnaire_roster__id teacher_number using teacher_questionnaire_TINM2
 *(De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if the ~
-gen SE_PRM_TINM_1 = 100 if m3scq1_tinm>=4 & !missing(m3scq1_tinm)
-replace SE_PRM_TINM_1 = 0 if m3scq1_tinm<4 & !missing(m3scq1_tinm)
+gen SE_PRM_TINM_1 = 0 if m3scq1_tinm<3 & !missing(m3scq1_tinm)
+replace SE_PRM_TINM_1 = 100 if m3scq1_tinm>=3 & !missing(m3scq1_tinm)
 *(De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if stud~
-gen SE_PRM_TINM_2 = 100 if m3scq2_tinm>=4 & !missing(m3scq2_tinm) 
-replace SE_PRM_TINM_2 = 0 if m3scq2_tinm<4 & !missing(m3scq2_tinm) 
+gen SE_PRM_TINM_2 = 0 if m3scq2_tinm<3 & !missing(m3scq2_tinm) 
+replace SE_PRM_TINM_2 = 100 if m3scq2_tinm>=3 & !missing(m3scq2_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if the ~
-gen SE_PRM_TINM_3 = 100 if m3scq3_tinm>=4 & !missing(m3scq3_tinm) 
-replace SE_PRM_TINM_3 = 0 if m3scq3_tinm<4 & !missing(m3scq3_tinm) 
+gen SE_PRM_TINM_3 = 0 if m3scq3_tinm<3 & !missing(m3scq3_tinm) 
+replace SE_PRM_TINM_3 = 100 if m3scq3_tinm>=3 & !missing(m3scq3_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with Students deserve more attention if they attend scho~
-gen SE_PRM_TINM_4 = 100 if m3scq4_tinm>=4 & !missing(m3scq4_tinm) 
-replace SE_PRM_TINM_4 = 0 if m3scq4_tinm<4 & !missing(m3scq4_tinm)
+gen SE_PRM_TINM_4 = 0 if m3scq4_tinm<3 & !missing(m3scq4_tinm)
+replace SE_PRM_TINM_4 = 100 if m3scq4_tinm>=3 & !missing(m3scq4_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with Students deserve more attention if they come to sch~
-gen SE_PRM_TINM_5 = 100 if m3scq5_tinm>=4 & !missing(m3scq5_tinm) 
-replace SE_PRM_TINM_5 = 0 if m3scq5_tinm<4 & !missing(m3scq5_tinm)
+gen SE_PRM_TINM_5 = 0 if m3scq5_tinm<3 & !missing(m3scq5_tinm)
+replace SE_PRM_TINM_5 = 100 if m3scq5_tinm>=3 & !missing(m3scq5_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with Students deserve more attention if they are motivat~
-gen SE_PRM_TINM_6 = 100 if m3scq6_tinm>=4 & !missing(m3scq6_tinm) 
-replace SE_PRM_TINM_6 = 0 if m3scq6_tinm<4 & !missing(m3scq6_tinm)
+gen SE_PRM_TINM_6 = 0 if m3scq6_tinm<3 & !missing(m3scq6_tinm)
+replace SE_PRM_TINM_6 = 100 if m3scq6_tinm>=3 & !missing(m3scq6_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with Students have a certain amount of intelligence and ~
-gen SE_PRM_TINM_7 = 100 if m3scq7_tinm>=4 & !missing(m3scq7_tinm) 
-replace SE_PRM_TINM_7 = 0 if m3scq7_tinm<4 & !missing(m3scq7_tinm)
+gen SE_PRM_TINM_7 = 0 if m3scq7_tinm<3 & !missing(m3scq7_tinm)
+replace SE_PRM_TINM_7 = 100 if m3scq7_tinm>=3 & !missing(m3scq7_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with To be honest, students can't really change how inte~
-gen SE_PRM_TINM_8 = 100 if m3scq10_tinm>=4 & !missing(m3scq10_tinm) 
-replace SE_PRM_TINM_8 = 0 if m3scq10_tinm<4 & !missing(m3scq10_tinm)
+gen SE_PRM_TINM_8 = 0 if m3scq10_tinm<3 & !missing(m3scq10_tinm)
+replace SE_PRM_TINM_8 = 100 if m3scq10_tinm>=3 & !missing(m3scq10_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with Students can always substantially change how intell~
-gen SE_PRM_TINM_9 = 100 if m3scq11_tinm>=4 & !missing(m3scq11_tinm) 
-replace SE_PRM_TINM_9 = 0 if m3scq11_tinm<4 & !missing(m3scq11_tinm)
+gen SE_PRM_TINM_9 = 0 if m3scq11_tinm<3 & !missing(m3scq11_tinm)
+replace SE_PRM_TINM_9 = 100 if m3scq11_tinm>=3 & !missing(m3scq11_tinm) 
 *(De Facto) Percent of teachers that agree or strongly agrees with \"Students can change even their basic intelligence l~
-gen SE_PRM_TINM_10 = 100 if m3scq14_tinm>=4 & !missing(m3scq14_tinm) 
-replace SE_PRM_TINM_10 = 0 if m3scq14_tinm<4 & !missing(m3scq14_tinm)
+gen SE_PRM_TINM_10 = 0 if m3scq14_tinm<3 & !missing(m3scq14_tinm)
+replace SE_PRM_TINM_10 = 100 if m3scq14_tinm>=3 & !missing(m3scq14_tinm) 
 
-foreach var in `r(intrinsic_motiv_q)' {
-replace `var' = . if `var'==99
-replace `var' = 5 if `var'==4
-replace `var' = 3.67 if `var'==3
-replace `var' = 2.33 if `var'==2
-replace `var' = 1 if `var'==1
+foreach var in `intrinsic_motiv_q' {
+gen score_temp=.
+replace score_temp = 1 if `var'==1
+replace score_temp = 2.33 if `var'==2
+replace score_temp = 3.67 if `var'==3
+replace score_temp = 5 if `var'==4
+replace score_temp = . if `var'==99
+replace `var'=score_temp
+drop score_temp
 }
 
-foreach var in `r(intrinsic_motiv_q_rev)' {
-replace `var' = . if `var'==99
-replace `var' = 5 if `var'==1
-replace `var' = 3.67 if `var'==2
-replace `var' = 2.33 if `var'==3
-replace `var' = 1 if `var'==4
+foreach var in `intrinsic_motiv_q_rev' {
+gen score_temp=.
+replace score_temp = 1 if `var'==4
+replace score_temp = 2.33 if `var'==3
+replace score_temp = 3.67 if `var'==2
+replace score_temp = 5 if `var'==1
+replace score_temp = . if `var'==99
+replace `var'=score_temp
+drop score_temp
 }
 
 gen acceptable_absent = (m3scq1_tinm+ m3scq2_tinm + m3scq3_tinm)/3
 gen students_deserve_attention = (m3scq4_tinm+ m3scq5_tinm + m3scq6_tinm )/3
 gen growth_mindset=(m3scq7_tinm + m3scq10_tinm + m3scq11_tinm + m3scq14_tinm)/4
-gen motivation_teaching = 0 if m3scq15_tinm__3>=1 & !missing(m3scq15_tinm__3)
-replace motivation_teaching= 1 if ((m3scq15_tinm__3!=1 & !missing(m3scq15_tinm__3)) & (m3scq15_tinm__1>=1 & !missing(m3scq15_tinm__1) | m3scq15_tinm__2>=1 & !missing(m3scq15_tinm__2)| m3scq15_tinm__4>=1 & !missing(m3scq15_tinm__1) & m3scq15_tinm__5>=1 & !missing(m3scq15_tinm__1)))
-gen motivation_teaching_1 = 1 if m3sdq2_tmna==1
-replace motivation_teaching_1 = 0 if m3sdq2_tmna!=1 & !missing(m3sdq2_tmna)
+gen motivation_teaching = 0 if m3scq15_tinm_3>=1 & !missing(m3scq15_tinm_3)
+replace motivation_teaching= 1 if ((m3scq15_tinm_3!=1 & !missing(m3scq15_tinm_3)) & (m3scq15_tinm_1>=1 & !missing(m3scq15_tinm_1) | m3scq15_tinm_2>=1 & !missing(m3scq15_tinm_2)| m3scq15_tinm_4>=1 & !missing(m3scq15_tinm_1) & m3scq15_tinm_5>=1 & !missing(m3scq15_tinm_1)))
+gen motivation_teaching_1 = 0 if m3sdq2_tmna!=1 & !missing(m3sdq2_tmna)
+replace motivation_teaching_1 = 1 if m3sdq2_tmna==1
 gen intrinsic_motivation=1+0.8*(0.2*acceptable_absent + 0.2*students_deserve_attention + 0.2*growth_mindset + motivation_teaching+motivation_teaching_1)
 
-put *, into(teacher_questionnaire_TINM_final)
-frame change teacher_questionnaire_TINM_final
-
-ds, has(type numeric)
-local numvars_tinm "`r(varlist)'"
-ds, has(type string)
-local stringvars_tinm "`r(varlist)'"
-
-collapse (mean) numvars_tinm (first) stringvars_tinm, by(school_code)
-
-svyset [pw=school_weight]
-svy: mean intrinsic_motivation
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean intrinsic_motivation acceptable_absent students_deserve_attention growth_mindset motivation_teaching motivation_teaching_1
 
 *********************************************
 ***** School  Inputs and Infrastructure Standards ***********
 *********************************************
 *   - 1 Point. Are there standards in place to monitor blackboard and chalk, pens and pencils, basic classroom furniture, computers, textbooks, exercise books, toilets, electricity, drinking water, accessibility for those with disabilities? (partial credit available)
 
-frame copy school school_data_ISTD
-frame change school_data_ISTD
+frame change school
 
 egen standards_monitoring_input = rowmean(m1scq13_imon__*)
-egen standards_monitoring_infrastructure = rowmean(m1scq14_imon__*)
-gen standards_monitoring=(standards_monitoring_input*6+standards_monitoring_infrastructure*4)/2
-collapse (firstnm) _all, by(school_code)
+egen standards_monitoring_infra = rowmean(m1scq14_imon__*)
+gen standards_monitoring=1+(standards_monitoring_input*6+standards_monitoring_infra*4)*0.4
 
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean standards_monitoring
 
 *********************************************
@@ -1250,8 +1157,8 @@ svy: mean standards_monitoring
 * - 1 Point. Are all infrastructure items (functioning toilets, electricity, drinking water, and accessibility for people with disabilities) being monitored? (partial credit available) 
 * - 1 Point. Is the community involved in the monitoring?
 
-frame copy school school_data_IMON
-frame change school_data_IMON
+frame change school
+
 replace m1scq3_imon = 1 if m1scq3_imon==1
 replace m1scq3_imon = 0 if m1scq3_imon!=1 & !missing(m1scq3_imon)
 replace m1scq5_imon = 0 if m1scq5_imon==0
@@ -1273,8 +1180,8 @@ replace parents_involved = 0 if missing(m1scq3_imon)
 
 gen sch_monitoring=1+1.5*monitoring_inputs+1.5*monitoring_infrastructure+parents_involved
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
+
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean sch_monitoring
 
 *********************************************
@@ -1282,8 +1189,7 @@ svy: mean sch_monitoring
 *********************************************
 
 
-frame copy school school_data_SCFN
-frame change school_data_SCFN
+frame change school
 gen infrastructure_scfn = !(m7sfq15a_pknw__0==1 | m7sfq15a_pknw__98==1)
 gen materials_scfn = !(m7sfq15b_pknw__0==1 | m7sfq15b_pknw__98==1)
 gen hiring_scfn = !(m7sfq15c_pknw__0==1 | m7sfq15c_pknw__98==1)
@@ -1293,8 +1199,7 @@ gen principal_hiring_scfn = !(m7sfq15f_pknw__0==1 | m7sfq15f_pknw__98==1)
 gen principal_supervision_scfn = !(m7sfq15g_pknw__0==1 | m7sfq15g_pknw__98==1)
 gen sch_management_clarity=1+(infrastructure_scfn+materials_scfn)/2+ (hiring_scfn + supervision_scfn)/2 + student_scfn +(principal_hiring_scfn+ principal_supervision_scfn)/2
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean sch_management_clarity
 
 *********************************************
@@ -1307,26 +1212,39 @@ svy: mean sch_management_clarity
 *   -score is between 1-5 based on how satisfied the principal is with status in community. We will also add in component based on Principal salaries.
 * For salary, based GDP per capita from 2018 World Bank  https://data.worldbank.org/indicator/NY.GDP.PCAP.CD?locations=JO.  
 
+frame create gdp_data
+frame change gdp_data
 
-frame copy school school_data_SATT
-frame change school_data_SATT
+*retreive parameters from run_GEPD.do
+*get data on gdp in local currency
+wbopendata, country($country)  indicator(NY.GDP.PCAP.CN) latest clear long
+
+*get latest value
+su ny_gdp_pcap_cn
+gl gdp_pcap `r(mean)'
+
+frame change school
 
 gen principal_satisfaction = . if m7shq1_satt==99
 replace principal_satisfaction = 5 if m7shq1_satt==1
 replace principal_satisfaction = 3.67 if m7shq1_satt==2
 replace principal_satisfaction = 2.33 if m7shq1_satt==3
 replace principal_satisfaction = 1 if m7shq1_satt==4
-gen principal_salary=12*m7shq2_satt/22813.06	
+
+replace m7shq2_satt=. if m7shq2_satt<0
+replace m7shq2_satt=. if m7shq2_satt==999
+
+gen principal_salary=12*m7shq2_satt/$gdp_pcap	
 
 gen principal_salary_score = 1 if principal_salary >=0 & principal_salary<=0.5 & !missing(principal_salary)
 replace principal_salary_score = 2 if principal_salary >=0.5 & principal_salary<=0.75 & !missing(principal_salary)
 replace principal_salary_score = 3 if principal_salary >=0.75 & principal_salary<=1 & !missing(principal_salary)
 replace principal_salary_score = 4 if principal_salary >=1 & principal_salary<=1.5 & !missing(principal_salary)
-replace principal_salary_score = 5 if principal_salary >=1.5 & principal_salary<=5 & !missing(principal_salary)
+replace principal_salary_score = 5 if principal_salary >=1.5  & !missing(principal_salary)
+
 gen sch_management_attraction=(principal_satisfaction+principal_salary_score)/2
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean sch_management_attraction
 
 *********************************************
@@ -1345,16 +1263,16 @@ svy: mean sch_management_attraction
 * - 4 Quality teaching, demonstrated management qualities, or knowledge of local community is a consideration in hiring, but not the most important factor 
 * - 5 Quality teaching, demonstrated management qualities, or knowledge of local community is the most important factor in hiring. 
 
-frame copy school school_data_SSLD
-frame change school_data_SSLD
-gen sch_selection_deployment = 5 if m7sgq2_ssld==2 | m7sgq2_ssld==3 | m7sgq2_ssld==8
-replace sch_selection_deployment = 1 if m7sgq2_ssld==6 | m7sgq2_ssld==7
-replace sch_selection_deployment = 4 if !(m7sgq2_ssld==6 | m7sgq2_ssld==7 | missing(m7sgq2_ssld)) & (m7sgq1_ssld__2==1 | m7sgq1_ssld__3==1 | m7sgq1_ssld__8==1)
-replace sch_selection_deployment = 3 if (!(m7sgq2_ssld==6 | m7sgq2_ssld==7 |missing(m7sgq2_ssld)) & (m7sgq1_ssld__1==1 | m7sgq1_ssld__4==1 | m7sgq1_ssld__5==1 | m7sgq1_ssld__97==1))
-replace sch_selection_deployment = 2 if m7sgq1_ssld__6==1 | m7sgq1_ssld__7==1
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
+frame change school
+
+gen sch_selection_deployment = 1 if m7sgq2_ssld==6 | m7sgq2_ssld==7
+replace sch_selection_deployment = 2 if m7sgq1_ssld__6==1 | m7sgq1_ssld__7==1
+replace sch_selection_deployment = 3 if (!(m7sgq2_ssld==6 | m7sgq2_ssld==7 |missing(m7sgq2_ssld)) & (m7sgq1_ssld__1==1 | m7sgq1_ssld__4==1 | m7sgq1_ssld__5==1 | m7sgq1_ssld__97==1))
+replace sch_selection_deployment = 4 if !(m7sgq2_ssld==6 | m7sgq2_ssld==7 | missing(m7sgq2_ssld)) & (m7sgq1_ssld__2==1 | m7sgq1_ssld__3==1 | m7sgq1_ssld__8==1)
+replace sch_selection_deployment = 5 if m7sgq2_ssld==2 | m7sgq2_ssld==3 | m7sgq2_ssld==8
+
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean sch_selection_deployment
 
 *********************************************
@@ -1373,21 +1291,25 @@ svy: mean sch_selection_deployment
 * - 1 Point. Have used skills gained at training. 
 * - 1 Point. Principals offered training at least once per year
 
-frame copy school school_data_SSUP
-frame change school_data_SSUP
-gen prinicipal_trained = 1 if m7sgq3_ssup==1
-replace prinicipal_trained = 0 if m7sgq3_ssup!=1 & !missing(m7sgq3_ssup)
-egen principal_training_temp = rowmean(m7sgq4_ssup__*)
-gen principal_training = principal_training_temp if m7sgq3_ssup==1
-replace principal_training = 0 if m7sgq3_ssup!=1 & !missing(m7sgq3_ssup)
-gen principal_used_skills = 1 if m7sgq5_ssup ==1 & m7sgq3_ssup==1
-replace principal_used_skills = 0 if m7sgq5_ssup!=1 & !missing(m7sgq5_ssup) & m7sgq3_ssup==1
-gen principal_offered = (m7sgq7_ssup==2 | m7sgq7_ssup==3 | m7sgq7_ssup==4 | m7sgq7_ssup==5)
-gen sch_support=1+prinicipal_trained+principal_training+principal_used_skills+principal_offered
+frame change school
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
-svy: mean sch_support
+gen principal_trained = 0 if m7sgq3_ssup==0
+replace principal_trained = 1 if m7sgq3_ssup==1
+
+egen principal_training_temp = rowmean(m7sgq4_ssup__*)
+
+gen principal_training = 0 if m7sgq3_ssup==0
+replace principal_training = principal_training_temp if m7sgq3_ssup==1
+
+gen principal_used_skills = 0 if m7sgq3_ssup==0
+replace principal_used_skills = 1 if m7sgq5_ssup ==1 & m7sgq3_ssup==1
+
+gen principal_offered = (m7sgq7_ssup==2 | m7sgq7_ssup==3 | m7sgq7_ssup==4 | m7sgq7_ssup==5)
+
+gen sch_support=1+principal_trained+principal_training+principal_used_skills+principal_offered
+
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
+svy: mean sch_support principal_trained principal_training principal_used_skills principal_offered
 
 *********************************************
 ***** School School Management Evaluation  ***********
@@ -1397,26 +1319,49 @@ svy: mean sch_support
 * The idea is that the indicator will be based on: 1) there is a legislation outlining the need to monitor, 2) principals are being evaluated, 3) 
 * principals are being evaluated on multiple things, and 4) there the accountability mechanisms in place.
 
-frme copy school school_data_SEVL
-frame change school_data_SEVL
+
+frame change school
+
 gen principal_formally_evaluated =1 if m7sgq8_sevl==1
-replace principal_formally_evaluated= 0 if m7sgq8_sevl!=1 & !missing(m7sgq8_sevl)
+replace principal_formally_evaluated= 0 if m7sgq8_sevl==0 
+
 ds m7sgq10_sevl__*
 local varlist `r(varlist)'
 local SEVL: list varlist - m7sgq10_sevl__98
+
 egen principal_eval_tot = rowtotal(`SEVL')
-gen principal_evaluation_multiple= 0 if m7sgq8_sevl==1
+
 gen principal_evaluation_multiple = 1 if m7sgq8_sevl==1 & principal_eval_tot>=5 & !missing(principal_eval_tot)
 replace principal_evaluation_multiple = 0.666667 if m7sgq8_sevl==1 & principal_eval_tot>1 & principal_eval_tot<5 & !missing(principal_eval_tot)
 replace principal_evaluation_multiple = 0.3333333 if m7sgq8_sevl==1 & principal_eval_tot==1
-replace principal_evaluation_multiple = 0 if m7sgq8_sevl!=1 & !missing(m7sgq8_sevl)
-gen principal_negative_consequences = 1 if m7sgq11_sevl__1==1 | m7sgq11_sevl__2==1 | m7sgq11_sevl__3==1 | m7sgq11_sevl__4==1 | m7sgq11_sevl__97==1
-gen principal_positive_consequences = 1 if m7sgq12_sevl__1==1 | m7sgq12_sevl__2==1 | m7sgq12_sevl__3==1 | m7sgq12_sevl__4==1 | m7sgq12_sevl__97==1
+replace principal_evaluation_multiple = 0 if m7sgq8_sevl==0 
+
+gen principal_negative_consequences = (m7sgq11_sevl__1==1 | m7sgq11_sevl__2==1 | m7sgq11_sevl__3==1 | m7sgq11_sevl__4==1 | m7sgq11_sevl__97==1)
+gen principal_positive_consequences = (m7sgq12_sevl__1==1 | m7sgq12_sevl__2==1 | m7sgq12_sevl__3==1 | m7sgq12_sevl__4==1 | m7sgq12_sevl__97==1)
+
 gen principal_evaluation=1+principal_formally_evaluated+principal_evaluation_multiple+principal_negative_consequences+principal_positive_consequences
 
-collapse (firstnm) _all, by(school_code)
-svyset [pw=school_weight]
+
+
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
 svy: mean principal_evaluation
+
+
+*********************************************
+* Save school, teachers, fourth_grade, and first_grade dataframe to stata data files in processed_dir
+*********************************************
+
+frame change school
+save "$save_dir/school.dta", replace
+
+frame change teachers
+save "$save_dir/teachers.dta", replace
+
+frame change fourth_grade_assessment
+save "$save_dir/fourth_grade_assessment.dta", replace
+
+frame change first_grade_assessment
+save "$save_dir/first_grade_assessment.dta", replace
 
 ****************************************************************************END**************************************************************************************************
 
