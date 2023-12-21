@@ -20,6 +20,60 @@ Attribution - You must give appropriate credit , provide a link to the license, 
 
 No additional restrictions - You may not apply legal terms or technological measures that legally restrict others from doing anything the license permits.
 
+## Weights
+
+Each file from the school survey (school.dta, teachers.dta, fourth_grade_assessment.dta, and first_grade_assessment.dta) contains a set of weights to make statistics nationally representative.
+
+Stratified random sampling was done, where schools were selected in strata with probability proportional to size.
+
+A column named `strata` can be found in the data identifying the strata from which the school came.
+
+Means can be estimated by appropriately applying weights.  Examples are shown below at the school, teacher, and student levels.
+
+School Example:
+
+```
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)
+svy: mean inputs
+```
+
+Teacher Content Knowledge Example:
+
+```
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_content_weight)
+svy: mean content_proficiency
+```
+
+Teacher Absence Example:
+
+```
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_abs_weight)
+svy: mean absence_rate
+```
+
+Teacher Questionnaire Example:
+
+
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_questionnaire_weight)
+svy: mean intrinsic_motivation acceptable_absent students_deserve_attention growth_mindset motivation_teaching motivation_teaching_1
+```
+
+Fourth Grade Example:
+
+```
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || fourth_grade_assessment__id, weight(g4_stud_weight_component)
+foreach var in student_knowledge student_proficient {
+svy: mean `var'
+}
+```
+
+First Grade Example:
+
+```
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || ecd_assessment__id, weight(g1_stud_weight_component)
+svy: mean ecd_student_proficiency
+
+```
 
 ## Organization
 
@@ -39,13 +93,10 @@ Clone this repository and save locally to your computer.
 
 1. Download the raw data files from your GEPD Survey Solutions Server and place them in the `01_GEPD_raw_data` folder.
 
-2. Open the `02_programs` folder and run the `01_GEPD_data_cleaning.do` script. This will clean the raw data files and save the cleaned data files in the `03_GEPD_anonymized_data` folder.
+2. Run the `profile_GEPD.do` script.  This script will establish your directory paths and define a few important globals used throughout the scripts.
 
-3. Open the `02_programs` folder and run the `02_GEPD_data_processing.do` script. This will process the cleaned data files and save the final GEPD indicators in the `04_GEPD_Indicators` folder.
+3. Run the `run_GEPD.do` script. This will clean the raw data files and save the cleaned data files in the `03_GEPD_anonymized_data` folder.
 
-4. Open the `04_GEPD_Indicators` folder and check that the final GEPD indicators are correct.
-
-5. Open the `02_programs` folder and run the `03_GEPD_quality_control.do` script. This will check the quality of the final GEPD indicators and save the results in the `04_GEPD_Indicators` folder.
 
 Do not, under any circumstances, push the raw data files to github.  The raw data files will contain personally identifiable information, and should not be stored in a public location such as github.
 
