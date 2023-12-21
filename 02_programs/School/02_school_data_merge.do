@@ -37,7 +37,10 @@ import delimited "${data_dir}\\Sampling\\${weights_file_name}"
 rename school_code ${school_code_name}
 
 
-keep school_code ${strata} urban_rural public strata_prob ipw
+keep school_code ${strata} ${other_info} strata_prob ipw
+gen urban_rural = "Urban" if areaclassification=="مدينة"
+replace urban_rural = "Rural" if areaclassification!="مدينة"
+
 destring school_code, replace force
 destring ipw, replace force
 duplicates drop school_code, force
@@ -60,7 +63,7 @@ destring school_code, replace force
 drop if missing(school_code)
 
 frlink m:1 school_code, frame(weights)
-frget ${strata} urban_rural public ipw, from(weights)
+frget ${strata} ${other_info} urban_rural ipw, from(weights)
 
 
 *create weight variable that is standardized
@@ -102,14 +105,20 @@ frame change teachers
 * We are assuming the teacher level modules (Teacher roster, Questionnaire, Pedagogy, and Content Knowledge have already been linked here)
 * See Merge_Teacher_Modules code folder for help in this task if needed
 ********
-use "${data_dir}\\School\\TCD_teacher_level.dta" 
+use "${data_dir}\\School\\JOR_2023_teacher_level.dta" 
+
+recode m2saq3 1=2 0=1
+
 cap drop urban_rural
 cap drop public
 cap drop school_weight
+foreach var in $other_info {
+	cap drop `var'
+}
 cap drop $strata
 
 frlink m:1 school_code, frame(school_collapse_temp)
-frget school_code ${strata} urban_rural public school_weight numEligible numEligible4th, from(school_collapse_temp)
+frget school_code ${strata} $other_info urban_rural  school_weight numEligible numEligible4th, from(school_collapse_temp)
 
 *get number of 4th grade teachers for weights
 egen g4_teacher_count=sum(m3saq2_4), by(school_code)
@@ -175,7 +184,7 @@ use "${data_dir}\\School\\ecd_assessment.dta"
 
 
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code ${strata} urban_rural public school_weight m6_class_count g1_teacher_count, from(school)
+frget school_code ${strata} $other_info urban_rural school_weight m6_class_count g1_teacher_count, from(school)
 
 
 order school_code
@@ -204,7 +213,7 @@ use "${data_dir}\\School\\fourth_grade_assessment.dta"
 
 
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code ${strata} urban_rural public school_weight m4scq4_inpt g4_teacher_count, from(school)
+frget school_code ${strata}  $other_info urban_rural school_weight m4scq4_inpt g4_teacher_count, from(school)
 
 order school_code
 sort school_code
