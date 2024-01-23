@@ -7,8 +7,7 @@ from fuzzywuzzy import process
 import pandas as pd
 #set paths
 
-# Since SLE, NER and RWA have consistent variable names, create a loop with all these countries
-#foreach c in  NER RWA JOR ETH PER TCD GAB
+# REMOVE ALL COUNTRIES AND ADD THE COUNTRY YOU NEED.E.G "EDO"
 countries=["NER", "RWA", "JOR", "PER", "TCD", "GAB", "JOR_2023"]
 for country in countries:
     #Country name
@@ -37,25 +36,25 @@ for country in countries:
 
 
     # Preprocess columns
-    teacher_roster['school_name'] = teacher_roster['hashed_school_code'].str.lower().str.strip()
+    teacher_roster['school_name'] = teacher_roster['interview_key'].str.lower().str.strip()
     teacher_roster['teacher_name'] = teacher_roster['m2saq2'].str.lower().str.strip()
     teacher_roster['teacher_unique_id'] = teacher_roster['teachers_id']
 
     #keep just three columns
-    teacher_roster = teacher_roster[['hashed_school_code', 'school_name', 'teacher_name', 'teacher_unique_id', 'm2saq2', 'teachers_id']]
+    teacher_roster = teacher_roster[['interview_key', 'school_name', 'teacher_name', 'teacher_unique_id', 'm2saq2', 'teachers_id']]
 
     # create a unique id that concatenates school code and teachers id
     #unique_teach_id = teacher_roster['teachers_id'].map(str) + ", " + teacher_roster['hashed_school_code']
 
     #teacher pegaogy
-    teacher_pedagogy = pd.read_stata(save_input_folder + country + "/" + country + "_teacher_pedagogy.dta")
+    #teacher_pedagogy = pd.read_stata(save_input_folder + country + "/" + country + "_teacher_pedagogy.dta")
 
-    teacher_pedagogy['school_name'] = teacher_pedagogy['hashed_school_code'].str.lower().str.strip()
-    teacher_pedagogy['teacher_name'] = teacher_pedagogy['m4saq1'].str.lower().str.strip()
-    teacher_pedagogy['teacher_unique_id'] = teacher_pedagogy['m4saq1_number']
+    #teacher_pedagogy['school_name'] = teacher_pedagogy['hashed_school_code'].str.lower().str.strip()
+    #teacher_pedagogy['teacher_name'] = teacher_pedagogy['m4saq1'].str.lower().str.strip()
+    #teacher_pedagogy['teacher_unique_id'] = teacher_pedagogy['m4saq1_number']
     
     #keep just three columns
-    teacher_pedagogy = teacher_pedagogy[['hashed_school_code', 'school_name', 'teacher_name', 'teacher_unique_id', 'm4saq1', 'm4saq1_number']]
+    #teacher_pedagogy = teacher_pedagogy[['hashed_school_code', 'school_name', 'teacher_name', 'teacher_unique_id', 'm4saq1', 'm4saq1_number']]
 
     #teacher content knowedge
     teacher_content = pd.read_stata(save_input_folder + country + "/" + country + "_teacher_assessment.dta")
@@ -75,7 +74,7 @@ for country in countries:
     teacher_questionaire['teacher_unique_id'] = teacher_questionaire['m3sb_tnumber']
 
     #keep just three columns
-    teacher_questionaire = teacher_questionaire[['hashed_school_code', 'school_name', 'teacher_name', 'teacher_unique_id', 'm3sb_troster', 'm3sb_tnumber']]
+    teacher_questionaire = teacher_questionaire[['interview__key', 'school_name', 'teacher_name', 'teacher_unique_id', 'm3sb_troster', 'm3sb_tnumber']]
 
 
 
@@ -114,16 +113,16 @@ for country in countries:
 
         # Loop over each pair of matching rows and merge the data
         for match in matches:
-            merged_row = pd.concat([df1.loc[match[0]], df2.loc[match[1]].drop(['school_name', 'teacher_name', 'teacher_unique_id', 'hashed_school_code'])])
+            merged_row = pd.concat([df1.loc[match[0]], df2.loc[match[1]].drop(['school_name', 'teacher_name', 'teacher_unique_id', 'interview__key'])])
             merged_df = merged_df.append(merged_row, ignore_index=True)
 
 
-        # for any unmatched teachers in df1, left join with df2 on hashed_school_code and teacher_unique_id
+        # for any unmatched teachers in df1, left join with df2 on interview_key and teacher_unique_id
         df1_teachid_matched = df1[~df1.index.isin([match[0] for match in matches])]
 
         #drop teacher_name from df2
         df2 = df2.drop(['teacher_name', 'school_name'], axis=1)
-        df1_teachid_matched = df1_teachid_matched.merge(df2, how='inner', on=['hashed_school_code', 'teacher_unique_id'])
+        df1_teachid_matched = df1_teachid_matched.merge(df2, how='inner', on=['interview__key', 'teacher_unique_id'])
 
 
         #append df1_teachid_matched to merged_df
@@ -143,7 +142,7 @@ for country in countries:
 
 
     # call the function for the two data frames teacher_roster and teacher_pedagogy
-    merged_pedagogy_df = fuzzy_teacher_match(teacher_roster, teacher_pedagogy)
+    #merged_pedagogy_df = fuzzy_teacher_match(teacher_roster, teacher_pedagogy)
 
     # call the function for the two data frames teacher_roster and teacher_content
     merged_content_df = fuzzy_teacher_match(teacher_roster, teacher_content)
@@ -153,9 +152,9 @@ for country in countries:
 
 
     #join merged_pedagogy_df, merged_content, and merged_questionnaire in one file
-    merged_df1 = pd.merge(teacher_roster, merged_pedagogy_df, on=['hashed_school_code','school_name', 'teacher_unique_id', 'teachers_id', 'm2saq2'], how="outer")
+    #merged_df1 = pd.merge(teacher_roster, merged_pedagogy_df, on=['hashed_school_code','school_name', 'teacher_unique_id', 'teachers_id', 'm2saq2'], how="outer")
 
-    merged_df2 = pd.merge(merged_df1, merged_content_df, on=['hashed_school_code','school_name', 'teacher_unique_id', 'teachers_id', 'm2saq2'], how="outer")
+    merged_df2 = pd.merge(teacher_roster, merged_content_df, on=['hashed_school_code','school_name', 'teacher_unique_id', 'teachers_id', 'm2saq2'], how="outer")
 
     merged_df = pd.merge(merged_df2, merged_questionnaire_df, on=['hashed_school_code', 'school_name', 'teacher_unique_id', 'teachers_id', 'm2saq2'], how="outer")
     
