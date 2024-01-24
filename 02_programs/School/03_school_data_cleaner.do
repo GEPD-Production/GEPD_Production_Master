@@ -77,32 +77,33 @@ set type double
 frame change teachers
 
 *Generate school absence variable
-gen school_absence_rate = (m2sbq6_efft==6 | teacher_available==2) if !missing(m2sbq6_efft)
-replace school_absence_rate = 100*school_absence_rate
+gen sch_absence_rate = 0 if (m2sbq6_efft!=6) & !missing(m2sbq6_efft)
+replace sch_absence_rate = 1 if (m2sbq6_efft==6 | teacher_available==2) & !missing(m2sbq6_efft)
+replace sch_absence_rate = 100*sch_absence_rate
 *generate absence variables
-gen absence_rate = 100 if m2sbq6_efft==6 | m2sbq6_efft==5 |  teacher_available==2 
-replace absence_rate = 0 if (m2sbq6_efft==1 | m2sbq6_efft==3 | m2sbq6_efft==2 | m2sbq6_efft==4) & teacher_available!=2
+gen absence_rate = 0 if ((m2sbq6_efft==1 | m2sbq6_efft==3 | m2sbq6_efft==2 | m2sbq6_efft==4)) & !missing(m2sbq6_efft)
+replace absence_rate = 100 if (m2sbq6_efft==6 | m2sbq6_efft==5 | teacher_available==2) & !missing(m2sbq6_efft)
 
 *generate principal absence_rate
-gen principal_absence = 100 if m2sbq3_efft==8
-replace principal_absence = 0 if m2sbq3_efft!=8 & !missing(m2sbq3_efft)
+gen principal_absence = 0 if m2sbq3_efft!=8 & !missing(m2sbq3_efft)
+replace principal_absence = 100 if m2sbq3_efft==8 & !missing(m2sbq3_efft)
 
 *Fix absence rates, where in some cases the principal is the only one they could assess for absence (1 room schools type of situation?)
 replace absence_rate = principal_absence if missing(absence_rate)
-replace school_absence_rate = principal_absence if missing(school_absence_rate)
+replace sch_absence_rate = principal_absence if missing(sch_absence_rate)
 *Generating teacher presence rate- whether in school or classroom
 gen presence_rate = 100-absence_rate
 
 
 svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_abs_weight)
 svy: mean absence_rate
-
+#
 *males
 
-svy: mean absence_rate if m2saq3==1
+svy: mean absence_rate if m2saq3==0
 
 *females
-svy: mean absence_rate if m2saq3==2
+svy: mean absence_rate if m2saq3==1
 
 *********************************************
 ***** Student Attendance ***********
@@ -158,7 +159,7 @@ de m5s1q* m5s2q* m5s1q* m5s2q*, varlist
 *Replacing values is enumerators have entered values other than 01,00 and 99- eg:2. Also replacing "No response" code 99 to 0- this is treated as incorrect answer- No such values have been detected in the file currently, this can be removed to increase speed of code
 foreach var in `r(varlist)' {
 replace `var'=1 if `var'==2 & !missing(`var')
-replace `var'=0 if `var'==99 & !missing(`var')
+replace `var'=0 if `var'!=1 & !missing(`var')
 }
 
 *create indicator for % correct on teacher assessment
@@ -188,8 +189,10 @@ gen content_knowledge=(math_content_knowledge+literacy_content_knowledge)/2 if !
 replace content_knowledge=math_content_knowledge if missing(literacy_content_knowledge)
 replace content_knowledge=literacy_content_knowledge if missing(math_content_knowledge)
 gen content_proficiency=(content_knowledge>=.80) if !missing(content_knowledge)
+gen literacy_content_proficiency=(literacy_content_knowledge>=.80) if !missing(literacy_content_knowledge)
+gen math_content_proficiency=(math_content_knowledge>=.80) if !missing(math_content_knowledge)
 
-foreach var in content_proficiency content_knowledge literacy_content_knowledge cloze grammar read_passage math_content_knowledge arithmetic_number_relations geometry interpret_data {
+foreach var in content_proficiency content_knowledge literacy_content_knowledge literacy_content_proficiency math_content_proficiency cloze grammar read_passage math_content_knowledge arithmetic_number_relations geometry interpret_data {
 	replace `var' = `var'*100
 }
 
@@ -205,12 +208,12 @@ svy: mean `var'
 
 *For male teachers
 foreach var in content_proficiency  {
-svy: mean `var' if m2saq3 == 1
+svy: mean `var' if m2saq3 == 0
 }
 
 *For female teachers
 foreach var in content_proficiency  {
-svy: mean `var' if m2saq3 == 2
+svy: mean `var' if m2saq3 == 1
 }
 
 
@@ -234,7 +237,7 @@ replace `var'=0 if `var'==99 & !missing(`var')
 capture program drop bin_var
 program define bin_var
     args varname correct_value
-	gen score_temp = 0
+	gen score_temp = 0 if !missing(`varname')
     replace score_temp = 1 if `varname' == `correct_value'
 	replace `varname' = score_temp
 	drop score_temp
@@ -244,9 +247,11 @@ end
 capture program drop call_out_scorer
 program define call_out_scorer
     args varname threshold
-    gen score_temp = 0
-    replace score_temp = 1 if `varname' >= `threshold'
+    gen score_temp = 0 if !missing(`varname')
+	egen score_med = median(`varname'), by(school_code)
+    replace `varname' = (1-abs(`varname'-score_med) >= `threshold')
 	drop score_temp
+	drop score_med
 end
 
 * Recode assessment variables to be 1 if student got it correct and zero otherwise
@@ -273,15 +278,15 @@ bin_var m8saq7k_gir 3
 * This part is not clear in Stata, as Stata does not have a group_by equivalent
 
 * Call out scorer
-qui de m8saq2_id* m8saq3_id* m8sbq1_number_sense*
+qui ds m8saq2_id* m8saq3_id* m8sbq1_number_sense*
 foreach var in `r(varlist)' {
     call_out_scorer `"`var'"' 0.8
 }
 
 * Subtract some letters not assessed and make out of 3 points
-egen m8saq2_id = rowtotal(m8saq2_id*) 
+egen m8saq2_id = rowtotal(m8saq2_id*) , missing
 replace m8saq2_id = (m8saq2_id - 7) / 3
-egen m8saq3_id = rowtotal(m8saq3_id*) 
+egen m8saq3_id = rowtotal(m8saq3_id*) , missing
 replace m8saq3_id = (m8saq3_id - 7) / 3
 
 * More recoding
@@ -300,7 +305,7 @@ replace m8saq4_id = 0 if m8saq4_id == 99
 bin_var m8saq7_word_choice 2
 
 * Recode m8sbq1_number_sense to be itself minus 7 divided by 3
-egen m8sbq1_number_sense = rowtotal(m8sbq1_number_sense*) 
+egen m8sbq1_number_sense = rowtotal(m8sbq1_number_sense*) , missing
 replace m8sbq1_number_sense = (m8sbq1_number_sense - 7) / 3
 
 * Recode m8sbq1_number_sense to be 0 if less than 0, otherwise keep the same
@@ -329,7 +334,7 @@ gen literacy_student_proficient= 100*(literacy_student_knowledge>=83.3) if !miss
 gen math_student_proficient= 100*(math_student_knowledge>=82) if !missing(math_student_knowledge)
 
 
-svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || fourth_grade_assessment__id, weight(g4_stud_weight_component)
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || fourth_grade_assessment__id, weight(g4_stud_weight)
 foreach var in student_knowledge student_proficient {
 svy: mean `var'
 }
@@ -374,8 +379,8 @@ ds *vocabn
 foreach var in `r(varlist)' {
     replace `var' = . if `var' == 98
     replace `var' = 0 if inlist(`var', 99, 77)
-    replace `var' = 1 if `var' >= 10 & `var' != 98 & `var' != 99
-    replace `var' = `var' / 10 if `var' < 10 & `var' != 98 & `var' != 99
+    replace `var' = `var' / 10 if `var' < 10 & !missing(`var')	
+    replace `var' = 1 if `var' >= 10 & !missing(`var')
 }
 
 * Recode variables ending with "counting" based on conditions
@@ -383,42 +388,46 @@ ds *counting
 foreach var in `r(varlist)' {
     replace `var' = . if `var' == 98
     replace `var' = 0 if inlist(`var', 99, 77)
-    replace `var' = 1 if `var' >= 30 & `var' != 98 & `var' != 99
-    replace `var' = `var' / 30 if `var' < 30 & `var' != 98 & `var' != 99
+    replace `var' = `var' / 30 if `var' < 30 & !missing(`var')
+    replace `var' = 1 if `var' >= 30 & !missing(`var')
 }
 
  
 ****Literacy****
 *calculate # of literacy items correct
-egen ecd_lit_student_knowledge=rowmean(*vocabn *comprehension *letters *words *sentence *nm_writing *_print)
+egen ecd_literacy_student_knowledge=rowtotal(*vocabn *comprehension *letters *words *sentence m6s2q6a_nm_writing *_print)
+replace ecd_literacy_student_knowledge=ecd_literacy_student_knowledge/25
 
 ****Math****
 *calculate # of math items correct
-egen ecd_math_student_knowledge=rowmean(*counting *produce_set *number_ident *number_compare *simple_add)
+egen ecd_math_student_knowledge=rowtotal(*counting *produce_set *number_ident *number_compare *simple_add)
+replace ecd_math_student_knowledge=ecd_math_student_knowledge/19
 
 ****Executive Functioning****
 *calculate # of executive functioning items correct
-egen ecd_exec_student_knowledge=rowmean(*backward_digit *head_shoulders)
+egen ecd_exec_student_knowledge=rowtotal(*backward_digit *head_shoulders)
+replace ecd_exec_student_knowledge=ecd_exec_student_knowledge/27
 
 ****Socio-Emotional****
 *calculate # of socio emotional items correct
-egen ecd_soc_student_knowledge=rowmean(*perspective *conflict_resol)
+egen ecd_soc_student_knowledge=rowtotal(*perspective *conflict_resol)
+replace ecd_soc_student_knowledge=ecd_soc_student_knowledge/5
 
 *calculate % correct for literacy, math, exec functioning, socio emotional and total
-gen ecd_student_knowledge=(ecd_lit_student_knowledge+ecd_math_student_knowledge+ecd_exec_student_knowledge+ecd_soc_student_knowledge)/4
+gen ecd_student_knowledge=(ecd_literacy_student_knowledge+ecd_math_student_knowledge+ecd_exec_student_knowledge+ecd_soc_student_knowledge)/4
 gen ecd_student_proficiency=(ecd_student_knowledge>=.80) if !missing(ecd_student_knowledge)
 gen ecd_math_student_proficiency=(ecd_math_student_knowledge>=.80) if !missing(ecd_math_student_knowledge)
-gen ecd_lit_student_proficiency=(ecd_lit_student_knowledge>=.80) if !missing(ecd_lit_student_knowledge)
+gen ecd_literacy_student_proficiency=(ecd_literacy_student_knowledge>=.80) if !missing(ecd_literacy_student_knowledge)
 gen ecd_exec_student_proficiency=(ecd_exec_student_knowledge>=.80) if !missing(ecd_exec_student_knowledge)
 gen ecd_soc_student_proficiency=(ecd_soc_student_knowledge>=.80) if !missing(ecd_soc_student_knowledge)
 
-foreach var in ecd_lit_student_knowledge ecd_math_student_knowledge ecd_soc_student_knowledge ecd_exec_student_knowledge ecd_student_knowledge ecd_student_proficiency ecd_math_student_proficiency ecd_lit_student_proficiency ecd_exec_student_proficiency ecd_soc_student_proficiency  {
+foreach var in ecd_literacy_student_knowledge ecd_math_student_knowledge ecd_soc_student_knowledge ecd_exec_student_knowledge ecd_student_knowledge ecd_student_proficiency ecd_math_student_proficiency ecd_literacy_student_proficiency ecd_exec_student_proficiency ecd_soc_student_proficiency  {
 replace `var' = `var'*100
 }
                                   
 
 
-svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || ecd_assessment__id, weight(g1_stud_weight_component)
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || ecd_assessment__id, weight(g1_stud_weight)
 svy: mean ecd_student_proficiency
 
 *For male students
@@ -520,24 +529,24 @@ gen class_electricity = (m1sbq11_infr==1) if !missing(m1sbq11_infr)
 
 *Accessibility for people with disabilities
 
-gen disab_road_access = 1 if m1s0q2_infr==1
+gen disab_road_access = 1 if m1s0q2_infr==1 & !missing(m1s0q2_infr)
 replace disab_road_access = 0 if m1s0q2_infr!=1 & !missing(m1s0q2_infr)
 
-gen disab_school_ramp = 1 if m1s0q3_infr == 0
+gen disab_school_ramp = 1 if m1s0q3_infr == 0 & !missing(m1s0q3_infr)
 replace disab_school_ramp = 1 if m1s0q4_infr==1 & m1s0q3_infr==1
 replace disab_school_ramp = 0 if m1s0q4_infr==0 & m1s0q3_infr==1
 
-gen disab_school_entr = 1 if m1s0q5_infr==1
+gen disab_school_entr = 1 if m1s0q5_infr==1 & !missing(m1s0q5_infr)
 replace disab_school_entr = 0 if m1s0q5_infr!=1 & !missing(m1s0q5_infr)
 
-gen disab_class_ramp =1 if m4scq1_infr==0
+gen disab_class_ramp =1 if m4scq1_infr==0 & !missing(m4scq1_infr==1)
 replace disab_class_ramp = 1 if m4scq2_infr==1 & m4scq1_infr==1
 replace disab_class_ramp = 0 if m4scq2_infr==0 & m4scq1_infr==1
 
-gen disab_class_entr = 1 if m4scq3_infr==1
+gen disab_class_entr = 1 if m4scq3_infr==1 & !missing(m4scq3_infr)
 replace disab_class_entr = 0 if m4scq3_infr!=1 & !missing(m4scq3_infr)
 egen disab_screening = rowmean(m1sbq17_infr__1 m1sbq17_infr__2 m1sbq17_infr__3)
-gen coed_toilet = 0 if m1sbq1_infr==7
+gen coed_toilet = 0 if m1sbq1_infr==7 & !missing(m1sbq1_infr)
 replace coed_toilet = m1sbq6_infr if m1sbq1_infr!=7 & !missing(m1sbq1_infr)
 gen disability_accessibility = (disab_road_access+disab_school_ramp+disab_school_entr+disab_class_ramp+disab_class_entr+coed_toilet+disab_screening)/7
                           
@@ -545,8 +554,7 @@ gen internet = 1 if m1sbq15_inpt==2
 replace internet = .5 if m1sbq15_inpt==1
 replace internet = 0 if m1sbq15_inpt==0 | missing(m1sbq15_inpt)
 
-frame put *, into(school_infr_final)
-frame change school_infr_final
+
 gen infrastructure = drinking_water+ functioning_toilet+ internet + class_electricity+ disability_accessibility
 
 
@@ -625,17 +633,23 @@ replace classroom_observed = 0 if m3sdq15_ildr!=1 & !missing(m3sdq15_ildr)
 gen classroom_observed_recent = 1 if classroom_observed==1 & m3sdq16_ildr<=12
 replace classroom_observed_recent = 0 if !(classroom_observed==1 & m3sdq16_ildr<=12)
 replace classroom_observed_recent=. if missing(classroom_observed) & missing(classroom_observed)
-gen discussion_30_min = 1 if m3sdq20_ildr==1
-replace discussion_30_min = 0 if m3sdq20_ildr!=1 & !missing(m3sdq20_ildr)
+gen discussion_30_min = 1 if m3sdq20_ildr==3
+replace discussion_30_min = 0 if m3sdq20_ildr!=3 
+replace discussion_30_min = . if missing(m3sdq20_ildr)
 *Make sure there was discussion and lasted more than 30 min
-gen discussed_observation = 1 if classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3
-replace discussed_observation = 0 if !(classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3)
+gen discussed_observation = 1 if classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr>=2
+replace discussed_observation = 0 if !(classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr>=2)
+replace discussed_observation=. if missing(classroom_observed) 
+
 gen feedback_observation = 1 if (m3sdq21_ildr==1 & (m3sdq22_ildr_1==1 | m3sdq22_ildr_2==1 | m3sdq22_ildr_3==1 | m3sdq22_ildr_4==1 | m3sdq22_ildr_5==1))
 replace feedback_observation = 0 if !(m3sdq21_ildr==1 & (m3sdq22_ildr_1==1 | m3sdq22_ildr_2==1 | m3sdq22_ildr_3==1 | m3sdq22_ildr_4==1 | m3sdq22_ildr_5==1))
-replace feedback_observation=. if missing(m3sdq21_ildr) & missing(m3sdq22_ildr_1)
+replace feedback_observation=. if missing(m3sdq21_ildr) & (missing(m3sdq22_ildr_1) & missing(m3sdq22_ildr_2) & missing(m3sdq22_ildr_3) & missing(m3sdq22_ildr_4) & missing(m3sdq22_ildr_5))
+replace feedback_observation = 0 if !(m3sdq15_ildr==1 & m3sdq19_ildr==1) //fix an issue where teachers that never had classroom observed arent asked this question.
 
 gen lesson_plan = 1 if m3sdq23_ildr==1
-replace lesson_plan = 0 if m3sdq23_ildr!=1 & !missing(m3sdq23_ildr)
+replace lesson_plan = 0 if m3sdq23_ildr!=1 
+replace lesson_plan = . if missing(m3sdq23_ildr)
+
 gen lesson_plan_w_feedback = 1 if m3sdq23_ildr==1 & m3sdq24_ildr==1
 replace lesson_plan_w_feedback = 0 if !(m3sdq23_ildr==1 & m3sdq24_ildr==1)
 replace lesson_plan_w_feedback =. if missing(m3sdq23_ildr) & missing(m3sdq24_ildr)
@@ -674,7 +688,7 @@ svy: mean instructional_leadership
 
 frame copy teachers pknw_actual_cont_temp
 frame change pknw_actual_cont_temp
-keep if !missing(m5s1q1f_grammer)
+*keep if !missing(m5s1q1f_grammer)
 keep school_code m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer
 collapse m5_teach_count m5_teach_count_math m5s2q1c_number m5s2q1e_number m5s1q1f_grammer, by(school_code)
 frame put *,into(pknw_actual_cont)
@@ -1001,6 +1015,7 @@ frame change teachers
 
 gen formally_evaluated = 0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
 replace formally_evaluated = 1 if m3sbq6_tmna==1
+replace formally_evaluated=. if missing(m3sbq6_tmna)
 
 gen evaluation_content =0 if m3sbq6_tmna!=1 & !missing(m3sbq6_tmna)
 replace evaluation_content =(m3sbq8_tmna_1+m3sbq8_tmna_2+ m3sbq8_tmna_3 + m3sbq8_tmna_5 + m3sbq8_tmna_6)/5 if m3sbq6_tmna==1
@@ -1033,10 +1048,12 @@ frame change teachers
 gen attendance_evaluated = 0 if m3sbq6_tmna!=1
 replace attendance_evaluated = 0 if m3sbq6_tmna==1 & m3sbq8_tmna_1!=1
 replace attendance_evaluated = 1 if m3sbq6_tmna==1 & m3sbq8_tmna_1==1
+replace attendance_evaluated=. if missing(m3sbq6_tmna) 
 
 gen attendance_rewarded = 0 if m3seq4_tatt!=1
 replace attendance_rewarded = 0 if m3seq4_tatt==1 & m3seq5_tatt_1!=1
 replace attendance_rewarded = 1 if m3seq4_tatt==1 & m3seq5_tatt_1==1
+replace attendance_rewarded=. if missing(m3seq4_tatt) 
 
 gen attendence_sanctions = 0 if !(missing(m3sbq2_tmna_1) & missing(m3sbq2_tmna_2) & missing(m3sbq2_tmna_3) & missing(m3sbq2_tmna_4) & missing(m3sbq2_tmna_97))
 replace attendence_sanctions = . if missing(m3sbq2_tmna_1) & missing(m3sbq2_tmna_2) & missing(m3sbq2_tmna_3) & missing(m3sbq2_tmna_4) & missing(m3sbq2_tmna_97)
@@ -1126,7 +1143,7 @@ gen acceptable_absent = (m3scq1_tinm+ m3scq2_tinm + m3scq3_tinm)/3
 gen students_deserve_attention = (m3scq4_tinm+ m3scq5_tinm + m3scq6_tinm )/3
 gen growth_mindset=(m3scq7_tinm + m3scq10_tinm + m3scq11_tinm + m3scq14_tinm)/4
 gen motivation_teaching = 0 if m3scq15_tinm_3>=1 & !missing(m3scq15_tinm_3)
-replace motivation_teaching= 1 if ((m3scq15_tinm_3!=1 & !missing(m3scq15_tinm_3)) & (m3scq15_tinm_1>=1 & !missing(m3scq15_tinm_1) | m3scq15_tinm_2>=1 & !missing(m3scq15_tinm_2)| m3scq15_tinm_4>=1 & !missing(m3scq15_tinm_1) & m3scq15_tinm_5>=1 & !missing(m3scq15_tinm_1)))
+replace motivation_teaching= 1 if ((m3scq15_tinm_3<1 & !missing(m3scq15_tinm_3)) & ((m3scq15_tinm_1>=1 & !missing(m3scq15_tinm_1)) | (m3scq15_tinm_2>=1 & !missing(m3scq15_tinm_2))| (m3scq15_tinm_4>=1 & !missing(m3scq15_tinm_4)) | (m3scq15_tinm_5>=1 & !missing(m3scq15_tinm_5))))
 gen motivation_teaching_1 = 0 if m3sdq2_tmna!=1 & !missing(m3sdq2_tmna)
 replace motivation_teaching_1 = 1 if m3sdq2_tmna==1
 gen intrinsic_motivation=1+0.8*(0.2*acceptable_absent + 0.2*students_deserve_attention + 0.2*growth_mindset + motivation_teaching+motivation_teaching_1)
@@ -1163,7 +1180,7 @@ replace m1scq3_imon = 1 if m1scq3_imon==1
 replace m1scq3_imon = 0 if m1scq3_imon!=1 & !missing(m1scq3_imon)
 replace m1scq5_imon = 0 if m1scq5_imon==0
 replace m1scq5_imon = 1 if m1scq5_imon==1
-replace m1scq5_imon = 0.5 if m1scq5_imon==2
+replace m1scq5_imon = .5 if m1scq5_imon==2
 replace m1scq5_imon = 0 if missing(m1scq5_imon)
 
 egen monitoring_inputs_temp = rowmean(m1scq4_imon__*)
@@ -1329,7 +1346,7 @@ ds m7sgq10_sevl__*
 local varlist `r(varlist)'
 local SEVL: list varlist - m7sgq10_sevl__98
 
-egen principal_eval_tot = rowtotal(`SEVL')
+egen principal_eval_tot = rowtotal(`SEVL'), missing
 
 gen principal_evaluation_multiple = 1 if m7sgq8_sevl==1 & principal_eval_tot>=5 & !missing(principal_eval_tot)
 replace principal_evaluation_multiple = 0.666667 if m7sgq8_sevl==1 & principal_eval_tot>1 & principal_eval_tot<5 & !missing(principal_eval_tot)
@@ -1352,16 +1369,16 @@ svy: mean principal_evaluation
 *********************************************
 
 frame change school
-save "$save_dir/school.dta", replace
+save "$save_dir/school_Stata.dta", replace
 
 frame change teachers
-save "$save_dir/teachers.dta", replace
+save "$save_dir/teachers_Stata.dta", replace
 
 frame change fourth_grade_assessment
-save "$save_dir/fourth_grade_assessment.dta", replace
+save "$save_dir/fourth_grade_Stata.dta", replace
 
 frame change first_grade_assessment
-save "$save_dir/first_grade_assessment.dta", replace
+save "$save_dir/first_grade_Stata.dta", replace
 
 ****************************************************************************END**************************************************************************************************
 
