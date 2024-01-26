@@ -13,6 +13,29 @@ local not1 interview__id
 
 ***************
 ***************
+* Append files from various questionnaires
+***************
+***************
+
+gl dir_v7 "${data_dir}\\School\\School Survey - Version 7 - without 10 Revisited Schools\\"
+gl dir_v8 "${data_dir}\\School\\School Survey - Version 8 - without 10 Revisited Schools\\"
+
+* get the list of files
+local files_v7: dir "${dir_v7}" files "*.dta"
+
+di `files_v7'
+* loop through the files and append into a single file saved in dir_saved
+gl dir_saved "${data_dir}\\School\\"
+
+foreach file of local files_v7 {
+	di "`file'"
+	use "${dir_v7}`file'", clear
+	append using "${dir_v8}`file'", force
+	save "${dir_saved}`file'", replace
+}
+
+***************
+***************
 * School File
 ***************
 ***************
@@ -23,7 +46,7 @@ local not1 interview__id
 frame create school
 frame change school
 
-use "${data_dir}\\School\\EPDash_final.dta" 
+use "${data_dir}\\School\\epdash.dta" 
 
 ********
 *read in the school weights
@@ -34,46 +57,32 @@ frame change weights
 import delimited "${data_dir}\\Sampling\\${weights_file_name}"
 
 * rename school code
-rename school_code ${school_code_name}
-
-drop if school_code == 223748 & iden == "N DJAMENA 8"
-drop if school_code==585 & telephone_etablissement!="63170595"
-drop if      school_code==773 & telephone_etablissement!="65941064"
-drop if      school_code==2132 & telephone_etablissement!="91379418"
-drop if      school_code==5737 & ipep!="MATADJANA"
-drop if      school_code==5875 & ipep!="MOUSSORO URBAIN"
-drop if      school_code==6699 & dpen!="HADJER LAMIS"
-drop if      school_code==6950 & telephone_etablissement!="66031532/90684733"
-drop if      school_code==7404 & ipep!="DABANSAKA URBAIN (MASSAGUET)"
-drop if         school_code==12380 & ipep!="10EME ARROND N DJAMENA A"
-drop if     school_code==220586 & ipep!="KALAÏT"
-drop if      school_code==221233 & ipep!="DAGANA URBAIN"
-drop if      school_code==224357 & ipep!="AM TIMAN URBAIN"
-drop if    school_code==225988 & ipep!="5EME ARROND N DJAMENA"
+rename ${school_code_name} school_code 
 
 
-keep school_code ${strata} urban_rural public strata_prob ipw
+keep school_code ${strata} ${other_info} strata_prob ipw urban_rural
+
+gen strata=" "
+foreach var in $strata {
+	replace strata=strata + `var' + " - "
+}
+
 destring school_code, replace force
 destring ipw, replace force
 duplicates drop school_code, force
-
-
-
 
 ******
 * Merge the weights
 *******
 frame change school
 
-gen school_code = m1s0q2_emis
-
-destring school_code, replace force
-replace school_code = 222760 if school_code==22760
+gen school_code=school_code_preload
+destring school_code, force replace
 
 drop if missing(school_code)
 
 frlink m:1 school_code, frame(weights)
-frget ${strata} urban_rural public strata_prob ipw, from(weights)
+frget ${strata} ${other_info} urban_rural strata_prob ipw strata, from(weights)
 
 
 *create weight variable that is standardized
@@ -82,10 +91,6 @@ gen school_weight=strata_prob // school level weight
 *fourth grade student level weight
 egen g4_stud_count = mean(m4scq4_inpt), by(school_code)
 
-
-* drop if school weight missing as these could not be found in sampling frame
-*br if missing(school_weight)
-drop if missing(school_weight)
 
 *create collapsed school file as a temp
 frame copy school school_collapse_temp
@@ -103,8 +108,18 @@ ds, has(type string)
 local stringvars "`r(varlist)'"
 local stringvars : list stringvars- not
 
+ foreach v of var * {
+	local l`v' : variable label `v'
+       if `"`l`v''"' == "" {
+ 	local l`v' "`v'"
+ 	}
+ }
+
 collapse (max) `numvars' (firstnm) `stringvars', by(school_code)
 
+ foreach v of var * {
+	label var `v' `"`l`v''"'
+ }
 
 ***************
 ***************
@@ -119,25 +134,22 @@ frame change teachers
 * We are assuming the teacher level modules (Teacher roster, Questionnaire, Pedagogy, and Content Knowledge have already been linked here)
 * See Merge_Teacher_Modules code folder for help in this task if needed
 ********
-use "${data_dir}\\School\\TCD_teacher_level.dta" 
-cap drop urban_rural
-cap drop public
-cap drop school_weight
+use "${data_dir}\\School\\Edo_teacher_level.dta" 
+
+recode m2saq3 1=2 0=1
+
+
+foreach var in $other_info {
+	cap drop `var'
+}
 cap drop $strata
 
-*fix a school code
-replace school_code = 222760 if school_code==22760
-
-frlink m:1 school_code, frame(school_collapse_temp)
-frget school_code ${strata} urban_rural public school_weight numEligible numEligible4th, from(school_collapse_temp)
+frlink m:1 interview__key, frame(school_collapse_temp)
+frget school_code ${strata} $other_info urban_rural strata school_weight numEligible numEligible4th, from(school_collapse_temp)
 
 *get number of 4th grade teachers for weights
-egen g4_teacher_count=sum(m3saq2_4), by(school_code)
-egen g1_teacher_count=sum(m3saq2_1), by(school_code)
-
-*fix teacher id for a few cases
-replace teachers_id=m4saq1_number if missing(teachers_id)
-drop if missing(teachers_id)
+egen g4_teacher_count=sum(m3saq2__4), by(school_code)
+egen g1_teacher_count=sum(m3saq2__1), by(school_code)
 
 order school_code
 sort school_code
@@ -199,8 +211,9 @@ frame change first_grade
 use "${data_dir}\\School\\ecd_assessment.dta" 
 
 
+
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code ${strata} urban_rural public school_weight m6_class_count g1_teacher_count, from(school)
+frget school_code ${strata} $other_info urban_rural strata school_weight m6_class_count g1_teacher_count, from(school)
 
 
 order school_code
@@ -229,7 +242,7 @@ use "${data_dir}\\School\\fourth_grade_assessment.dta"
 
 
 frlink m:1 interview__key interview__id, frame(school)
-frget school_code ${strata} urban_rural public school_weight m4scq4_inpt g4_stud_count g4_teacher_count, from(school)
+frget school_code ${strata}  $other_info urban_rural strata school_weight m4scq4_inpt g4_teacher_count g4_stud_count, from(school)
 
 order school_code
 sort school_code
@@ -243,6 +256,7 @@ bysort school_code: gen g4_assess_count=_N
 gen g4_student_weight_temp=g4_stud_count/g4_assess_count // max of 25 students selected from the class
 
 gen g4_stud_weight=g4_class_weight*g4_student_weight_temp
+
 
 save "${processed_dir}\\School\\Confidential\\Merged\\fourth_grade_assessment.dta" , replace
 

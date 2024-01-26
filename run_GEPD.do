@@ -17,17 +17,17 @@ if _rc {
 * Set some parameters for the project
 *-------------------------------------------------------------------------------
 
-global country "TCD"
-global country_name  "Chad"
+global country "NGA"
+global country_name  "Nigeria - Edo State"
 global year  "2023"
-global strata "region" 
+global strata lga  urban_rural
 * Strata for sampling
 *-------------------------------------------------------------------------------
 * Run all tasks in this project
 *-------------------------------------------------------------------------------
 * TASK: calculates GEPD School Indicators by combining multiple data sources
-do "${clone}/02_programs/School/Stata/01_school_run.do"
+do "${clone}/02_programs/School/01_school_run.do"
 
 * TASK: calculates GEPD Public Officials Indicators by combining multiple data sources
-do "${clone}/02_programs/Public_Officials/Stata/01_public_officials_run.do"
+do "${clone}/02_programs/Public_Officials/01_public_officials_run.do"
 *-------------------------------------------------------------------------------

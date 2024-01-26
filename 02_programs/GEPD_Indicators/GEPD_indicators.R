@@ -9,10 +9,10 @@ library(readxl)
 
 
 #Country name and year of survey
-country_name <-'Chad'
-country <- "TCD"
+country_name <-'Nigeria-Edo'
+country <- "NGA"
 year <- '2023'
-software <- "Stata" #choose R or Stata
+software <- "R" #choose R or Stata
 
 
 #########################
@@ -26,11 +26,7 @@ processed_dir <- here('03_GEPD_processed_data/')
 
 
 ## Summary Statistics
-strata <- c('Region')
-
-if (software=="Stata") {
-  strata <- c("region")
-}
+strata <- c('strata')
 
 options(survey.lonely.psu="adjust")
 
@@ -39,8 +35,7 @@ GEPD_template <- read_csv(here("04_GEPD_Indicators","GEPD_indicator_template.csv
 
 #load main files
 school_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("school_",software,".dta")))
-teachers_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("teachers_",software,".dta"))) %>%
-  filter(!is.na(teachers_id))
+teachers_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("teachers_",software,".dta"))) 
 first_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("first_grade_",software,".dta")))
 fourth_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("fourth_grade_",software,".dta")))
 public_officials_dta <- read_dta(here(processed_dir,"Public_Officials","Confidential", "public_officials.dta"))
@@ -158,12 +153,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
     } else if (unit=="Female") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==1)
+        filter(m2saq3==2)
       
     } else if (unit=="Male") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==0)
+        filter(m2saq3==1)
       
     } else if (unit=="Rural") {
       
@@ -187,12 +182,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_abs_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_abs_weight, school_code, teachers_id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_abs_weight, school_code, TEACHERS__id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, teachers_id),
+        id=c(school_code, TEACHERS__id),
         strata=strata,
         weight=c(school_weight, teacher_abs_weight)) %>%
       ungroup() %>%
@@ -214,12 +209,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
     } else if (unit=="Female") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==1)
+        filter(m2saq3==2)
       
     } else if (unit=="Male") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==0)
+        filter(m2saq3==1)
       
     } else if (unit=="Rural") {
       
@@ -243,12 +238,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_questionnaire_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_questionnaire_weight, school_code, teachers_id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_questionnaire_weight, school_code, TEACHERS__id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, teachers_id),
+        id=c(school_code, TEACHERS__id),
         strata=strata,
         weight=c(school_weight, teacher_questionnaire_weight)) %>%
       ungroup() %>%
@@ -270,12 +265,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
     } else if (unit=="Female") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==1)
+        filter(m2saq3==2)
       
     } else if (unit=="Male") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==0)
+        filter(m2saq3==1)
       
     } else if (unit=="Rural") {
       
@@ -299,12 +294,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.na(teacher_content_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_content_weight, school_code, teachers_id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_content_weight, school_code, TEACHERS__id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, teachers_id),
+        id=c(school_code, TEACHERS__id),
         strata=strata,
         weight=c(school_weight, teacher_content_weight)) %>%
       ungroup() %>%
@@ -326,12 +321,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
     } else if (unit=="Female") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==1)
+        filter(m2saq3==2)
       
     } else if (unit=="Male") {
       
       stat_df<-teachers_dta %>%
-        filter(m2saq3==0)
+        filter(m2saq3==1)
       
     } else if (unit=="Rural") {
       
@@ -355,12 +350,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_pedagogy_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_pedagogy_weight, school_code, teachers_id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_pedagogy_weight, school_code, TEACHERS__id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, teachers_id),
+        id=c(school_code, TEACHERS__id),
         strata=strata,
         weight=c(school_weight, teacher_pedagogy_weight)) %>%
       ungroup() %>%
@@ -694,28 +689,28 @@ indicators <-   list(
   #######################################
   
   
-  c("SE.PRM.PEDG     ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  c("SE.PRM.PEDG.1   ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  c("SE.PRM.PEDG.1.F", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  c("SE.PRM.PEDG.1.M", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  c("SE.PRM.PEDG.1.R ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  c("SE.PRM.PEDG.1.U ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  c("SE.PRM.PEDG.2   ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "All"),  
-  c("SE.PRM.PEDG.2.F", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  c("SE.PRM.PEDG.2.M", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  c("SE.PRM.PEDG.2.R ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  c("SE.PRM.PEDG.2.U ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  c("SE.PRM.PEDG.3   ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  c("SE.PRM.PEDG.3.F", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  c("SE.PRM.PEDG.3.M", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  c("SE.PRM.PEDG.3.R ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  c("SE.PRM.PEDG.3.U ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  c("SE.PRM.PEDG.4   ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  c("SE.PRM.PEDG.4.F", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  c("SE.PRM.PEDG.4.M", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  c("SE.PRM.PEDG.4.R ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  c("SE.PRM.PEDG.4.U ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  
+  # c("SE.PRM.PEDG     ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  # c("SE.PRM.PEDG.1   ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  # c("SE.PRM.PEDG.1.F", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  # c("SE.PRM.PEDG.1.M", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  # c("SE.PRM.PEDG.1.R ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  # c("SE.PRM.PEDG.1.U ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  # c("SE.PRM.PEDG.2   ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "All"),  
+  # c("SE.PRM.PEDG.2.F", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  # c("SE.PRM.PEDG.2.M", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  # c("SE.PRM.PEDG.2.R ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  # c("SE.PRM.PEDG.2.U ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  # c("SE.PRM.PEDG.3   ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  # c("SE.PRM.PEDG.3.F", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  # c("SE.PRM.PEDG.3.M", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  # c("SE.PRM.PEDG.3.R ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  # c("SE.PRM.PEDG.3.U ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  # c("SE.PRM.PEDG.4   ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  # c("SE.PRM.PEDG.4.F", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  # c("SE.PRM.PEDG.4.M", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  # c("SE.PRM.PEDG.4.R ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  # c("SE.PRM.PEDG.4.U ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  # 
   
   #######################################
   # 	Basic Inputs	(INPT)
@@ -1052,7 +1047,7 @@ indicators <-   list(
   c("SE.PRM.TEVL.2", "evaluation_law_school", "policy_survey", "NA","NA"), #(De Jure) Legislation assigns responsibility of evaluating the performance of teachers to the schools                    
   c("SE.PRM.TEVL.3 ","100*formally_evaluated		", "teacher_questionnaire", "TEVL",  "All"),   #(De Facto) Percent of teachers that report being evaluated in the past 12 months                                         
   c("SE.PRM.TEVL.4", "evaluation_criteria", "policy_survey", "NA","NA"), #(De Jure) The criteria to evaluate teachers is clear                                                                     
-  c("SE.PRM.TEVL.5 ","rowSums(select(., m3sbq8_tmna_1,m3sbq8_tmna_2,m3sbq8_tmna_3, m3sbq8_tmna_4, m3sbq8_tmna_5,m3sbq8_tmna_6, m3sbq8_tmna_7, m3sbq8_tmna_8,m3sbq8_tmna_97) , na.rm=TRUE )", "teacher_questionnaire", "TEVL",  "All"),  #(De Facto) Number of criteria used to evaluate teachers                                                                  
+  c("SE.PRM.TEVL.5 ","rowSums(select(., m3sbq8_tmna__1,m3sbq8_tmna__2,m3sbq8_tmna__3, m3sbq8_tmna__4, m3sbq8_tmna__5,m3sbq8_tmna__6, m3sbq8_tmna__7, m3sbq8_tmna__8,m3sbq8_tmna__97) , na.rm=TRUE )", "teacher_questionnaire", "TEVL",  "All"),  #(De Facto) Number of criteria used to evaluate teachers                                                                  
   c("SE.PRM.TEVL.6 ","100*negative_consequences		", "teacher_questionnaire", "TEVL",  "All"),  #(De Facto) Percent of teachers that report there would be consequences after two negative evaluations                    
   c("SE.PRM.TEVL.7 ","100*positive_consequences		", "teacher_questionnaire", "TEVL",  "All"),  #(De Facto) Percent of teachers that report there would be consequences after two positive evaluations                    
   c("SE.PRM.TEVL.8", "negative_evaluations", "policy_survey", "NA","NA"), #(De Jure) There are clear consequences for teachers who receive two or more negative evaluations                         

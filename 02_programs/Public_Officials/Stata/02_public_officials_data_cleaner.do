@@ -28,9 +28,9 @@ use "${data_dir}/Public_Officials/public_officials.dta"
 frame create teachers
 frame change teachers
 
-use "${processed_dir}/School/Confidential/Cleaned/teachers.dta"
+use "${processed_dir}/School/Confidential/Cleaned/teachers_Stata.dta"
 
-svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)   || unique_teach_id, weight(teacher_abs_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_abs_weight)
 svy: mean absence_rate
 gl teacher_absence =  _b[absence_rate]
 
@@ -38,9 +38,9 @@ gl teacher_absence =  _b[absence_rate]
 frame create school
 frame change school
 
-use "${processed_dir}/School/Confidential/Cleaned/school.dta"
+use "${processed_dir}/School/Confidential/Cleaned/school_Stata.dta"
 
-svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)  
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)  
 svy: mean m4scq4_inpt
 gl class_size = _b[m4scq4_inpt]
 

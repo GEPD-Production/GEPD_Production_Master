@@ -30,17 +30,11 @@ library(GGally)
 library(srvyr)
 library(flextable)
 #Country name and year of survey
-country_name <-'Chad'
-country <- "TCD"
+country_name <-'Nigeria-Edo'
+country <- "NGA"
 year <- '2023'
-api_user <- "GEPD_api_TCD"
-need_api=1
-teach=TRUE
-#########################
-# File paths #
-#########################
-#The download_folder will be the location of where raw data is downloaded from the API
-#The save_folder will be the location of where cleaned data is stored
+teach=FALSE
+
 
 #########################
 # File paths #
@@ -60,10 +54,14 @@ processed_dir <- here('03_GEPD_processed_data/')
 
 
 # #launch file to access data from API
-school_file<-"EPDash_final.dta"
+school_file<-"epdash.dta"
+teacher_file <- "Edo_teacher_level.dta"
 
-
-
+#info for weights
+weights_file <- "GEPD_Edo_weights_2023-06-20.csv"
+strata_info <- c("LGA", "urban_rural")
+other_info <- c("Senatorial District", "CLASSIFICATION", "School Type")
+school_code_name <-"UBEC SCHOOL CODE"
 ```
 
 ```{r functions}
@@ -397,30 +395,26 @@ SEVL_rules <- validator(
 
 #read in sampling frame
 #Load original sample of schools
-currentDate<-c("2023-05-31")
 
 sample_folder <- file.path(paste0(data_dir, "/Sampling/", sep="/"))
 
-data_set_updated <- read_csv(paste(sample_folder, '/GEPD_TCD_weights_', currentDate,  '.csv', sep="")) %>%
-  filter(
-    !(school_code == 223748 & IDEN == "N DJAMENA 8"),
-    !(school_code==585 & TELEPHONE_ETABLISSEMENT!="63170595"),
-    !(school_code==773 & TELEPHONE_ETABLISSEMENT!="65941064"),
-    !(school_code==2132 & TELEPHONE_ETABLISSEMENT!="91379418"),
-    !(school_code==5737 & IPEP!="MATADJANA"),
-    !(school_code==5875 & IPEP!="MOUSSORO URBAIN"),
-    !(school_code==6699 & DPEN!="HADJER LAMIS"),
-    !(school_code==6950 & TELEPHONE_ETABLISSEMENT!="66031532/90684733"),
-    !(school_code==7404 & IPEP!="DABANSAKA URBAIN (MASSAGUET)"),
-    !(school_code==12380 & IPEP!="10EME ARROND N DJAMENA A"),
-    !(school_code==220586 & IPEP!="KALAÏT"),
-    !(school_code==221233 & IPEP!="DAGANA URBAIN"),
-    !(school_code==224357 & IPEP!="AM TIMAN URBAIN"),
-    !(school_code==225988 & IPEP!="5EME ARROND N DJAMENA")
+data_set_updated <- read_csv(paste(sample_folder, weights_file , sep="")) %>%
+  select(school_code_name, strata_info, other_info, strata_prob, ipw
+         ) %>%
+  unite(strata,strata_info, sep=" - ", remove=FALSE) %>%
+  #check if column has a space in the title, and if so do a name repair
+  rename_at(
+    c(strata_info, other_info),
+    ~ str_replace(., " ", "_")
   ) %>%
-  select(school_code, Region, urban_rural, public, strata_prob, ipw)
+  rename(school_code=!! school_code_name) %>%
+  #create a new column called "strata" that is a combination of the strata and other_info columns
+  #drop a duplicate
+  filter(!(school_code==12140130 & LGA=="Uhunmwode"))
 
-
+# check in strata and other_info if there are any values with spaces and if so remove and add a _
+strata_info <- str_replace_all(strata_info, " ", "_")
+other_info <- str_replace_all(other_info, " ", "_")
 
 ###########################
 #read in school level file
@@ -435,18 +429,9 @@ school_dta<- school_dta %>%
          survey_time=m1s0q8,
          lat=m1s0q9__Latitude,
          lon=m1s0q9__Longitude,
-         school_code=if_else(!is.na(school_emis_preload),as.numeric(school_emis_preload), as.numeric(m1s0q2_code)),
+         school_code=as.numeric(school_code_preload),
          m7_teach_count_pknw=m7_teach_count, #this variable was mistakenly not tagged as pknw
          total_enrolled=m1saq7) %>%
-  ## Get names and code for all the blank interviews
-  mutate(
-    
-    school_code= if_else(school_info_correct==1, as.numeric(school_code), as.numeric(m1s0q2_emis)),
-    
-    school_name_preload = if_else(school_info_correct==1, as.character(school_name_preload), as.character(m1s0q2_name)),
-    school_code=if_else(school_code==22760, 222760, school_code) #fix issue with school code
-   
-  ) %>%
   select(-starts_with("enumerators_preload")) %>% 
   filter(!is.na(school_code)) 
 
@@ -455,6 +440,13 @@ school_dta <- school_dta %>%
   left_join(data_set_updated, by=c("school_code"="school_code")) %>% 
   filter(!is.na(school_code)) 
 
+#check for duplicates in school code
+t <- school_dta %>% 
+  group_by(school_code) %>%
+  summarise(n=n()) %>%
+  filter(n>1) %>%
+  select(school_code) %>%
+  distinct()
 
 #add weight info
 school_dta <- school_dta %>%
@@ -470,7 +462,7 @@ preamble_info <- c( 'interview__key', 'school_code',
                    'school_province_preload', 'school_district_preload', 'school_emis_preload', 'school_emis_preload',
                    'school_info_correct', 'm1s0q2_name', 'm1s0q2_code', 'm1s0q2_emis',
                    'survey_time', 'lat', 'lon' , 'total_enrolled' , 'm7saq10', 'm1saq4',
-                   'school_code', 'Region', 'urban_rural', 'public', 'school_weight', 
+                   'school_code', 'strata', strata_info, other_info, 'school_weight', 
                    'numEligible', 'numEligible4th',
                    'm6_class_count', 
                     'm4scq4_inpt', 'g4_stud_count'
@@ -478,7 +470,12 @@ preamble_info <- c( 'interview__key', 'school_code',
 
 
 school_merge_temp <- school_dta %>%
-  select( preamble_info)
+  select( preamble_info) %>%
+  group_by(school_code) %>%
+  mutate(
+    numEligible=mean(numEligible, na.rm=TRUE), 
+    numEligible4th=mean(numEligible4th, na.rm=TRUE)
+  )
 
 school_collapse_temp <- school_dta %>%
   group_by(school_code) %>%
@@ -496,14 +493,17 @@ school_collapse_temp <- school_dta %>%
 # See Merge_Teacher_Modules code folder for help in this task if needed
 ##########
 
-teachers_dta<-read_dta(here(data_dir,"School", "TCD_teacher_level.dta")) %>%
-  select(-urban_rural, -public, -rural) %>%
+teachers_dta<-read_dta(here(data_dir,"School", teacher_file )) %>%
   mutate(teacher_name=m2saq2,
-         teachers_id=if_else(is.na(teachers_id),m4saq1_number, teachers_id),
-         teacher_number=teachers_id) %>%
-  mutate(school_code=if_else(school_code==22760, 222760, school_code)) %>% #fix issue with school code
-  left_join(school_collapse_temp %>% select(school_code, Region, urban_rural, public, school_weight, numEligible, numEligible4th )) %>%
-  filter(!is.na(teachers_id))
+         teacher_number=TEACHERS__id) %>%
+  left_join(school_merge_temp %>% select(interview__key, school_code, strata, strata_info, other_info, school_weight, numEligible, numEligible4th )) %>%
+  filter(!is.na(TEACHERS__id)) %>%
+  mutate( #revert a change that was made to recode
+    m2saq3=case_when(
+      m2saq3==1 ~ 2,
+      m2saq3==0 ~ 1
+    )
+  )
 
 
 #rename a few key variables up front
@@ -512,15 +512,15 @@ teachers_dta<- teachers_dta %>%
          teacher_number=m3sb_tnumber ,
          available=m3s0q1,
          teacher_position=m3saq1,
-         teacher_grd1=bin_var(m3saq2_1,1),
-         teacher_grd2=bin_var(m3saq2_2,1),
-         teacher_grd3=bin_var(m3saq2_3,1),
-         teacher_grd4=bin_var(m3saq2_4,1),
+         teacher_grd1=bin_var(m3saq2__1,1),
+         teacher_grd2=bin_var(m3saq2__2,1),
+         teacher_grd3=bin_var(m3saq2__3,1),
+         teacher_grd4=bin_var(m3saq2__4,1),
          #teacher_grd5=bin_var(m3saq2_5,1),
-         teacher_language=bin_var(m3saq3_1,1),
-         teacher_math=bin_var(m3saq3_2,1),
-         teacher_both_subj=bin_var(m3saq3_3,1),
-         teacher_other_subj=bin_var(m3saq3_97,1),
+         teacher_language=bin_var(m3saq3__1,1),
+         teacher_math=bin_var(m3saq3__2,1),
+         teacher_both_subj=bin_var(m3saq3__3,1),
+         teacher_other_subj=bin_var(m3saq3__97,1),
          teacher_education=m3saq4,
          teacher_year_began=m3saq5,
          teacher_age=m3saq6,
@@ -549,8 +549,8 @@ teachers_dta <- teachers_dta %>%
 teachers_dta <- teachers_dta %>%
   group_by(school_code) %>%
   mutate(
-    g4_teacher_count=sum(m3saq2_4, na.rm=TRUE),
-    g1_teacher_count=sum(m3saq2_1, na.rm=TRUE)
+    g4_teacher_count=sum(m3saq2__4, na.rm=TRUE),
+    g1_teacher_count=sum(m3saq2__1, na.rm=TRUE)
   )
 
 #teacher weights
@@ -715,8 +715,8 @@ teachers_dta <- teachers_dta %>%
 teachers_dta %>%
   ungroup() %>%
   as_survey_design(
-                   ids=c(school_code,teachers_id),
-                   strata=Region,
+                   ids=c(school_code,TEACHERS__id),
+                   strata=strata,
                    weights=c(school_weight, teacher_abs_weight)
                    ) %>%
   summarise(
@@ -1387,14 +1387,14 @@ teachers_dta <- teachers_dta %>%
   mutate(classroom_observed=bin_var(m3sdq15_ildr,1),
          classroom_observed_recent=if_else((classroom_observed==1 & m3sdq16_ildr<=12),1,0), #set recent to mean under 12 months
          purpose_observation=case_when(
-           m3sdq18_ildr_1==1 ~ "Evaluation",
-           m3sdq18_ildr_2==1 ~ "Professional Development",
-           m3sdq18_ildr_3==1 ~ "Monitoring",
-           m3sdq18_ildr_97==1 ~ m3sdq18_other_ildr ),
+           m3sdq18_ildr__1==1 ~ "Evaluation",
+           m3sdq18_ildr__2==1 ~ "Professional Development",
+           m3sdq18_ildr__3==1 ~ "Monitoring",
+           m3sdq18_ildr__97==1 ~ m3sdq18_other_ildr ),
          discussion_30_min=bin_var(m3sdq20_ildr,3),
          discussed_observation=if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr>=2),1,0), #make sure there was discussion and lasted more than 10 min
-         feedback_observation=if_else((m3sdq21_ildr==1 & (m3sdq22_ildr_1==1 | m3sdq22_ildr_2==1 | m3sdq22_ildr_3==1
-                                                          | m3sdq22_ildr_4==1 | m3sdq22_ildr_5==1)),1,0), #got feedback and was specific
+         feedback_observation=if_else((m3sdq21_ildr==1 & (m3sdq22_ildr__1==1 | m3sdq22_ildr__2==1 | m3sdq22_ildr__3==1
+                                                          | m3sdq22_ildr__4==1 | m3sdq22_ildr__5==1)),1,0), #got feedback and was specific
          lesson_plan=if_else(m3sdq23_ildr==1,1,0),
          lesson_plan_w_feedback=if_else((m3sdq23_ildr==1 & m3sdq24_ildr==1),1,0)) %>%
   mutate(feedback_observation=if_else(m3sdq15_ildr==1 & m3sdq19_ildr==1, feedback_observation, 0)) %>% #fix an issue where teachers that never had classroom observed arent asked this question.
@@ -1626,28 +1626,28 @@ teachers_dta <- teachers_dta %>%
          better_teachers_promoted=bin_var(m3seq3_tatt,1),
          teacher_bonus=bin_var(m3seq4_tatt,1),
          teacher_bonus_attend=if_else(m3seq4_tatt==1,
-                                      bin_var(m3seq5_tatt_1,1),
+                                      bin_var(m3seq5_tatt__1,1),
                                       0),
          teacher_bonus_student_perform=if_else(m3seq4_tatt==1,
-                                               bin_var(m3seq5_tatt_2,1),
+                                               bin_var(m3seq5_tatt__2,1),
                                                0),
          teacher_bonus_extra_duty=if_else(m3seq4_tatt==1,
-                                          bin_var(m3seq5_tatt_3,1),
+                                          bin_var(m3seq5_tatt__3,1),
                                           0),
          teacher_bonus_hard_staff=if_else(m3seq4_tatt==1,
-                                          bin_var(m3seq5_tatt_4,1),
+                                          bin_var(m3seq5_tatt__4,1),
                                           0),
          teacher_bonus_subj_shortages=if_else(m3seq4_tatt==1,
-                                              bin_var(m3seq5_tatt_5,1),
+                                              bin_var(m3seq5_tatt__5,1),
                                               0),
          teacher_bonus_add_qualif=if_else(m3seq4_tatt==1,
-                                          bin_var(m3seq5_tatt_6,1),
+                                          bin_var(m3seq5_tatt__6,1),
                                           0),
          teacher_bonus_school_perform=if_else(m3seq4_tatt==1,
-                                              bin_var(m3seq5_tatt_7,1),
+                                              bin_var(m3seq5_tatt__7,1),
                                               0),
          teacher_bonus_other=if_else(m3seq4_tatt==1,
-                                     if_else(m3seq5_tatt_97==1,m3seq5_other_tatt,"NA"),
+                                     if_else(m3seq5_tatt__97==1,m3seq5_other_tatt,"NA"),
                                      "NA"),
          salary_delays=if_else(m3seq6_tatt==1, m3seq7_tatt,0)) %>%
   mutate(salary_delays=if_else(salary_delays>12,12,salary_delays)) %>%
@@ -1697,14 +1697,14 @@ plot(out)
 teachers_dta <- teachers_dta %>%
   mutate(
     teacher_selection=case_when(
-      (m3sdq1_tsdp_5==1 | m3sdq1_tsdp_6==1 | m3sdq1_tsdp_8==1 | m3sdq1_tsdp_9==1 )  ~ 2,
-      (m3sdq1_tsdp_1==1 | m3sdq1_tsdp_2==1 | m3sdq1_tsdp_3==1 | m3sdq1_tsdp_4==1 | m3sdq1_tsdp_7==1) ~ 1,
-      (m3sdq1_tsdp_1==0 & m3sdq1_tsdp_2==0 & m3sdq1_tsdp_3==0 & m3sdq1_tsdp_4==0 & m3sdq1_tsdp_5==0 & m3sdq1_tsdp_6==0 & m3sdq1_tsdp_7==0 & m3sdq1_tsdp_8==0 & m3sdq1_tsdp_9==0) ~ 0
+      (m3sdq1_tsdp__5==1 | m3sdq1_tsdp__6==1 | m3sdq1_tsdp__8==1 | m3sdq1_tsdp__9==1 )  ~ 2,
+      (m3sdq1_tsdp__1==1 | m3sdq1_tsdp__2==1 | m3sdq1_tsdp__3==1 | m3sdq1_tsdp__4==1 | m3sdq1_tsdp__7==1) ~ 1,
+      (m3sdq1_tsdp__1==0 & m3sdq1_tsdp__2==0 & m3sdq1_tsdp__3==0 & m3sdq1_tsdp__4==0 & m3sdq1_tsdp__5==0 & m3sdq1_tsdp__6==0 & m3sdq1_tsdp__7==0 & m3sdq1_tsdp__8==0 & m3sdq1_tsdp__9==0) ~ 0
     ),
     teacher_deployment=case_when(
-      (m3seq8_tsdp_3==1 | m3seq8_tsdp_4==1 | m3seq8_tsdp_5==1  )  ~ 2,
-      (m3seq8_tsdp_1==1 | m3seq8_tsdp_2==1 | m3seq8_tsdp_97==1) ~ 1,
-      ((m3seq8_tsdp_1==0 & m3seq8_tsdp_2==0 & m3seq8_tsdp_3==0 & m3seq8_tsdp_4==0 & m3seq8_tsdp_5==0) | ( m3seq8_tsdp_99==1)) ~ 0
+      (m3seq8_tsdp__3==1 | m3seq8_tsdp__4==1 | m3seq8_tsdp__5==1  )  ~ 2,
+      (m3seq8_tsdp__1==1 | m3seq8_tsdp__2==1 | m3seq8_tsdp__97==1) ~ 1,
+      ((m3seq8_tsdp__1==0 & m3seq8_tsdp__2==0 & m3seq8_tsdp__3==0 & m3seq8_tsdp__4==0 & m3seq8_tsdp__5==0) | ( m3seq8_tsdp__99==1)) ~ 0
       
     )
   ) %>%
@@ -1825,25 +1825,25 @@ plot(out)
 
 #list of teacher evluation questions
 tevl<-c(
-  'm3sbq7_tmna_1', 'm3sbq7_tmna_2', 'm3sbq7_tmna_3', 'm3sbq7_tmna_4','m3sbq7_tmna_5', 'm3sbq7_tmna_6', 'm3sbq7_tmna_97',
-  'm3sbq8_tmna_2', 'm3sbq8_tmna_3', 'm3sbq8_tmna_4','m3sbq8_tmna_5', 'm3sbq8_tmna_6', 'm3sbq8_tmna_7', 'm3sbq8_tmna_8', 'm3sbq8_tmna_97', 'm3sbq8_tmna_98',
-  'm3sbq9_tmna_1', 'm3sbq9_tmna_2', 'm3sbq9_tmna_3', 'm3sbq9_tmna_4', 'm3sbq9_tmna_7', 'm3sbq9_tmna_97', 'm3sbq9_tmna_98',
-  'm3bq10_tmna_1', 'm3bq10_tmna_2', 'm3bq10_tmna_3', 'm3bq10_tmna_4', 'm3bq10_tmna_7', 'm3bq10_tmna_97', 'm3bq10_tmna_98')
+  'm3sbq7_tmna__1', 'm3sbq7_tmna__2', 'm3sbq7_tmna__3', 'm3sbq7_tmna__4','m3sbq7_tmna__5', 'm3sbq7_tmna__6', 'm3sbq7_tmna__97',
+  'm3sbq8_tmna__2', 'm3sbq8_tmna__3', 'm3sbq8_tmna__4','m3sbq8_tmna__5', 'm3sbq8_tmna__6', 'm3sbq8_tmna__7', 'm3sbq8_tmna__8', 'm3sbq8_tmna__97', 'm3sbq8_tmna__98',
+  'm3sbq9_tmna__1', 'm3sbq9_tmna__2', 'm3sbq9_tmna__3', 'm3sbq9_tmna__4', 'm3sbq9_tmna__7', 'm3sbq9_tmna__97', 'm3sbq9_tmna__98',
+  'm3bq10_tmna__1', 'm3bq10_tmna__2', 'm3bq10_tmna__3', 'm3bq10_tmna__4', 'm3bq10_tmna__7', 'm3bq10_tmna__97', 'm3bq10_tmna__98')
 
 
 
 teachers_dta<- teachers_dta %>%
   mutate(formally_evaluated=bin_var(m3sbq6_tmna,1),
          evaluation_content=if_else(m3sbq6_tmna==1,
-                                    (m3sbq8_tmna_1+m3sbq8_tmna_2+ m3sbq8_tmna_3 + m3sbq8_tmna_5 + m3sbq8_tmna_6)/5,
+                                    (m3sbq8_tmna__1+m3sbq8_tmna__2+ m3sbq8_tmna__3 + m3sbq8_tmna__5 + m3sbq8_tmna__6)/5,
                                     0),
          negative_consequences=case_when(
-           (m3sbq9_tmna_1==1 | m3sbq9_tmna_2==1 | m3sbq9_tmna_3==1 | m3sbq9_tmna_4==1 | m3sbq9_tmna_97==1) ~ 1,
-           (is.na(m3sbq9_tmna_1) & is.na(m3sbq9_tmna_2) & is.na(m3sbq9_tmna_3) & is.na(m3sbq9_tmna_4) & is.na(m3sbq9_tmna_97)) ~ as.numeric(NA),
+           (m3sbq9_tmna__1==1 | m3sbq9_tmna__2==1 | m3sbq9_tmna__3==1 | m3sbq9_tmna__4==1 | m3sbq9_tmna__97==1) ~ 1,
+           (is.na(m3sbq9_tmna__1) & is.na(m3sbq9_tmna__2) & is.na(m3sbq9_tmna__3) & is.na(m3sbq9_tmna__4) & is.na(m3sbq9_tmna__97)) ~ as.numeric(NA),
            TRUE ~ 0),
          positive_consequences=case_when(
-           (m3bq10_tmna_1==1 | m3bq10_tmna_2==1 | m3bq10_tmna_3==1 | m3bq10_tmna_4==1 | m3bq10_tmna_97==1) ~ 1,
-           (is.na(m3bq10_tmna_1) & is.na(m3bq10_tmna_2) & is.na(m3bq10_tmna_3) & is.na(m3bq10_tmna_4) & is.na(m3bq10_tmna_97)) ~ as.numeric(NA),
+           (m3bq10_tmna__1==1 | m3bq10_tmna__2==1 | m3bq10_tmna__3==1 | m3bq10_tmna__4==1 | m3bq10_tmna__97==1) ~ 1,
+           (is.na(m3bq10_tmna__1) & is.na(m3bq10_tmna__2) & is.na(m3bq10_tmna__3) & is.na(m3bq10_tmna__4) & is.na(m3bq10_tmna__97)) ~ as.numeric(NA),
            TRUE ~ 0)
   ) %>%
   mutate(teaching_evaluation=1+formally_evaluated+evaluation_content+negative_consequences+positive_consequences)
@@ -1863,6 +1863,8 @@ summary(out)
 plot(out)
 
 ```
+
+
 ```{r tmna}
 
 
@@ -1883,24 +1885,24 @@ plot(out)
 teachers_dta <- teachers_dta %>%
   mutate(attendance_evaluated=if_else(m3sbq6_tmna==1,
                                       case_when(
-                                        (m3sbq8_tmna_1==1) ~ 1,
+                                        (m3sbq8_tmna__1==1) ~ 1,
                                         TRUE ~ 0
                                       ),
                                       0),
          attendance_rewarded=if_else(m3seq4_tatt==1,
                                      case_when(
-                                       (m3seq5_tatt_1==1) ~ 1,
+                                       (m3seq5_tatt__1==1) ~ 1,
                                        TRUE ~ 0
                                      ),
                                      0),
          attendence_sanctions=case_when(
-           (m3sbq2_tmna_1==1 | m3sbq2_tmna_2==1 | m3sbq2_tmna_3==1 | m3sbq2_tmna_4==1 | m3sbq2_tmna_97==1) ~ 1,
-           (is.na(m3sbq2_tmna_1) & is.na(m3sbq2_tmna_2) & is.na(m3sbq2_tmna_3) & is.na(m3sbq2_tmna_4) & is.na(m3sbq2_tmna_97)) ~ as.numeric(NA),
+           (m3sbq2_tmna__1==1 | m3sbq2_tmna__2==1 | m3sbq2_tmna__3==1 | m3sbq2_tmna__4==1 | m3sbq2_tmna__97==1) ~ 1,
+           (is.na(m3sbq2_tmna__1) & is.na(m3sbq2_tmna__2) & is.na(m3sbq2_tmna__3) & is.na(m3sbq2_tmna__4) & is.na(m3sbq2_tmna__97)) ~ as.numeric(NA),
            TRUE ~ 0
          ),
          miss_class_admin=case_when(
-           (m3sbq1_tatt_1==1 | m3sbq1_tatt_2==1 | m3sbq1_tatt_3==1 | m3sbq1_tatt_97==1) ~ 1,
-           (m3sbq1_tatt_1==0 & m3sbq1_tatt_2==0 & m3sbq1_tatt_3==0 & m3sbq1_tatt_97==0) ~ 0,
+           (m3sbq1_tatt__1==1 | m3sbq1_tatt__2==1 | m3sbq1_tatt__3==1 | m3sbq1_tatt__97==1) ~ 1,
+           (m3sbq1_tatt__1==0 & m3sbq1_tatt__2==0 & m3sbq1_tatt__3==0 & m3sbq1_tatt__97==0) ~ 0,
            
            TRUE ~ as.numeric(NA)
          )
@@ -1963,9 +1965,9 @@ teachers_dta <- teachers_dta %>%
          students_deserve_attention=(m3scq4_tinm+ m3scq5_tinm + m3scq6_tinm )/3,
          growth_mindset=(m3scq7_tinm + m3scq10_tinm + m3scq11_tinm + m3scq14_tinm)/4,
          motivation_teaching=case_when(
-           is.na(m3scq15_tinm_3) ~ as.numeric(NA),
-           m3scq15_tinm_3>=1 ~ 0,
-           (m3scq15_tinm_3<1 & (m3scq15_tinm_1>=1 | m3scq15_tinm_2>=1 | m3scq15_tinm_4>=1 | m3scq15_tinm_5>=1)) ~ 1,
+           is.na(m3scq15_tinm__3) ~ as.numeric(NA),
+           m3scq15_tinm__3>=1 ~ 0,
+           (m3scq15_tinm__3<1 & (m3scq15_tinm__1>=1 | m3scq15_tinm__2>=1 | m3scq15_tinm__4>=1 | m3scq15_tinm__5>=1)) ~ 1,
            TRUE ~ as.numeric(NA)
          )) %>%
   mutate(intrinsic_motivation=1+0.8*(0.2*acceptable_absent + 0.2*students_deserve_attention + 0.2*growth_mindset + motivation_teaching+bin_var(m3sdq2_tmna,1))) 
