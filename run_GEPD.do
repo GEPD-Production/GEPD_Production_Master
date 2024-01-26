@@ -16,12 +16,9 @@ if _rc {
 *-------------------------------------------------------------------------------
 * Set some parameters for the project
 *-------------------------------------------------------------------------------
+do "${clone}/GEPD_parameters.do"
 
-global country "NGA"
-global country_name  "Nigeria - Edo State"
-global year  "2023"
-global strata lga  urban_rural
-* Strata for sampling
+
 *-------------------------------------------------------------------------------
 * Run all tasks in this project
 *-------------------------------------------------------------------------------

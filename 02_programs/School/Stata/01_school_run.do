@@ -17,15 +17,6 @@ if _rc != 0 {
 }
 
 
-*-------------------------------------------------------------------------------
-* Please configure the following parameters before executing this task
-*-------------------------------------------------------------------------------
-* Execution parameters
-global master_seed  17893   // Ensures reproducibility
-global weights_file_name "GEPD_Edo_weights_2023-06-20" // Name of the file with the sampling
-global school_code_name "ubecschoolcode" // Name of the school code variable in the weights file
-gl other_info senatorialdistrict classification schooltype // other info needed in sampling frame
-*-------------------------------------------------------------------------------
 
 
 *-------------------------------------------------------------------------------
