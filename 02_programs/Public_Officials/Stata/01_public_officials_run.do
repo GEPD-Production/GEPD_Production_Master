@@ -22,9 +22,9 @@ if _rc != 0 {
 * Subroutines for this task
 *-------------------------------------------------------------------------------
 * Import rawdata from .dta files and clean
-do "${clone}/02_programs/Public_Officials/02_public_officials_data_cleaner.do"
+do "${clone}/02_programs/Public_Officials/Stata/02_public_officials_data_cleaner.do"
 
 * Anonymize  data
-do "${clone}/02_programs/Public_Officials/03_public_officials_data_anonymizer.do"
+do "${clone}/02_programs/Public_Officials/Stata/03_public_officials_data_anonymizer.do"
 
 *-----------------------------------------------------------------------------
