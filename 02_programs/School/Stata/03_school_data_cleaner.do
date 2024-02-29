@@ -95,7 +95,7 @@ replace sch_absence_rate = principal_absence if missing(sch_absence_rate)
 gen presence_rate = 100-absence_rate
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_abs_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_abs_weight)
 svy: mean absence_rate
 
 *males
@@ -201,7 +201,7 @@ bysort school_code: egen m5_teach_count_math=count(math_content_knowledge) if ty
 
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_content_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_content_weight)
 foreach var in content_proficiency  {
 svy: mean `var'
 }
@@ -696,7 +696,11 @@ frame put *,into(pknw_actual_cont)
 frame copy teachers pknw_actual_exper_temp
 frame change pknw_actual_exper_temp
 keep if !missing(m3saq5)
-keep school_code m3sb_tnumber m3saq5 m3saq6
+
+*keep school_code m3sb_tnumber m3saq5 m3saq6  // Comment_AR: taking m3sb_tnumber out as there is no variable for teacher id from module 3 as survey design changed. Teacher ids are now auto-populated. 
+
+keep school_code m3saq5 m3saq6
+
 gen experience=$year - m3saq5
 keep if experience<3
 egen teacher_count_experience_less3 = count(school_code), by(school_code)
@@ -888,7 +892,7 @@ replace salary_delays = 12 if salary_delays>12 & !missing(salary_delays)
 gen teacher_attraction=(1+(0.8*teacher_satisfied_job)+(.8*teacher_satisfied_status)+(.8*better_teachers_promoted)+(.8*teacher_bonus)+(.8*(1-salary_delays/12)))
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean teacher_attraction
 
 *********************************************
@@ -920,7 +924,7 @@ replace teacher_deployment = 2 if (m3seq8_tsdp__3==1 | m3seq8_tsdp__4==1 | m3seq
 gen teacher_selection_deployment=1+teacher_selection+teacher_deployment
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean teacher_selection_deployment teacher_selection teacher_deployment
 
 *********************************************
@@ -997,7 +1001,7 @@ gen teacher_support=1+pre_service+practicum+in_service+opportunities_teachers_sh
 
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean teacher_support pre_service practicum in_service opportunities_teachers_share
 
 *********************************************
@@ -1029,7 +1033,7 @@ replace positive_consequences = . if missing(m3bq10_tmna__1) & missing(m3bq10_tm
 replace positive_consequences = 1 if (m3bq10_tmna__1==1 | m3bq10_tmna__2==1 | m3bq10_tmna__3==1 | m3bq10_tmna__4==1 | m3bq10_tmna__97==1)
 gen teaching_evaluation=1+formally_evaluated+evaluation_content+negative_consequences+positive_consequences
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean teaching_evaluation formally_evaluated evaluation_content negative_consequences positive_consequences
 
 *********************************************
@@ -1066,7 +1070,7 @@ replace miss_class_admin = 1 if (m3sbq1_tatt__1==1 | m3sbq1_tatt__2==1 | m3sbq1_
 gen teacher_monitoring=1+attendance_evaluated + 1*attendance_rewarded + 1*attendence_sanctions + (1-miss_class_admin)
 
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean teacher_monitoring attendance_evaluated attendance_rewarded attendence_sanctions miss_class_admin
 
 *********************************************
@@ -1148,7 +1152,7 @@ gen motivation_teaching_1 = 0 if m3sdq2_tmna!=1 & !missing(m3sdq2_tmna)
 replace motivation_teaching_1 = 1 if m3sdq2_tmna==1
 gen intrinsic_motivation=1+0.8*(0.2*acceptable_absent + 0.2*students_deserve_attention + 0.2*growth_mindset + motivation_teaching+motivation_teaching_1)
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_questionnaire_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
 svy: mean intrinsic_motivation acceptable_absent students_deserve_attention growth_mindset motivation_teaching motivation_teaching_1
 
 *********************************************

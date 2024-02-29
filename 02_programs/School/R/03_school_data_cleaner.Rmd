@@ -30,8 +30,8 @@ library(GGally)
 library(srvyr)
 library(flextable)
 #Country name and year of survey
-country_name <-'Nigeria-Edo'
-country <- "NGA"
+country_name <-'Pakistan-Balochistan'
+country <- "PAK"
 year <- '2023'
 teach=FALSE
 
@@ -41,9 +41,9 @@ teach=FALSE
 #########################
 #The download_folder will be the location of where raw data is downloaded from the API
 #The save_folder will be the location of where cleaned data is stored
-dir <- here()
-data_dir <- here('01_GEPD_raw_data/')
-processed_dir <- here('03_GEPD_processed_data/')
+dir <- ('C:/Users/wb549384/OneDrive - WBG/Desktop/GEPD-Revamped WF/GEPD_Production-Balochistan')
+data_dir <- ('01_GEPD_raw_data/')
+processed_dir <- ('03_GEPD_processed_data/')
 
 
 
@@ -452,7 +452,7 @@ t <- school_dta %>%
 school_dta <- school_dta %>%
   group_by(school_code) %>%
   mutate(
-    school_weight=strata_prob,
+    school_weight=1/strata_prob,
     g4_stud_count = mean(m4scq4_inpt, na.rm=TRUE)
   ) %>% ungroup() %>%
   filter(!is.na(school_weight))
@@ -1372,7 +1372,7 @@ plot(out)
 #############################################
 
 # School survey. Total score starts at 1 and points added are the sum of whether a teacher has: 
-#   - Had a classroom observation in past year 
+# - Had a classroom observation in past year 
 # - Had a discussion based on that observation that lasted longer than 10 min 
 # - Received actionable feedback from that observation 
 # - Teacher had a lesson plan and discussed it with another person

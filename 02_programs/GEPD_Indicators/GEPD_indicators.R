@@ -6,13 +6,13 @@ library(Hmisc)
 library(survey)
 library(here)
 library(readxl)
-
-
+library(srvyr)
+library(writexl)
 #Country name and year of survey
-country_name <-'Nigeria-Edo'
-country <- "NGA"
+country_name <-'Pakistan-Punjab'
+country <- "PAK"
 year <- '2023'
-software <- "R" #choose R or Stata
+software <- "Stata" #choose R or Stata
 
 
 #########################
@@ -35,7 +35,8 @@ GEPD_template <- read_csv(here("04_GEPD_Indicators","GEPD_indicator_template.csv
 
 #load main files
 school_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("school_",software,".dta")))
-teachers_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("teachers_",software,".dta"))) 
+teachers_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("teachers_",software,".dta"))) %>%
+  filter(!is.na(teachers_id))
 first_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("first_grade_",software,".dta")))
 fourth_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("fourth_grade_",software,".dta")))
 public_officials_dta <- read_dta(here(processed_dir,"Public_Officials","Confidential", "public_officials.dta"))
@@ -182,12 +183,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_abs_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_abs_weight, school_code, TEACHERS__id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_abs_weight, school_code, teachers_id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, TEACHERS__id),
+        id=c(school_code, teachers_id),
         strata=strata,
         weight=c(school_weight, teacher_abs_weight)) %>%
       ungroup() %>%
@@ -238,12 +239,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_questionnaire_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_questionnaire_weight, school_code, TEACHERS__id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_questionnaire_weight, school_code, teachers_id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, TEACHERS__id),
+        id=c(school_code, teachers_id),
         strata=strata,
         weight=c(school_weight, teacher_questionnaire_weight)) %>%
       ungroup() %>%
@@ -294,12 +295,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.na(teacher_content_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_content_weight, school_code, TEACHERS__id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_content_weight, school_code, teachers_id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, TEACHERS__id),
+        id=c(school_code, teachers_id),
         strata=strata,
         weight=c(school_weight, teacher_content_weight)) %>%
       ungroup() %>%
@@ -350,12 +351,12 @@ indicator_stats <- function(name, indicator, dataset, tag,  unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_pedagogy_weight)) %>%
-      select(VALUE, one_of(strata), school_weight, teacher_pedagogy_weight, school_code, TEACHERS__id ) %>%
+      select(VALUE, one_of(strata), school_weight, teacher_pedagogy_weight, school_code, teachers_id ) %>%
       pivot_longer(cols='VALUE',
                    names_to = 'indicators',
                    values_to='value') %>%
       as_survey_design(
-        id=c(school_code, TEACHERS__id),
+        id=c(school_code, teachers_id),
         strata=strata,
         weight=c(school_weight, teacher_pedagogy_weight)) %>%
       ungroup() %>%
@@ -689,29 +690,29 @@ indicators <-   list(
   #######################################
   
   
-  # c("SE.PRM.PEDG     ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  # c("SE.PRM.PEDG.1   ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  # c("SE.PRM.PEDG.1.F", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  # c("SE.PRM.PEDG.1.M", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  # c("SE.PRM.PEDG.1.R ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  # c("SE.PRM.PEDG.1.U ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  # c("SE.PRM.PEDG.2   ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "All"),  
-  # c("SE.PRM.PEDG.2.F", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  # c("SE.PRM.PEDG.2.M", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  # c("SE.PRM.PEDG.2.R ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  # c("SE.PRM.PEDG.2.U ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  # c("SE.PRM.PEDG.3   ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  # c("SE.PRM.PEDG.3.F", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  # c("SE.PRM.PEDG.3.M", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  # c("SE.PRM.PEDG.3.R ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  # c("SE.PRM.PEDG.3.U ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  # c("SE.PRM.PEDG.4   ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "All"),
-  # c("SE.PRM.PEDG.4.F", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Female"),
-  # c("SE.PRM.PEDG.4.M", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Male"),
-  # c("SE.PRM.PEDG.4.R ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
-  # c("SE.PRM.PEDG.4.U ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
-  # 
-  
+  c("SE.PRM.PEDG     ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  c("SE.PRM.PEDG.1   ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  c("SE.PRM.PEDG.1.F", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  c("SE.PRM.PEDG.1.M", "100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  c("SE.PRM.PEDG.1.R ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  c("SE.PRM.PEDG.1.U ","100*as.numeric(teach_score>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  c("SE.PRM.PEDG.2   ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  c("SE.PRM.PEDG.2.F", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  c("SE.PRM.PEDG.2.M", "100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  c("SE.PRM.PEDG.2.R ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  c("SE.PRM.PEDG.2.U ","100*as.numeric(classroom_culture>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  c("SE.PRM.PEDG.3   ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  c("SE.PRM.PEDG.3.F", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  c("SE.PRM.PEDG.3.M", "100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  c("SE.PRM.PEDG.3.R ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  c("SE.PRM.PEDG.3.U ","100*as.numeric(instruction>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+  c("SE.PRM.PEDG.4   ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "All"),
+  c("SE.PRM.PEDG.4.F", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Female"),
+  c("SE.PRM.PEDG.4.M", "100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Male"),
+  c("SE.PRM.PEDG.4.R ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Rural"),
+  c("SE.PRM.PEDG.4.U ","100*as.numeric(socio_emotional_skills>=3)", "teacher_pedagogy", "PEDG",  "Urban"),
+
+
   #######################################
   # 	Basic Inputs	(INPT)
   #######################################
@@ -725,6 +726,7 @@ indicators <-   list(
   c("SE.PRM.INPT.3   ","33*textbooks+ 67*pens_etc", "school", "INPT",  "All") ,
   c("SE.PRM.INPT.3.R ","33*textbooks+ 67*pens_etc", "school", "INPT",  "Rural") ,
   c("SE.PRM.INPT.3.U ","33*textbooks + 67*pens_etc", "school", "INPT",  "Urban"),
+  c("SE.PRM.INPT.2","100*blackboard_functional", "school", "INPT",  "All"),
   c("SE.PRM.INPT.2.R ","100*blackboard_functional", "school", "INPT",  "Rural"),
   c("SE.PRM.INPT.2.U ","100*blackboard_functional", "school", "INPT",  "Urban"),
   c("SE.PRM.INPT.4   ","100*share_desk", "school", "INPT",  "All"),
@@ -776,6 +778,8 @@ indicators <-   list(
   
   
   c("SE.PRM.LCAP    ", "ecd_student_proficiency	", "first_grade", "LCAP",  "All"),
+  c("SE.PRM.LCAP.R", "ecd_student_proficiency	", "first_grade", "LCAP",  "Rural"),
+  c("SE.PRM.LCAP.U", "ecd_student_proficiency	", "first_grade", "LCAP",  "Urban"),  
   c("SE.PRM.LCAP.1  ", "ecd_student_knowledge	", "first_grade", "LCAP",  "All"),
   c("SE.PRM.LCAP.1.F", "ecd_student_knowledge	", "first_grade", "LCAP",  "Female"),
   c("SE.PRM.LCAP.1.M", "ecd_student_knowledge	", "first_grade", "LCAP",  "Male"),
@@ -870,23 +874,23 @@ indicators <-   list(
   c("SE.PRM.ILDR.3.R ","100*classroom_observed_recent", "teacher_questionnaire", "ILDR",  "Rural"),
   c("SE.PRM.ILDR.3.U ","100*classroom_observed_recent", "teacher_questionnaire", "ILDR",  "Urban"),
   #(De Facto) Perc,ent of teachers reporting having discussed the results of the classroom observation	
-  c("SE.PRM.ILDR.4   ","100*discussed_observation", "teacher_questionnaire", "ILDR",  "All"),  
-  c("SE.PRM.ILDR.4.F ","100*discussed_observation", "teacher_questionnaire", "ILDR",  "Female"),
-  c("SE.PRM.ILDR.4.M ","100*discussed_observation", "teacher_questionnaire", "ILDR",  "Male"),
-  c("SE.PRM.ILDR.4.R ","100*discussed_observation", "teacher_questionnaire", "ILDR",  "Rural"),
-  c("SE.PRM.ILDR.4.U ","100*discussed_observation", "teacher_questionnaire", "ILDR",  "Urban"),
+  c("SE.PRM.ILDR.4   ","100*if_else(classroom_observed==1 & m3sdq19_ildr==1,1,0)", "teacher_questionnaire", "ILDR",  "All"),  
+  c("SE.PRM.ILDR.4.F ","100*if_else(classroom_observed==1 & m3sdq19_ildr==1,1,0)", "teacher_questionnaire", "ILDR",  "Female"),
+  c("SE.PRM.ILDR.4.M ","100*if_else(classroom_observed==1 & m3sdq19_ildr==1,1,0)", "teacher_questionnaire", "ILDR",  "Male"),
+  c("SE.PRM.ILDR.4.R ","100*if_else(classroom_observed==1 & m3sdq19_ildr==1,1,0)", "teacher_questionnaire", "ILDR",  "Rural"),
+  c("SE.PRM.ILDR.4.U ","100*if_else(classroom_observed==1 & m3sdq19_ildr==1,1,0)", "teacher_questionnaire", "ILDR",  "Urban"),
   #(De Facto) Perc,ent of teachers reporting that the discussion was over 30 minutes	
-  c("SE.PRM.ILDR.5   ","100*discussion_30_min", "teacher_questionnaire", "ILDR",  "All"),  
-  c("SE.PRM.ILDR.5.F ","100*discussion_30_min", "teacher_questionnaire", "ILDR",  "Female"),
-  c("SE.PRM.ILDR.5.M ","100*discussion_30_min", "teacher_questionnaire", "ILDR",  "Male"),
-  c("SE.PRM.ILDR.5.R ","100*discussion_30_min", "teacher_questionnaire", "ILDR",  "Rural"),
-  c("SE.PRM.ILDR.5.U ","100*discussion_30_min", "teacher_questionnaire", "ILDR",  "Urban"),
+  c("SE.PRM.ILDR.5   ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)", "teacher_questionnaire", "ILDR",  "All"),  
+  c("SE.PRM.ILDR.5.F ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)", "teacher_questionnaire", "ILDR",  "Female"),
+  c("SE.PRM.ILDR.5.M ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)", "teacher_questionnaire", "ILDR",  "Male"),
+  c("SE.PRM.ILDR.5.R ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)", "teacher_questionnaire", "ILDR",  "Rural"),
+  c("SE.PRM.ILDR.5.U ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)", "teacher_questionnaire", "ILDR",  "Urban"),
   #(De Facto) Perc,ent of teachers reporting that they were provided with feedback in that discussion	
-  c("SE.PRM.ILDR.6   ","100*feedback_observation", "teacher_questionnaire", "ILDR",  "All"),  
-  c("SE.PRM.ILDR.6.F ","100*feedback_observation", "teacher_questionnaire", "ILDR",  "Female"),
-  c("SE.PRM.ILDR.6.M ","100*feedback_observation", "teacher_questionnaire", "ILDR",  "Male"),
-  c("SE.PRM.ILDR.6.R ","100*feedback_observation", "teacher_questionnaire", "ILDR",  "Rural"),
-  c("SE.PRM.ILDR.6.U ","100*feedback_observation", "teacher_questionnaire", "ILDR",  "Urban"),
+  c("SE.PRM.ILDR.6   ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq21_ildr==1),1,0)", "teacher_questionnaire", "ILDR",  "All"),  
+  c("SE.PRM.ILDR.6.F ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq21_ildr==1),1,0)", "teacher_questionnaire", "ILDR",  "Female"),
+  c("SE.PRM.ILDR.6.M ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq21_ildr==1),1,0)", "teacher_questionnaire", "ILDR",  "Male"),
+  c("SE.PRM.ILDR.6.R ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq21_ildr==1),1,0)", "teacher_questionnaire", "ILDR",  "Rural"),
+  c("SE.PRM.ILDR.6.U ","100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq21_ildr==1),1,0)", "teacher_questionnaire", "ILDR",  "Urban"),
   #(De Facto) Perc,ent of teachers reporting having lesson plans	
   c("SE.PRM.ILDR.7   ","100-100*lesson_plan", "teacher_questionnaire", "ILDR",  "All"),  
   c("SE.PRM.ILDR.7.F ","100-100*lesson_plan", "teacher_questionnaire", "ILDR",  "Female"),
@@ -976,7 +980,7 @@ indicators <-   list(
   #(De Jure) Is ,there a well-established career path for teachers?	
   #SE.PRM.TATT.7,  -999     ,
   #(De Facto) Pe,rcent of teachers that report salary delays in the past 12 months	
-  c("SE.PRM.TATT.8 ", "100*salary_delays		", "teacher_questionnaire", "TATT",  "All"),  
+  c("SE.PRM.TATT.8 ", "100*m3seq6_tatt		", "teacher_questionnaire", "TATT",  "All"),  
   #(De Facto) Po,licy Lever (Teaching) - Attraction	
   c("SE.PRM.TATT.DF", "teacher_attraction", "policy_survey", "NA","NA"),
   #(De Jure) Pol,icy Lever (Teaching) - Attraction	
@@ -1117,13 +1121,13 @@ indicators <-   list(
   
   
   c("SE.PRM.IMON    "," sch_monitoring		", "school", "IMON",  "All"),    #Policy Lever (Inputs & Infrastructure) - Monitoring                                                                      
-  c("SE.PRM.IMON.1  "," m1scq1_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report there is someone monitoring that basic inputs are available to students        
+  c("SE.PRM.IMON.1  "," 100*m1scq1_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report there is someone monitoring that basic inputs are available to students        
   c("SE.PRM.IMON.10" ,"-999", "policy_survey", "NA","NA"), #(De Jure) Number of basic infrastructure features clearly articulated as needing to be monitored                         
-  c("SE.PRM.IMON.2  "," parents_involved		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that parents or community members are involved in the monitoring of availabili~
-  c("SE.PRM.IMON.3  "," m1scq5_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that there is an inventory to monitor availability of basic inputs             
-  c("SE.PRM.IMON.4  "," m1scq7_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report there is someone monitoring that basic infrastructure is available             
-  c("SE.PRM.IMON.5  "," bin_var(m1scq10_imon,1)		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that parents or community members are involved in the monitoring of availabili~
-  c("SE.PRM.IMON.6  "," m1scq11_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that there is an inventory to monitor availability of basic infrastructure     
+  c("SE.PRM.IMON.2  "," 100*parents_involved		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that parents or community members are involved in the monitoring of availabili~
+  c("SE.PRM.IMON.3  "," 100*m1scq5_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that there is an inventory to monitor availability of basic inputs             
+  c("SE.PRM.IMON.4  "," 100*m1scq7_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report there is someone monitoring that basic infrastructure is available             
+  c("SE.PRM.IMON.5  "," 100*bin_var(m1scq10_imon,1)		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that parents or community members are involved in the monitoring of availabili~
+  c("SE.PRM.IMON.6  "," 100*m1scq11_imon		", "school", "IMON",  "All"),  #(De Facto) Percent of schools that report that there is an inventory to monitor availability of basic infrastructure     
   c("SE.PRM.IMON.7"  ,"-999", "policy_survey", "NA","NA"), #(De Jure) Is the responsibility of monitoring basic inputs clearly articulated in the policies?                          
   c("SE.PRM.IMON.8"  ,"-999", "policy_survey", "NA","NA"), #(De Jure) Number of basic inputs clearly articulated as needing to be monitored                                          
   c("SE.PRM.IMON.9"  ,"-999", "policy_survey", "NA","NA"), #(De Jure) Is the responsibility of monitoring basic infrastructure clearly articulated in the policies?                  
@@ -1237,8 +1241,8 @@ c("SE.PRM.SCFN.DJ" ,"sch_management_clarity", "policy_survey", "NA","NA"),#(De J
   
   c("SE.PRM.SATT   ","sch_management_attraction		", "school", "SATT",  "All"),  #Policy Lever (School Management) - Attraction                                                                             
 c("SE.PRM.SATT.1"  ,"professionalized", "policy_survey", "NA","NA"), #(De Jure) Do the national policies governing the education system portray the position of principal or head teacher as pr~
-  c("SE.PRM.SATT.2 ","principal_salary		", "school", "SATT",  "All"),  #(De Facto) Average principal salary as percent of GDP per capita                                                          
-  c("SE.PRM.SATT.3 ", "principal_satisfaction		", "school", "SATT",  "All"),#(De Facto) Percent of principals reporting being satisfied or very satisfied with their social status in the community    
+  c("SE.PRM.SATT.2 ","100*principal_salary		", "school", "SATT",  "All"),  #(De Facto) Average principal salary as percent of GDP per capita                                                          
+  c("SE.PRM.SATT.3 ", "100*(principal_satisfaction>3)		", "school", "SATT",  "All"),#(De Facto) Percent of principals reporting being satisfied or very satisfied with their social status in the community    
   c("SE.PRM.SATT.DF", "sch_management_attraction		", "school", "SATT",  "All"), #(De Facto) Policy Lever (School Management) - Attraction                                                                  
 c("SE.PRM.SATT.DJ" ,"sch_management_attraction", "policy_survey", "NA","NA"),#(De Jure) Policy Lever (School Management) - Attraction  
   
@@ -1392,7 +1396,7 @@ for (i in 1:length(indicators)) {
 
 #join metadata
 
-indicator_data <- left_join(indicator_data, GEPD_template) %>%
+indicator_data <- left_join(GEPD_template, indicator_data ) %>%
   rename(
     `Mean`=mean,
     `Standard Error`=mean_se,
@@ -1404,5 +1408,145 @@ indicator_data <- left_join(indicator_data, GEPD_template) %>%
 
 #save as csv
 write_excel_csv(indicator_data, here('04_GEPD_Indicators',paste0(country,"_GEPD_Indicators_", software,".csv")))
+
+
+#write to an xlsx named GEPD_indicators.xlsx
+#save one tab with all endicators in this list
+main_indicators <-
+  c(
+    "SE.PRM.LERN"
+    ,"SE.PRM.EFFT"
+    ,"SE.PRM.CONT"
+    ,"SE.PRM.PEDG"
+    ,"SE.PRM.INPT"
+    ,"SE.PRM.INFR"
+    ,"SE.PRM.LCAP"
+    ,"SE.PRM.ATTD"
+    ,"SE.PRM.OPMN"
+    ,"SE.PRM.ILDR"
+    ,"SE.PRM.PKNW"
+    ,"SE.PRM.PMAN"
+    ,"SE.PRM.TATT"
+    ,"SE.PRM.TSDP"
+    ,"SE.PRM.TSUP"
+    ,"SE.PRM.TEVL"
+    ,"SE.PRM.TMNA"
+    ,"SE.PRM.TINM"
+    ,"SE.PRM.ISTD"
+    ,"SE.PRM.IMON"
+    ,"SE.PRM.LNTN"
+    ,"SE.PRM.LHTH"
+    ,"SE.PRM.LCBC"
+    ,"SE.PRM.LFCP"
+    ,"SE.PRM.LSKC"
+    ,"SE.PRM.SCFN"
+    ,"SE.PRM.SATT"
+    ,"SE.PRM.SSLD"
+    ,"SE.PRM.SSUP"
+    ,"SE.PRM.SEVL"
+    ,"SE.PRM.BQBR"
+    ,"SE.PRM.BIMP"
+    ,"SE.PRM.BMAC"
+    ,"SE.PRM.BNLG"
+    ,"SE.PRM.BFIN"
+    
+  )
+
+main_indicator_labels <- c(
+  "Proficiency on GEPD Assessment"
+  ,"Teacher Presence"
+  ,"Teacher Content Knowledge"
+  ,"Teacher Pedagogical Skills"
+  ,"Basic Inputs"
+  ,"Basic Infrastructure"
+  ,"Student Readiness"
+  ,"Student Attendance"
+  ,"Operational Management"
+  ,"Instructional Leadership"
+  ,"Principal School Knowledge"
+  ,"Principal Management Skills"
+  ,"(Teaching) - Attraction"
+  ,"(Teaching) - Selection & Deployment"
+  ,"(Teaching) - Support"
+  ,"(Teaching) - Evaluation"
+  ,"(Teaching) - Monitoring & Accountability"
+  ,"(Teaching) - Intrinsic Motivation"
+  ,"(Inputs & Infrastructure) - Standards"
+  ,"(Inputs & Infrastructure) - Monitoring"
+  ,"(Learners) - Nutrition Programs"
+  ,"(Learners) - Health"
+  ,"(Learners) - Center-Based Care"
+  ,"(Learners) - Caregiver Capacity – Financial Capacity"
+  ,"(Learners) - Caregiver Capacity – Skills Capacity"
+  ,"(School Management) - Clarity of Functions"
+  ,"(School Management) - Attraction"
+  ,"(School Management) - Selection & Deployment"
+  ,"(School Management) - Support"
+  ,"(School Management) - Evaluation"
+  ,"Politics & Bureaucratic Capacity - Characteristics of Bureaucracy"
+  ,"Politics & Bureaucratic Capacity - Impartial Decision-Making"
+  ,"Politics & Bureaucratic Capacity - Mandates & Accountability"
+  ,"Politics & Bureaucratic Capacity - National Learning Goals"
+  ,"Politics & Bureaucratic Capacity - Financing"
+  
+)
+
+#save a tab to the excel with just the indicators in main_indicators
+main_indicator_data <- indicator_data %>%
+  filter(Series %in% main_indicators) %>%
+  #arrange by main indicators
+  mutate(Series = factor(Series, levels = main_indicators)) %>%
+  arrange(Series) %>%
+  #round mean standard error, lower bound, upper bound, and variance to 1 decimal places
+  mutate(across(c(Mean, `Standard Error`, `Lower Bound`, `Upper Bound`, Variance), ~round(., 1))) %>%
+  select(Series,	`Indicator Name`,	Mean,	`Standard Error`,	`Lower Bound`,	`Upper Bound`,	`Variance`,	`N`, everything())
+
+
+#list of tabs 
+list_of_tabs <- list(
+  "Main Indicators" = main_indicator_data
+)
+
+#add tab with main urban/rural breakdowns
+urban_rural_data <- indicator_data %>%
+  filter(Series %in% c(paste0(main_indicators, ".1.R"), paste0(main_indicators, ".1.U"), 
+                       'SE.PRM.EFFT.2.R', 'SE.PRM.EFFT.2.U',
+                       'SE.PRM.LCAP.R', 'SE.PRM.LCAP.U'
+                       )) %>%
+  filter(!(Series %in% c("SE.PRM.EFFT.1.R", "SE.PRM.EFFT.1.U")) ) %>% #manual fix to pick the right teacher absence indicator.
+  filter(!(Series %in% c("SE.PRM.LCAP.1.R", "SE.PRM.LCAP.1.U")) ) %>% #manual fix to pick the right ecd  indicator.
+  #round mean standard error, lower bound, upper bound, and variance to 1 decimal places
+  mutate(across(c(Mean, `Standard Error`, `Lower Bound`, `Upper Bound`, Variance), ~round(., 1))) %>%
+  select(Series,	`Indicator Name`,	Mean,	`Standard Error`,	`Lower Bound`,	`Upper Bound`,	`Variance`,	`N`, everything())
+
+#add to list of tabs
+list_of_tabs[["Urban Rural Breakdown"]] <- urban_rural_data
+
+#now loop through the main indicators and save each one as a separate tab in the excel with all the subindicaors as well
+for (i in 1:length(main_indicators)) {
+  
+  #get indicator name
+  name <- main_indicators[i]
+  
+  #get indicator label
+  label <- main_indicator_labels[i]
+  
+  #get indicator data
+  sub_data <- indicator_data %>%
+    filter(grepl(name, Series)) %>%
+    #round mean standard error, lower bound, upper bound, and variance to 1 decimal places
+    mutate(across(c(Mean, `Standard Error`, `Lower Bound`, `Upper Bound`, Variance), ~round(., 1))) %>%
+    select(Series,	`Indicator Name`,	Mean,	`Standard Error`,	`Lower Bound`,	`Upper Bound`,	`Variance`,	`N`, everything())
+  
+  #create dataframe that is named after name
+  assign(name, sub_data)
+  
+  #add sub_data to list
+  list_of_tabs[[label]] <- sub_data
+  
+}
+
+write_xlsx(list_of_tabs, here('04_GEPD_Indicators',paste0(country,"_GEPD_Indicators_", software,".xlsx")))
+
 
 

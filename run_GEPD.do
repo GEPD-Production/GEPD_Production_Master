@@ -16,12 +16,16 @@ if _rc {
 *-------------------------------------------------------------------------------
 * Set some parameters for the project
 *-------------------------------------------------------------------------------
-do "${clone}/GEPD_parameters.do"
+* do "${clone}/GEPD_parameters.do"
 
 
 *-------------------------------------------------------------------------------
 * Run all tasks in this project
 *-------------------------------------------------------------------------------
+
+* TASK: create the teacher-level file inlcuding TEACH vars:
+do "${clone}/02_programs/School/Merge_Teacher_Modules/4_matching_teacher_level.do"
+
 * TASK: calculates GEPD School Indicators by combining multiple data sources
 do "${clone}/02_programs/School/Stata/01_school_run.do"
 

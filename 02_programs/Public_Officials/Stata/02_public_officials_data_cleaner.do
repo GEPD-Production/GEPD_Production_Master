@@ -30,7 +30,7 @@ frame change teachers
 
 use "${processed_dir}/School/Confidential/Cleaned/teachers_Stata.dta"
 
-svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || TEACHERS__id, weight(teacher_abs_weight)
+svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_abs_weight)
 svy: mean absence_rate
 gl teacher_absence =  _b[absence_rate]
 
@@ -219,6 +219,27 @@ egen employee_unions_as_facilitators=rowmean(scored_IDM4*)
 ********
 
 mean national_learning_goals targeting monitoring incentives community_engagement mandates_accountability coherence transparency accountability quality_bureaucracy knowledge_skills work_environment merit motivation_attitudes impartial_decision_making pol_personnel_management pol_policy_making pol_policy_implementation employee_unions_as_facilitators
+
+
+*Clean office variable:
+
+clonevar tier_govt_ar = m1s0q2_name
+
+replace tier_govt_ar = m1s0q2_name_incorrect if info_correct ==0 
+fre info_correct
+
+fre tier_govt_ar
+
+
+gen office_clean = "Secretariat (or equivalent)" if  tier_govt_ar ==1
+replace office_clean = "District office (or equivalent)" if  tier_govt_ar == 3
+replace office_clean = "Directorate office (or equivalent)" if  tier_govt_ar == 2
+
+fre office_clean
+fre tier_govt_ar
+
+
+
 
 *********
 * Save

@@ -25,6 +25,6 @@ if _rc != 0 {
 do "${clone}/02_programs/Public_Officials/Stata/02_public_officials_data_cleaner.do"
 
 * Anonymize  data
-do "${clone}/02_programs/Public_Officials/Stata/03_public_officials_data_anonymizer.do"
+* do "${clone}/02_programs/Public_Officials/Stata/03_public_officials_data_anonymizer.do"
 
 *-----------------------------------------------------------------------------

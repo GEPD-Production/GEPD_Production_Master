@@ -16,7 +16,7 @@ local not1 interview__id
 * Append files from various questionnaires
 ***************
 ***************
-
+/*
 gl dir_v7 "${data_dir}\\School\\School Survey - Version 7 - without 10 Revisited Schools\\"
 gl dir_v8 "${data_dir}\\School\\School Survey - Version 8 - without 10 Revisited Schools\\"
 
@@ -33,6 +33,7 @@ foreach file of local files_v7 {
 	append using "${dir_v8}`file'", force
 	save "${dir_saved}`file'", replace
 }
+*/
 
 ***************
 ***************
@@ -46,7 +47,7 @@ foreach file of local files_v7 {
 frame create school
 frame change school
 
-use "${data_dir}\\School\\epdash.dta" 
+use "${data_dir}\\School\\EPDashboard2.dta" 
 
 ********
 *read in the school weights
@@ -59,18 +60,26 @@ import delimited "${data_dir}\\Sampling\\${weights_file_name}"
 * rename school code
 rename ${school_code_name} school_code 
 
+* Comment_AR: adjust variables in the sample file. Confirm correct sample file from Brian.
+
+clonevar location =  csl_area
+clonevar schoollevel = csl_level
+
+clonevar  urban_rural = location
+
+
 
 keep school_code ${strata} ${other_info} strata_prob ipw urban_rural
 
-gen strata=" "
-foreach var in $strata {
-	replace strata=strata + `var' + " - "
-}
 
 destring school_code, replace force
 destring ipw, replace force
 duplicates drop school_code, force
 
+
+* Comment_AR: Drop one missing school_code : Confirm correct sample file.
+
+drop if school_code == .
 ******
 * Merge the weights
 *******
@@ -86,7 +95,7 @@ frget ${strata} ${other_info} urban_rural strata_prob ipw strata, from(weights)
 
 
 *create weight variable that is standardized
-gen school_weight=strata_prob // school level weight
+gen school_weight=1/strata_prob // school level weight
 
 *fourth grade student level weight
 egen g4_stud_count = mean(m4scq4_inpt), by(school_code)
@@ -134,9 +143,20 @@ frame change teachers
 * We are assuming the teacher level modules (Teacher roster, Questionnaire, Pedagogy, and Content Knowledge have already been linked here)
 * See Merge_Teacher_Modules code folder for help in this task if needed
 ********
-use "${data_dir}\\School\\Edo_teacher_level.dta" 
 
-recode m2saq3 1=2 0=1
+* use "${data_dir}\\School\\TEACHERS.dta"
+
+use "${data_dir}\\School\\Punjab_teacher_level_test.dta"
+
+* Rename all variables to lower case:
+ren *, lower 
+
+clonevar teachers_id = teachers__id
+
+fre  m2saq3
+
+* Comment_AR: Commented out as gender variable is already correctly formatted. 
+* recode m2saq3 1=2 0=1
 
 
 foreach var in $other_info {
@@ -144,8 +164,8 @@ foreach var in $other_info {
 }
 cap drop $strata
 
-frlink m:1 interview__key, frame(school_collapse_temp)
-frget school_code ${strata} $other_info urban_rural strata school_weight numEligible numEligible4th, from(school_collapse_temp)
+frlink m:1 interview__key, frame(school)
+frget school_code ${strata} $other_info urban_rural strata school_weight numEligible numEligible4th, from(school)
 
 *get number of 4th grade teachers for weights
 egen g4_teacher_count=sum(m3saq2__4), by(school_code)
@@ -179,8 +199,17 @@ replace teacher_pedagogy_weight=1 if missing(teacher_pedagogy_weight) //fix issu
 
 drop if missing(school_weight)
 
+
+
+********************************************************************************
+* Comment_AR: TEACH Run:
+do "${clone}/02_programs/School/Stata/teach_chk.do"
+
+
+
 save "${processed_dir}\\School\\Confidential\\Merged\\teachers.dta" , replace
 
+********************************************************************************
 
 
 ********
@@ -224,9 +253,9 @@ gen g1_class_weight=g1_teacher_count/1, // weight is the number of 1st grade str
 replace g1_class_weight=1 if g1_class_weight<1 //fix issues where no g1 teachers listed. Can happen in very small schools
 
 bysort school_code: gen g1_assess_count=_N
-gen g1_student_weight_temp=m6_class_count/g1_assess_count // 3 students selected from the class
+gen g1_stud_weight_temp=m6_class_count/g1_assess_count // 3 students selected from the class
 
-gen g1_stud_weight=g1_class_weight*g1_student_weight_temp
+gen g1_stud_weight=g1_class_weight*g1_stud_weight_temp
 
 save "${processed_dir}\\School\\Confidential\\Merged\\first_grade_assessment.dta" , replace
 
@@ -253,9 +282,9 @@ replace g4_class_weight=1 if g4_class_weight<1 //fix issues where no g4 teachers
 
 bysort school_code: gen g4_assess_count=_N
 
-gen g4_student_weight_temp=g4_stud_count/g4_assess_count // max of 25 students selected from the class
+gen g4_stud_weight_temp=g4_stud_count/g4_assess_count // max of 25 students selected from the class
 
-gen g4_stud_weight=g4_class_weight*g4_student_weight_temp
+gen g4_stud_weight=g4_class_weight*g4_stud_weight_temp
 
 
 save "${processed_dir}\\School\\Confidential\\Merged\\fourth_grade_assessment.dta" , replace
