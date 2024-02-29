@@ -1,0 +1,1155 @@
+---
+title: "Global Education Policy Dashboard - Pakistan - Punjab 2023"
+format: 
+  pptx:
+    fig_height: 8
+    fig_width: 10
+execute:
+  warning: false
+  error: false
+  message: false
+  echo: false
+---
+
+```{r}
+#label: setup
+
+#include packages
+library(tidyverse)
+library(haven)
+library(kableExtra)
+library(skimr)
+library(flextable)
+library(ggridges)
+library(scales)
+library(ggtext)
+library(estimatr)
+library(srvyr)
+#library(spatstat)
+library(Hmisc)
+library(ggpmisc)
+library(ggalt)
+library(here)
+library(patchwork)
+library(DT)
+#remotes::install_github("ricardo-bion/ggradar")
+library(ggradar)
+library(readxl)
+library(leaflet)
+
+#Country name and year of survey
+country_name <-'Pakistan_Punjab'
+country <- "PAK"
+year <- '2023'
+teach=TRUE
+software= "Stata"
+options(survey.lonely.psu="adjust")
+
+#########################
+# File paths #
+#########################
+#The download_folder will be the location of where raw data is downloaded from the API
+#The save_folder will be the location of where cleaned data is stored
+dir <- here()
+data_dir <- here('01_GEPD_raw_data/')
+processed_dir <- here('03_GEPD_processed_data/')
+
+
+# define stle for ggplot based on BBC plotting styles
+bbc_style <- function() {
+  font <- "Helvetica"
+  
+  ggplot2::theme(
+    
+    #Text format:
+    #This sets the font, size, type and colour of text for the chart's title
+    plot.title = ggplot2::element_text(family=font,
+                                       size=28,
+                                       face="bold",
+                                       color="#222222"),
+    #This sets the font, size, type and colour of text for the chart's subtitle, as well as setting a margin between the title and the subtitle
+    plot.subtitle = ggplot2::element_text(family=font,
+                                          size=22,
+                                          margin=ggplot2::margin(9,0,9,0)),
+    plot.caption = ggplot2::element_blank(),
+    #This leaves the caption text element empty, because it is set elsewhere in the finalise plot function
+    
+    #Legend format
+    #This sets the position and alignment of the legend, removes a title and backround for it and sets the requirements for any text within the legend. The legend may often need some more manual tweaking when it comes to its exact position based on the plot coordinates.
+    legend.position = "top",
+    legend.text.align = 0,
+    legend.background = ggplot2::element_blank(),
+    legend.title = ggplot2::element_blank(),
+    legend.key = ggplot2::element_blank(),
+    legend.text = ggplot2::element_text(family=font,
+                                        size=18,
+                                        color="#222222"),
+    
+    #Axis format
+    #This sets the text font, size and colour for the axis test, as well as setting the margins and removes lines and ticks. In some cases, axis lines and axis ticks are things we would want to have in the chart - the cookbook shows examples of how to do so.
+    axis.title = ggplot2::element_blank(),
+    axis.text = ggplot2::element_text(family=font,
+                                      size=18,
+                                      color="#222222"),
+    axis.text.x = ggplot2::element_text(margin=ggplot2::margin(5, b = 10)),
+    axis.ticks = ggplot2::element_blank(),
+    axis.line = ggplot2::element_blank(),
+    
+    #Grid lines
+    #This removes all minor gridlines and adds major y gridlines. In many cases you will want to change this to remove y gridlines and add x gridlines. The cookbook shows you examples for doing so
+    panel.grid.minor = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(color="#cbcbcb"),
+    panel.grid.major.x = ggplot2::element_blank(),
+    
+    #Blank background
+    #This sets the panel background as blank, removing the standard grey ggplot background colour from the plot
+    panel.background = ggplot2::element_blank(),
+    
+    #Strip background (#This sets the panel background for facet-wrapped plots to white, removing the standard grey ggplot background colour and sets the title size of the facet-wrap title to font size 22)
+    strip.background = ggplot2::element_rect(fill="white"),
+    strip.text = ggplot2::element_text(size  = 22,  hjust = 0)
+  )
+}
+
+```
+
+
+
+
+# Introduction
+
+
+
+
+- The Global Education Policy Dashboard  applies framework of WDR 2018 
+
+- Create and collect a concise set of indicators that allow tracking of key determinants of learning.  
+
+- The Dashboard tracks three levels, the three Ps:
+  * Practice
+  * Policies
+  * Politics.
+
+- The data is collected using three surveys: A school survey, an policy survey, and a survey of public officials
+
+School Survey: The School Survey will collect data primarily on Practices (the quality of service delivery in schools), but also on some de facto Policy and school-level Politics indicators.  It will consist of streamlined versions of existing instruments—including SDI and SABER SD on teachers, 4th grade students, and inputs/infrastructure, TEACH on pedagogical practice, GECDD on school readiness of young children, and DWMS on management quality—together with new questions to fill gaps in those instruments.  Though the number of modules is similar to the full version of SDI, the number of items within each module is significantly lower. In each country, this survey will be administered in a nationally representative sample of 250 schools, selected through stratified  random sampling. As currently envisioned, the School Survey will include 8 short modules.
+Expert Survey: The Expert Survey will collect information to feed into the policy indicators.  This survey will be filled out by key informants in each country, drawing on their knowledge to identify key elements of the policy framework (as in the SABER approach to policy-data collection that the Bank has used over the past 7 years).  The survey will have 4 modules with each including approximately ten questions.
+
+Policy Survey:  The policy survey is conducted by an expert on the laws and regulations of a country.  The experts gather information on De Jure policies in the education system for that country.
+
+Survey of Public Officials: The Survey of Public Officials will collect information about the capacity and orientation of the bureaucracy, as well as political factors affecting education outcomes. This survey will be a streamlined and education-focused version of the civil-servant surveys that the Bank’s Bureaucracy Lab has implemented recently in several countries, and the dashboard team is collaborating closely with DEC and Governance GP staff to develop this instrument.  As currently envisioned, the survey will be administered to a random sample of about 200 staff serving in the central education ministry and district education offices.  It will include questions about technical and leadership skills, work environment, stakeholder engagement, clientelism, and attitudes and behaviors.
+
+Roadmap:  
+- Below is a set of tables and charts containing findings for the Chad 2023 Global Education Policy Dashboard survey. - We will start with breakdowns of our Practice indicators  
+- Then we will discuss findings of our Practice Indicators  
+- Finally we will conclude with findings for our Bureaucracy Indicators.  
+
+
+
+
+```{r data, message=FALSE, warning=FALSE, include=FALSE}
+
+
+# load indicator template
+GEPD_template <- read_csv(here("04_GEPD_Indicators","GEPD_indicator_template.csv"))
+
+#load main files
+school_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("school_",software,".dta")))
+teachers_dta <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("teachers_",software,".dta"))) %>%
+  mutate(
+    teacher_abs_comb_weight=school_weight*teacher_abs_weight,
+    teacher_quest_comb_weight=school_weight*teacher_questionnaire_weight,
+    teacher_content_comb_weight=school_weight*teacher_content_weight,
+    teacher_pedagogy_comb_weight=school_weight*teacher_pedagogy_weight
+  )
+first_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("first_grade_",software,".dta"))) %>%
+  mutate(
+    g1_comb_weight=school_weight*g1_stud_weight
+  )
+fourth_grade <- read_dta(here(processed_dir,"School","Confidential","Cleaned", paste0("fourth_grade_",software,".dta"))) %>%
+  mutate(
+    g4_comb_weight=school_weight*g4_stud_weight
+  )
+public_officials_dta <- read_dta(here(processed_dir,"Public_Officials","Confidential", "public_officials.dta"))
+expert_df <- read_dta(here(processed_dir,"Policy_Survey", "expert_dta_final.dta"))
+defacto_dta_learners <- read_excel(here(processed_dir,"Other_Indicators", "Learners_defacto_indicators.xlsx"))
+finance_df <- read_excel(here(processed_dir,"Other_Indicators", "Finance_scoring.xlsx"))
+
+
+#Create a function which will generate new binary variable using case_when, but 
+#if value is misisng it will generate binary variable to be missing
+#This is done a lot so will create function for it.
+#e.g. school_absent=case_when(
+#         m2sbq6_efft==6  ~ 1,
+#         m2sbq6_efft!=6   ~ 0,
+#         is.na(m2sbq6_efft) ~ as.numeric(NA))
+bin_var <- function(var, val) {
+  case_when(
+    var==val  ~ 1,
+    var!=val   ~ 0,
+    is.na(var) ~ as.numeric(NA))
+}
+
+#create function to wrap text
+wrapper <- function(x, ...) 
+{
+  paste(strwrap(x, ...), collapse = "\n")
+}
+
+```
+
+# School Map
+
+- The following map shows the location of schools in the survey.
+
+```{r}
+#| label: school_map
+
+
+  
+school_map <- school_dta %>%
+  filter(!is.na(m1s0q9__Latitude) & !is.na(m1s0q9__Longitude))
+
+#get mean of longitude and latitude
+mean_lat <- median(school_dta$m1s0q9__Latitude, na.rm=TRUE)
+mean_long <- median(school_dta$m1s0q9__Longitude, na.rm=TRUE)
+  
+
+
+#create icons
+icons2 <- awesomeIcons(
+  icon = 'graduation-cap',
+  iconColor = 'white',
+  library = 'fa',
+  markerColor = 'blue'
+)
+
+
+m <- leaflet(school_map, height=1600, width=800) %>% 
+  addTiles()  %>%
+  addAwesomeMarkers(
+    lng=~as.numeric(m1s0q9__Longitude), 
+    lat=~as.numeric(m1s0q9__Latitude))
+  
+  
+
+saveWidget(m, "school_map.html", selfcontained=TRUE)
+
+#webshot2::webshot("temp.html", file="Rplot.png", cliprect="viewport")
+
+```
+
+# Practice Indicators
+
+- To begin, we will show a few results from our Practice, or Service Delivery, Indicators collected as part of the school survey.
+
+# Overall Learning
+
+- We begin with student learning on our assessment of 4th grade students.  
+- We offer breakdowns by Urban/Rural and by Gender
+
+```{r learning, echo=FALSE}
+
+
+
+
+learning_data_plot <- fourth_grade %>%
+  bind_rows(fourth_grade %>% filter(m8s1q3==2), .id="Female") %>%
+  bind_rows(fourth_grade %>% filter(m8s1q3==1), .id="Male") %>%
+  mutate(Gender=case_when(
+    Female==1 ~ "All Students",
+    Female==2 ~ "Female",
+    Male==2 ~ "Male",
+    TRUE ~ as.character(NA)
+    )) %>%
+  select(-Female, -Male) %>%
+  mutate(Type=if_else(urban_rural=="Rural", "Rural", "Urban")) %>%
+  filter(!is.na(Type))
+
+
+learning_dataMean <- summarise(group_by(learning_data_plot, Gender , Type), MD = round(wtd.mean(student_knowledge, g4_comb_weight, na.rm=TRUE),1))
+
+  ggplot(learning_data_plot, aes(x=Type, y=student_knowledge, fill=Gender)) + #now plot the output in a bar graph
+    geom_violin(aes(weight=g4_comb_weight), position="dodge") +
+     geom_text(data = learning_dataMean, aes(x=Type, y=MD, label=MD), 
+               position = position_dodge(width = 0.9), size = 5, vjust = -1) +
+     geom_point(data = learning_dataMean, aes(x=Type, y=MD),
+                position = position_dodge(width = 0.9)) +
+  ggtitle("Distribution of 4th Grade Student Assessment Scores by Gender and Urban/Rural") +
+  xlab(str_wrap("Urban/Rural Status", width=75))+
+  ylab(str_wrap("Percentage Correcton on 4th Grade Assessment",35)) +
+  scale_fill_discrete(name="Gender", 
+                      labels=c('All Students','Girls','Boys' )) +
+  theme_bw() +
+    theme(legend.position = "bottom",
+          axis.text = ggplot2::element_text(
+                                      size=12
+                                      )) 
+
+```
+
+# Overall Learning
+
+student level learning assessment items statistics:
+
+```{r}
+#calculate basic words, 8+7, etc
+#select columns
+
+closer_look_g4 <- c(
+  'm8saq3_id',
+  'm8saq7b_gir',
+  'm8sbq3a_arithmetic',
+  'm8sbq3f_arithmetic',
+  'm8sbq3j_arithmetic'
+)
+
+closer_look_labels <- c(
+  'could identify basic words',
+  'successfully answered multiple choice 4th grade level reading comprehension question',
+  'successfully answered 8+7',
+  'successfully answered 7x8',
+  'successfully answered 75/5'
+
+)
+
+#for each closer_look_g4, calculate the mean as a 
+for (i in 1:length(closer_look_g4)) {
+  dat <- fourth_grade %>%
+    summarise(!!paste0(closer_look_g4[i], "_mean") := 100*weighted.mean(!!sym(closer_look_g4[i]), weight=g4_comb_weight, na.rm=TRUE))
+  
+  #print value and label
+  val <- dat %>% 
+    pull()
+  
+  label <- paste0("The percentage of students who ", closer_look_labels[i], " is ", round(val,1), "%")
+  print(label)
+}
+
+
+```
+
+# Breakdowns for infrastructure
+
+- We compare inputs and infrastructure for Urban/Rural schools 
+
+```{r urban_rural, echo=FALSE}
+
+
+urban_rural <- school_dta %>%
+  mutate(Type=factor(urban_rural, levels=c("Rural", "Urban"), labels = c("Rural", "Urban"))) %>%
+  filter(!is.na(urban_rural))
+
+
+
+infr_urban_rural <- urban_rural %>%
+  group_by(Type) %>%
+  mutate(weight=school_weight/sum(school_weight, na.rm=T)) %>%
+  ungroup() %>%
+  filter(!is.na(weight))
+
+ggplot(infr_urban_rural, aes(x=infrastructure)) +
+    geom_density(aes(fill=Type , weight=weight), alpha=0.6) +
+    theme_bw() +
+    scale_fill_discrete(name="Type")+
+  labs(x='Infrastructure Index',
+       y='Density')+
+  ggtitle("Infrastructure in Urban/Rural Areas")
+  
+
+```
+
+# Breakdown for Input by Urban/Rural
+
+```{r urban_rural_input, echo=FALSE}
+
+
+urban_rural_input <- school_dta %>%
+  mutate(Type=factor(urban_rural, levels=c("Rural", "Urban"), labels = c("Rural", "Urban"))) %>%
+  filter(!is.na(urban_rural))
+
+
+
+inpt_urban_rural <- urban_rural_input %>%
+  group_by(Type) %>%
+  mutate(weight=school_weight/sum(school_weight, na.rm=T)) %>%
+  ungroup() %>%
+  ggplot(aes(x=inputs))  +
+    geom_density(aes(fill=Type , weight=weight), alpha=0.6) +
+    theme_bw() +
+  labs(x='Input Index')+
+  ggtitle("Input Across Urban/Rural")
+  
+inpt_urban_rural
+
+
+
+```
+
+# First Grade Assessment Score
+
+- The following plots the school level average of the 4th grade assessment scores on the school level average 1st grade assessment score.  
+- Note that the children assessed in 4th grade differ from the students assessed in 1st grade  
+- The graph is meant to associate levels of student learning in 1st grade with 4th grade student learning.
+
+```{r 1st_grade_plot, echo=FALSE, fig_height=8, fig_width=9}
+ #############################
+    # Create database with just learning outcomes for regressions
+    ##############################
+
+
+df_reg<-first_grade %>%
+  select(school_code, ecd_student_knowledge, g1_comb_weight) %>%
+  group_by(school_code) %>%
+  mutate(ecd_student_knowledge=weighted.mean(ecd_student_knowledge, g1_comb_weight, na.rm=TRUE)) %>%
+  ungroup() %>%
+  left_join(
+    fourth_grade %>%
+      select(school_code, student_knowledge, g4_comb_weight) %>%
+      group_by(school_code) %>%
+      mutate(student_knowledge=weighted.mean(student_knowledge, g4_comb_weight, na.rm=TRUE)) %>%
+      ungroup() 
+  )
+      
+          #add equations to plots
+    eq_plot_txt <- function(data, inp, var) {
+      
+
+      eq <- lm_robust(data[[var]] ~ data[[inp]], data = data, se_type='HC2')
+      coef <- round(coef(eq),2)
+      std_err <- round(sqrt(diag(vcov(eq))),2)
+      r_2<- round(summary(eq)$r.squared,2)
+      sprintf(" y = %.2f + %.2f x, R<sup>2</sup> = %.2f <br> (%.2f) <span style='color:white'> %s</span> (%.2f) ", coef[1], coef[2], r_2[1], std_err[1],"s", std_err[2])
+      
+    }
+      
+    location <- data.frame(
+      x=10,
+      y=10
+    )
+      
+      regplots<- ggplot(data=df_reg, aes(x=ecd_student_knowledge, y=student_knowledge, color="#0081a8")) +
+        geom_point() +
+        geom_smooth(method='lm') +
+        scale_color_manual(labels = c( "Principal Indicator "),  values= c( "#0081a8")) +
+        theme_bw() +
+        theme(
+          text = element_text(size = 14),
+          legend.position='none'
+        ) +
+        expand_limits(x = 0, y = 0) +
+        labs(colour = "Indicator") +
+        ylab(paste0("4th Grade Score")) +
+        xlab(paste0("1st Grade Score")) +
+         geom_richtext(
+            data=location, aes(x=x,y=y, color="#0081a8",label = eq_plot_txt(df_reg, 'student_knowledge', 'ecd_student_knowledge')), hjust=0.2
+         )
+      
+      
+      # regplots2<- ggplot(data=df_reg, aes(x=teach_score, y=student_knowledge, weight=ipw, color="#ff0000")) +
+      #   geom_point() +
+      #   geom_smooth(method='lm') +
+      #   scale_color_manual(labels = c( "Principal Indicator "),  values= c( "#ff0000")) +
+      #   theme_bw() +
+      #   theme(
+      #     text = element_text(size = 14),
+      #     legend.position='none',
+      #     axis.text.y=element_blank(),
+      #     axis.title.y=element_blank()
+      #   ) +
+      #   expand_limits(x = 1, y = 0) +
+      #   labs(colour = "Indicator") +
+      #   ylab(paste0("4th Grade Score")) +
+      #   xlab(paste0("Pedagogy Score")) +
+      #   stat_poly_eq(aes(label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+      #                label.x.npc = "right", label.y.npc = 0.2,
+      #                formula = 'y~x', parse = TRUE, size = 5)
+      
+      
+      regplots +
+          plot_annotation(title = str_wrap("Scatterplot of School Average 4th Grade Student Scores against 1st Grade Student Scores",90))
+
+      
+
+
+      
+      
+    summary(lm(student_knowledge~ecd_student_knowledge, data=df_reg))
+
+    
+
+    
+    
+```
+
+
+# Teacher Pedagogical Skill
+- One of the best predictors of 4th grade student achievement, along with the 1st grade scores, is the teacher's pedagogical score  
+- The following plots the school level average of the 4th grade assessment scores on the teacher's pedagogical skill based on the Teach scale.  
+
+```{r}
+#| label: teach_plot
+ #############################
+    # Create database with just learning outcomes for regressions
+    ##############################
+
+df_reg<-teachers_dta %>%
+  select(school_code, teach_score, teacher_pedagogy_comb_weight) %>%
+  group_by(school_code) %>%
+  summarise(teach_score=weighted.mean(teach_score, teacher_pedagogy_comb_weight, na.rm=TRUE)) %>%
+  ungroup() %>%
+  left_join(
+    fourth_grade %>%
+      select(school_code, student_knowledge, g4_comb_weight) %>%
+      group_by(school_code) %>%
+      summarise(student_knowledge=weighted.mean(student_knowledge, g4_comb_weight, na.rm=TRUE)) %>%
+      ungroup() 
+  )
+
+
+    location <- data.frame(
+      x=1,
+      y=5
+    )
+      
+      regplots<- ggplot(data=df_reg, aes(x=teach_score, y=student_knowledge, color="#0081a8")) +
+        geom_point() +
+        geom_smooth(method='lm') +
+        scale_color_manual(labels = c( "Principal Indicator "),  values= c( "#0081a8")) +
+        theme_bw() +
+        theme(
+          text = element_text(size = 14),
+          legend.position='none'
+        ) +
+        expand_limits(x = 0, y = 0) +
+        ggtitle(str_wrap("Scatterplot of School Average 4th Grade Student Scores against Teacher Pedagogical Scores",60)) +
+        labs(colour = "Indicator") +
+        ylab(paste0("4th Grade Score")) +
+        xlab(paste0("Teach Score")) +
+         geom_richtext(
+           data=location, aes(x=1,y=5,label = eq_plot_txt(df_reg, 'student_knowledge', 'teach_score'), hjust=0.2)
+         ) 
+      
+
+      
+      
+      regplots
+      
+      
+      
+
+    
+
+    
+    
+```
+
+
+# Teacher Content Knowledge Skill
+-   
+- The following plots the school level average of the 4th grade assessment scores on the teacher's content knowledge based on the teacher assessment.  
+
+```{r}
+#| label: cont_plot
+ #############################
+    # Create database with just learning outcomes for regressions
+    ##############################
+
+df_reg<-teachers_dta %>%
+  select(school_code, content_knowledge, teacher_content_comb_weight) %>%
+  group_by(school_code) %>%
+  summarise(content_knowledge=weighted.mean(content_knowledge, teacher_content_comb_weight, na.rm=TRUE)) %>%
+  ungroup() %>%
+  left_join(
+    fourth_grade %>%
+      select(school_code, student_knowledge, g4_comb_weight) %>%
+      group_by(school_code) %>%
+      summarise(student_knowledge=weighted.mean(student_knowledge, g4_comb_weight, na.rm=TRUE)) %>%
+      ungroup() 
+  )
+
+
+    location <- data.frame(
+      x=10,
+      y=10
+    )
+      
+      regplots<- ggplot(data=df_reg, aes(x=content_knowledge, y=student_knowledge, color="#0081a8")) +
+        geom_point() +
+        geom_smooth(method='lm') +
+        scale_color_manual(labels = c( "Principal Indicator "),  values= c( "#0081a8")) +
+        theme_bw() +
+        theme(
+          text = element_text(size = 14),
+          legend.position='none'
+        ) +
+        expand_limits(x = 0, y = 0) +
+        ggtitle(str_wrap("Scatterplot of School Average 4th Grade Student Scores against Teacher Content Knowledge Scores",60)) +
+        labs(colour = "Indicator") +
+        ylab(paste0("4th Grade Score")) +
+        xlab(paste0("Teacher Content Knowledge Score")) +
+         geom_richtext(
+           data=location, aes(x=x,y=y,label = eq_plot_txt(df_reg, 'student_knowledge', 'content_knowledge'), hjust=0.2)
+         ) 
+      
+
+      
+      
+      regplots
+      
+      
+      
+
+    
+
+    
+    
+```
+
+# Teacher Content Knowledge
+
+- Regions  differ in terms of their service delivery and learning outcomes.  
+- This is particularly true for teacher effort and skill.  
+- Below we plot teacher content knowledge by region to highlight some of these differences.  
+
+```{r content_knowledge_region, echo=FALSE, warning=FALSE}
+
+region_content <- teachers_dta %>%
+  mutate(Type=urban_rural) 
+
+
+
+region_content_plot <- region_content %>%
+  group_by(Type) %>%
+  mutate(weight=teacher_content_comb_weight/sum(teacher_content_comb_weight)) %>%
+  ungroup() %>%
+  ggplot(aes(x=content_knowledge, y=Type))  +
+    geom_density_ridges(aes(fill=Type , weight=weight), alpha=0.6) +
+    geom_vline(xintercept=80) +
+    theme_bw() +
+  labs(x='Teacher Content Knowledge')+
+  ggtitle("Teacher Content Knowledge Across Territories")
+  region_content_plot
+  
+region_content_plot <- region_content %>%
+  group_by(Type) %>%
+  mutate(weight=teacher_content_comb_weight/sum(teacher_content_comb_weight)) %>%
+  ungroup() %>%
+  ggplot(aes(x=math_content_knowledge))  +
+    geom_density(aes(fill=Type , weight=weight), alpha=0.6) +
+      geom_vline(xintercept=80) +
+    theme_bw() +
+  labs(caption = "Weighted Average Content Knowledge Shown in Diagram",
+         x='Teacher Content Knowledge'
+      )+
+  ggtitle("Teacher Content Knowledge Across Territories")
+
+
+#boxplot
+# teacher_absence_final_anon_link<-teacher_absence_final_anon %>%
+#   left_join(school_data_preamble_anon) %>%
+#   select(-interview__key)
+# 
+# region_content2 <- teacher_assessment_dta_anon %>%
+#   mutate(teachers_id=g4_teacher_number) %>%
+#   left_join(teacher_absence_final_anon_link) %>%
+#   mutate(Type=territory,
+#          Gender=if_else(teacher_male==1, "Male", "Female")) %>%
+#   filter(!is.na(Gender)) %>%
+#   mutate(math_content_proficiency=as.numeric(math_content_knowledge>=80),
+#          literacy_content_proficiency=as.numeric(literacy_content_knowledge>=80))
+
+  # contMean <- summarise(group_by(region_content,  Type), MD = round(weighted.mean(literacy_content_proficiency, ipw, na.rm=T),1))
+  # 
+  # p1<-ggplot(region_content, aes(x=Type, y=literacy_content_proficiency, fill=Type)) + #now plot the output in a bar graph
+  #   geom_boxplot(aes(weight=ipw), position="dodge") +
+  #   geom_text(data = contMedian, aes(x=Type, y=MD, label=MD), 
+  #             position = position_dodge(width = 0.8), size = 3, vjust = 1) +
+  # xlab(str_wrap("Territory", width=75))+
+  # ylab(str_wrap("Teacher Content Knowledge",35)) +
+  # theme_bw() +
+  #   theme(legend.position = "bottom") 
+  
+region_content_long <-region_content %>%
+  mutate(overall_content_proficiency=content_proficiency) %>%
+  select(-content_proficiency) %>%
+  pivot_longer(cols=c('overall_content_proficiency', 'literacy_content_proficiency', 'math_content_proficiency'),
+               names_to="Assessment",
+               values_to='content_proficiency') %>%
+  mutate(Assessment=case_when(
+    Assessment=='overall_content_proficiency' ~ "Math + Literacy Combined",
+    Assessment=='literacy_content_proficiency' ~ "Literacy",
+    Assessment=='math_content_proficiency' ~ "Math"
+  ))
+
+
+    contMean <- summarise(group_by(region_content_long,  Type, Assessment), MD = round(weighted.mean(content_proficiency, teacher_content_comb_weight, na.rm=T),1))
+
+  p1<-ggplot(contMean, aes(x=Assessment, y= MD, fill=Type)) + #now plot the output in a bar graph
+    geom_col( position="dodge") +
+    geom_text(data = contMean, aes(x=Assessment, y=MD, label=paste(Type,MD,sep=": ")), 
+              position = position_dodge(width = 0.8), size = 4, hjust = -.1) +
+  xlab(str_wrap("Subject", width=75))+
+  ylab(str_wrap("Teacher Content Knowledge Proficiency",35)) +
+  scale_fill_discrete(name="Territory") +
+
+  coord_flip() +
+  expand_limits(y=0:100) +
+    theme_bw() +
+    ggtitle(str_wrap("Teacher Content Knowledge Proficiency by Subject & Urban/Rural Status", 50)) +
+      theme(
+    legend.position="none",
+    axis.text.x = element_text(size=12),
+    axis.text.y = element_text(size=12)
+    
+  ) 
+p1
+
+
+```
+
+
+
+# Do principals know their schools?
+
+- Adequate Textbooks:
+  * Principals asked, "In the selected 4th grade classroom, how many of the pupils have the relevant textbooks?"
+  * We can compare answer to average calculated in our school survey
+  
+
+```{r echo=FALSE}
+
+
+
+textbooks <- school_dta %>%
+  mutate(share_textbook=(m4scq5_inpt)/(m4scq4_inpt)) %>%
+  mutate(share_textbook_guess=(m7sfq10_pknw)/(m4scq4_inpt)) %>%
+  mutate(gap_textbooks=(m7sfq10_pknw-m4scq5_inpt)) %>%
+  filter(abs(gap_textbooks)<80) #drop some outlier observations that are probably miscodings
+
+
+
+ggplot(data=textbooks, aes(x=m4scq5_inpt, y=m7sfq10_pknw)) +
+  geom_point() +
+  annotate("text", label=wrapper(paste("Principals over-estimate by ", round(mean(textbooks$gap_textbooks, na.rm=T),1)," pupils on average"),15), x = 70, y = 20) +
+  geom_line(aes(x=m4scq5_inpt, y=m4scq5_inpt, color="45 Degree Line")) +
+  theme_bw() +
+  labs(x='Actual # of Pupils with Textbook',
+       y='# Guessed by Principal') +
+  ggtitle("How well Principals Know # of Students with Textbooks")
+
+
+
+```
+
+# Discuss Results of Teacher Evaluation with Principal
+
+```{r discuss_results, echo=FALSE}
+
+discuss_indicators <- c(
+                        'not_classroom_observed',
+                        'no_discuss',
+                        'discuss_10',
+                        'discuss_10_30',
+                        'discuss_30'
+                        
+                        )
+discuss_indicators_labels <- c(
+                        'Classroom Not Observed',
+                        'Observed, No Discussion',
+                        'Discussed less than 10 min',
+                        'Discussed 10-30 min',
+                        'Discussed more than 30 min'
+                        
+                        )
+discuss_labels_df <- data.frame(variable=as.character(discuss_indicators),
+                      varlabels=as.character(discuss_indicators_labels))
+
+bin_var <- function(var, val) {
+  case_when(
+    var==val  ~ 1,
+    var!=val   ~ 0,
+    is.na(var) ~ as.numeric(NA))
+}
+
+
+teacher_discuss_df <- teachers_dta %>%
+  filter(!is.na(m3sdq15_ildr)) %>%
+  mutate(not_classroom_observed=100*if_else( m3sdq15_ildr==0,1,0),
+         no_discuss=100*if_else(classroom_observed==1 & m3sdq19_ildr==0,1,0),
+         discussed_observation=100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr>=2),1,0), #make sure there was discussion and lasted more than 10 min
+
+         discuss_10=100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==1),1,0)
+         ,
+          discuss_10_30=100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==2),1,0)
+         ,
+          discuss_30=100*if_else((classroom_observed==1 & m3sdq19_ildr==1 & m3sdq20_ildr==3),1,0)
+         )  
+
+
+
+
+teacher_discuss_stats <- teacher_discuss_df %>%
+      filter(!is.na(school_weight)) %>%
+      filter(!is.infinite(school_weight)) %>%
+      filter(!is.na(teacher_questionnaire_weight)) %>%
+      select(discuss_indicators, strata, school_weight, teacher_questionnaire_weight, school_code, teachers_id ) %>%
+      pivot_longer(cols=discuss_indicators,
+                   names_to = 'variable',
+                   values_to='value') %>%
+      as_survey_design(
+        id=c(school_code, teachers_id),
+        strata=strata,
+        weight=c(school_weight, teacher_questionnaire_weight)) %>%
+      group_by(variable) %>%
+      summarise(mean=survey_mean(value, na.rm=T, vartype=c('se', 'ci','var')),
+                N=sum(!(is.na(value) | is.na(school_weight) | is.na(teacher_questionnaire_weight)))) %>%
+      as_tibble() %>%
+  left_join(discuss_labels_df) %>%
+  mutate(
+    filled=if_else(variable=="not_classroom_observed", "#fb8500", "#219ebc"),
+    varlabels=factor(varlabels, levels=rev(discuss_indicators_labels))
+  )
+
+
+
+
+
+  ggplot(teacher_discuss_stats,aes(y=mean,x=varlabels)) +
+    geom_bar(stat='identity', fill='#fb8500')  +
+    geom_text(color="black", size=5, hjust=1.25,
+                  aes(y=round(mean,1), label=round(mean,1))) +    
+    coord_flip() +
+    labs(x=NULL, y="Score/Fraction of Teachers Reporting", 
+        title=str_wrap('Did Teacher Discuss Results from Classroom Observation and for How Long?',50))+
+    scale_x_discrete(labels=function(x) str_wrap(x,width=50)) +
+    expand_limits(y=0:1.5) +
+  theme_bw() +
+   theme(legend.position = 'none',
+         text=element_text(size=14),
+         axis.text=element_text(size=14))
+
+
+
+```
+
+
+
+# Policies
+
+- Next, we explore the De Facto scores for teachers by looking at differences across teachers in how they view the policy environment.  
+- Below are violin plots showing the distribution across schools of  ratings of teachers to these policy questions.  
+-  There is significant variation across teachers in how they understand or experience policies.
+
+
+```{r}
+#get list of de facto indicators
+main_indicator_labels<-c( 
+                        'Teaching - Attraction',
+                         'Teaching - Selection & Deployment',
+                         'Teaching - Support', 
+                         'Teaching - Evaluation', 
+                         'Teaching - Monitoring & Accountability', 
+                         'Teaching - Intrinsic Motivation'
+
+    )  
+    
+    indicators_list<-c(
+                       'teacher_attraction', 
+                       'teacher_selection_deployment', 
+                       'teacher_support', 
+                       'teaching_evaluation', 
+                       'teacher_monitoring',
+                       'intrinsic_motivation'
+
+    )
+    
+
+    labels_df_var<-data.frame(indicators=as.character(indicators_list),
+                          indicator_labels=as.character(main_indicator_labels))    
+    
+    #get de facto data
+data_defacto <- teachers_dta %>%
+      select(school_code, teachers_id, indicators_list,teacher_quest_comb_weight ) %>%
+      pivot_longer(cols=indicators_list,
+               names_to = "indicators",
+               values_to = "indicator_values") %>%
+  left_join(labels_df_var)
+
+  ggplot(data=data_defacto, aes(x=indicator_labels, y=indicator_values, fill='#ff0000')) + #now plot the output in a bar graph
+    #geom_violin(position="dodge") +
+    geom_boxplot(weights=data_defacto$teacher_quest_comb_weight) +
+    # scale_x_discrete(labels = str_wrap(indicator_labels, width = 25)) + 
+  xlab(str_wrap("Policy Lever Indicators", width=75))+
+  ylab("Scale (1-5)") +
+  ggtitle(str_wrap("Differences across teachers in policy implementation", width=75)) +
+  theme_bw() +
+    theme(legend.position = "none") +
+    coord_flip()
+
+```
+
+
+# Overall performance for Bureuacracy Indicators
+
+- Moving to the Bureaucracy Indicators, below we show the averages by Office type for each of our indicators
+- Public officials in the district offices tend to score lower than at the central level
+
+
+
+```{r overall, echo=FALSE}
+
+public_officials_dta <- public_officials_dta %>%
+    filter(!is.na(m1s0q2_name)) 
+
+
+
+data_plot <- public_officials_dta %>%
+  mutate(m1s0q2_name=str_remove(m1s0q2_name, "or equivalent")) %>%
+  mutate(m1s0q2_name=str_remove(m1s0q2_name, "\\)")) %>%
+    mutate(m1s0q2_name=str_remove(m1s0q2_name, "\\(")) %>%
+  mutate(govt_tier=factor(office_clean, levels = c("Secretariat (or equivalent)", "Directorate office (or equivalent)", "District office (or equivalent)"))
+  ) %>%
+  group_by(govt_tier) %>%
+  select(interview__id,  govt_tier, national_learning_goals, mandates_accountability, quality_bureaucracy, impartial_decision_making) %>%
+  pivot_longer(cols=c("national_learning_goals", "mandates_accountability", 
+                      "impartial_decision_making","quality_bureaucracy" ),
+               names_to = "indicators",
+               values_to = "indicator_values") 
+
+dataMedian <- summarise(group_by(data_plot, indicators , govt_tier), MD = round(median(indicator_values, na.rm=T),1))
+
+  ggplot(data_plot, aes(x=indicators, y=indicator_values, fill=govt_tier)) + #now plot the output in a bar graph
+    geom_boxplot(position="dodge") +
+    geom_text(data = dataMedian, aes(x=indicators, y=MD, label=MD), 
+              position = position_dodge(width = 0.8), size = 3, vjust = -0.5) +
+    scale_x_discrete(labels = str_wrap(c("Impartial Decision Making",
+                                         "Mandates & Accountability",
+                                         "National Learning Goals",
+                                         "Quality of the Bureaucracy"), width = 25)) + 
+  xlab(str_wrap("Survey of Public Officials Indicators", width=75))+
+  ylab("Scale (1-5)") +
+  ggtitle(str_wrap("Boxplot of Overall Indicators for Survey of Public Officials", width=75)) +
+  scale_fill_discrete(name="Government Level") +
+  theme_bw() +
+    theme(legend.position = "bottom",
+          axis.text = ggplot2::element_text(
+                                      size=12
+                                      ),
+          legend.text = ggplot2::element_text(
+                                      size=12
+                                      )) 
+
+  
+#more motivated question
+
+```
+
+
+# Country Comparison
+
+```{r}
+#color scorer
+practice_tags <- "SE.PRM.PROE|SE.LPV.PRIM|SE.LPV.PRIM.BMP|SE.PRM.LERN|SE.PRM.TENR|SE.PRM.EFFT|SE.PRM.CONT|SE.PRM.ATTD|SE.PRM.LCAP|SE.PRM.PEDG|SE.LPV"
+
+#function to create score data for a specified country and year
+color_fn <- function(data) {
+  api_metadata_fn_p <- get(data) %>%
+    rename(Indicator.Name='Indicator Name') %>%
+    filter(grepl(practice_tags, Series) | grepl("Percent", Indicator.Name)) %>%
+    rename(  'Indicator Name'=Indicator.Name) %>%
+    select(Series, `Indicator Name`, value) %>%
+    mutate(value=if_else(value==-999,as.numeric(NA),as.numeric(value))) %>%
+    mutate(
+      value_metadata=case_when(
+        grepl("SE.LPV.PRIM$", Series) & value >15 ~ "Needs Improvement",
+        grepl("SE.LPV.PRIM$", Series) & value <=15 & value>10 ~ "Caution",
+        grepl("SE.LPV.PRIM$", Series) & value <=10 ~ "On Target",               
+        grepl("SE.LPV.PRIM.1$", Series) & value >15 ~ "Needs Improvement",
+        grepl("SE.LPV.PRIM.1$", Series) & value <=15 & value>10 ~ "Caution",
+        grepl("SE.LPV.PRIM.1$", Series) & value <=10 ~ "On Target",                 
+        value <85 ~ "Needs Improvement",
+        value >=85 & value<90 ~ "Caution",
+        value >=90 ~ "On Target",
+        TRUE ~ "N/A"
+      ))
+  
+  
+  api_metadata_fn_c <- get(data) %>%
+    rename(Indicator.Name='Indicator Name') %>%
+    filter(!(grepl(practice_tags, Series) | grepl("Percent", Indicator.Name))) %>%
+    rename(  'Indicator Name'=Indicator.Name) %>%
+    select(Series, `Indicator Name`, value) %>%
+    mutate(value=if_else(value==-999,as.numeric(NA),as.numeric(value))) %>%
+    mutate(
+      value_metadata=case_when(
+        value <3 ~ "Needs Improvement",
+        value >=3 & value<4 ~ "Caution",
+        value >=4 ~ "On Target",
+        TRUE ~ "N/A"
+      ))
+  
+  api_metadata_fn_p %>%
+    bind_rows(api_metadata_fn_c) %>%
+    arrange(Series) 
+}
+
+```
+
+
+```{r cc, echo=FALSE, message=FALSE, warning=FALSE}
+#list countries
+countries <- c("ICT", "KP", "Balochistan", "Sindh", "Punjab" )
+
+path <- gsub(paste0("GEPD_Production-",country_name), "", here() )
+
+
+#loop through each countries and read in data at path=paste0(path, "country", "/04_GEPD_Indicators/PAK_GEPD_Indicators_Stata.csv" )
+for (cntry in countries) {
+  assign(paste0(cntry, "_GEPD_Indicators"), 
+         (read_csv(paste0(path, "GEPD_Production-Pakistan_", cntry, "/04_GEPD_Indicators/PAK_GEPD_Indicators_Stata.csv")  ) %>%
+            transmute(
+              Series=Series,
+              `Indicator Name`=`Indicator Name`,
+              value=Mean
+            )
+          
+
+         )
+
+  )
+}
+
+#add color coding for each country
+for (cntry in countries) {
+  assign(paste0(cntry, "_GEPD_Indicators"), 
+         color_fn(paste0(cntry, "_GEPD_Indicators")) %>%
+            mutate(
+              country=cntry,
+              date=2023)
+
+  )
+}
+
+
+
+
+#create combined df
+combined_df_raw <- ICT_GEPD_Indicators %>%
+  bind_rows(KP_GEPD_Indicators) %>%
+  bind_rows(Balochistan_GEPD_Indicators) %>%
+  bind_rows(Sindh_GEPD_Indicators) %>%
+  bind_rows(Punjab_GEPD_Indicators) 
+
+
+  
+  combined_df <- combined_df_raw %>%
+    arrange(Series) %>%
+    mutate(
+           value=round(value,1),
+           value_color=case_when(
+             value_metadata=="Needs Improvement" ~ "#FF0000",
+             value_metadata=="Caution" ~ "#FCD606",
+             value_metadata=="On Target" ~ "#85C546",
+             TRUE ~ "#808080"
+           ),
+           Series=str_replace_all(Series, "SE.LPV","SE.GEPD"))
+
+
+combined_wide_df <- combined_df %>%
+  select(Series, `Indicator Name`, country, value) %>%
+  pivot_wider(
+    names_from=country, 
+    values_from=value
+  ) 
+
+combined_wide_color <- combined_df %>%
+  select(Series, country, value_color) %>%
+  pivot_wider(
+    names_from=country, 
+    values_from=value_color
+  ) 
+
+
+
+
+
+```
+
+```{r countrytabfn, echo=FALSE, message=FALSE, warning=FALSE}
+#create function for creating country comparison tables
+country_tab_fn <- function(variables, title) {
+  
+  #filter and arrange data
+tab_df <- combined_wide_df %>%
+  filter(Series %in% variables) %>%
+  arrange(factor(Series, levels=variables))
+
+#set colors
+tab_color_df <- combined_wide_color %>%
+  filter(Series %in% variables) %>%
+  arrange(factor(Series, levels=variables))
+
+#set colors
+PAK_KP_col <- tab_color_df$KP
+PAK_ICT_col <- tab_color_df$ICT
+Balochistan_col <- tab_color_df$Balochistan
+Sindh_col <- tab_color_df$Sindh
+Punjab_col <- tab_color_df$Punjab
+
+
+#build table
+tab_df <- tab_df  %>%
+  select(`Indicator Name`, ICT, KP, Balochistan, Sindh, Punjab) 
+
+
+ovr_table <- flextable(tab_df) %>%
+  add_header_lines(title) %>%
+  add_footer_lines('Source: UIS, GLAD, GEPD, World Bank. 
+ Green indicates indicator "on-target", yellow indicates "requires caution", red indicates "needs improvement"' ) %>%
+  theme_vanilla()
+
+#colors
+ovr_table <- ovr_table %>%
+  bg(j = c('ICT'),
+     bg = PAK_ICT_col) %>%
+  bg(j = c('KP'),
+     bg = PAK_KP_col) %>%
+  bg(j = c('Balochistan'),
+     bg = Balochistan_col) %>%
+  bg(j = c('Sindh'),
+     bg = Sindh_col) %>%
+  bg(j = c('Punjab'),
+     bg = Punjab_col) 
+ 
+
+
+ovr_table %>%
+  autofit()
+
+  
+}
+```
+
+
+
+Practices
+
+```{r}
+# Produce a table showing means by country for select practice indicators
+practice_indicators <- c(
+  'SE.PRM.LERN',
+  'SE.PRM.EFFT',
+  'SE.PRM.CONT',
+  'SE.PRM.PEDG',
+  'SE.PRM.INPT',
+  'SE.PRM.INFR',
+  'SE.PRM.LCAP',
+  'SE.PRM.ATTD',
+  'SE.PRM.OPMN',
+  'SE.PRM.ILDR',
+  'SE.PRM.PKNW',
+  'SE.PRM.PMAN'
+)
+country_tab_fn(practice_indicators, 'GEPD Practice Indicators')
+```

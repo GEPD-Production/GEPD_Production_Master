@@ -57,6 +57,7 @@
 # R-scrips and Rmarkdown-scripts
 !/**/*.R
 !/**/*.Rmd
+!/**/*.qmd
 
 # LaTeX
 !/**/*.tex
@@ -77,7 +78,7 @@
 # csv files in input folders
 !/**/*_rawdata/*.csv
 !/**/*_rawdata/*/*.csv
-
+!/**/GEPD_indicator_template.csv
 
 
 
