@@ -1,6 +1,6 @@
 
 *Anonymize GEPD data files for school, teachers, students
-*Written by Mohammed El-desouky, and Last updated on April 18, 2024.
+*Written by Mohammed El-desouky, and Last updated on May 20, 2024.
 
 /*--------------------------------------------------------------------------------
 *Note to users: Running multiple commands in this file requires manual verification 
@@ -663,7 +663,11 @@ m3sdq18_other_ildr m3sdq25_other_ildr m3seq5_other_tatt m3seq8_other_tsdp ///
 unique_teach_id teacher_unique_id iden district interview__key interview__id ///
 school tehsil shift schoollevel strata m4saq1_lwr m3_lwr m5_lwr enumerators_preload__0-enumerators_preload__99 ///
 m1s0q1_name_other m1s0q1_comments m1s0q8 m1s0q9__Timestamp m1s0q1_name m6_teacher_name m6s1q1__0-m6s1q1__5 Date_time m8_teacher_name m8s1q1__0-comments second_name first_name m2saq22 location teacher_name1-teacher_name4 senatorialdistrict classification ///
-teacher_abs_count teacher_quest_count teacher_content_count 
+teacher_abs_count teacher_quest_count teacher_content_count ///
+emis_code xcoordinate ycoordinate total_enrollment school_headmaster_contact_no ///
+nstudents_district total_district share_district /// 
+sample_size totalstudents strata_count strata_size strata_school_prob strata_prob index tag ///
+flag_unmatched tag_v2 flag_mismatch school_collapse_temp
 
 foreach var of local drop{
       capture drop `var'
