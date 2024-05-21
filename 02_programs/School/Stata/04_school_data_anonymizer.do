@@ -1,6 +1,6 @@
 
 *Anonymize GEPD data files for school, teachers, students
-*Written by Mohammed El-desouky, and Last updated on May 20, 2024.
+*Written by Mohammed El-desouky, and Last updated on April 18, 2024.
 
 /*--------------------------------------------------------------------------------
 *Note to users: Running multiple commands in this file requires manual verification 
@@ -840,6 +840,7 @@ do "${clone}/02_programs/School/Merge_Teacher_Modules/z_value_labels.do"
 order district_code school_code_maskd ecd_assessment__id
 sort school_code_maskd ecd_assessment__id
 
+label var school_code_maskd"Masked school code"
 
 log on dropped_vars
 *--- dropping vars with all missing (no obs)
@@ -992,6 +993,8 @@ do "${clone}/02_programs/School/Merge_Teacher_Modules/z_value_labels.do"
 
 order district_code school_code_maskd fourth_grade_assessment__id
 sort school_code_maskd fourth_grade_assessment__id
+
+label var school_code_maskd"Masked school code"
 
 
 log on dropped_vars
