@@ -2094,8 +2094,7 @@ cap la var SE_PRM_TINM_7 "(De Facto) % teachers agree/strongly agree (Students h
 cap la var SE_PRM_TINM_8 "(De Facto) % teachers agree/strongly agree (To be honest, students can't really change how inte~)"
 cap la var SE_PRM_TINM_9 "(De Facto) % teachers agree/strongly agree (Students can always substantially change how intell~)"
 cap la var SE_PRM_TINM_10 "(De Facto) % teachers agree/strongly agree (Students can change even their basic intelligence l~)"
-cap la var motivation_teaching_1 "teacher motivation for teaching_1"
-			
+cap la var motivation_teaching_1 "teacher motivation for teaching_1"		
 			
 *----- fourth g add                        
 cap la var g4_class_weight  "g4_class_weight"
