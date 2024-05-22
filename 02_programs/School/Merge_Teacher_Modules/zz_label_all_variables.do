@@ -1775,6 +1775,284 @@ cap la var problem_solving_info_collect "Problem_solving-Info_collect"
 cap la var problem_solving_stomach  "Problem solving-Stomach"
 cap la var standards_monitoring_infra "Standards for monitoring_infra"
 
+cap la var m1sbq12a_inpt_etri ""
+cap la var s1_a1_4a ""
+cap la var s1_a1_4b ""
+cap la var m7saq11 ""
+cap la var m7saq11_other ""
+cap la var m7covq1 ""
+cap la var m7covq2 ""
+cap la var m7covq3 "" 
+
+cap la var m7covq4__1 ""
+cap la var m7covq4__2 "" 
+cap la var m7covq4__3 ""
+cap la var m7covq4__4 ""
+cap la var m7covq4__97 ""
+cap la var m7covq4__99 ""
+cap la var m7covq4_other "" 
+
+cap la var m7covq5 "" 
+
+cap la var m7covq6__1 ""
+cap la var m7covq6__2 ""
+cap la var m7covq6__3 "" 
+cap la var m7covq6__4 ""
+cap la var m7covq6__5 ""
+cap la var m7covq6__6 ""
+cap la var m7covq6__7 ""
+cap la var m7covq6__97 ""
+
+cap la var m7covq7 ""
+cap la var m7covq7_other ""
+
+cap la var m7covq8 ""
+
+cap la var m7covq9__1 "" 
+cap la var m7covq9__2 "" 
+cap la var m7covq9__3 "" 
+cap la var m7covq9__4 ""
+cap la var m7covq9__5 ""
+cap la var m7covq9__6 "" 
+cap la var m7covq9__7 ""
+cap la var m7covq9__97 "" 
+cap la var m7covq9_other "" 
+
+cap la var m7covq10__1 "" 
+cap la var m7covq10__2 "" 
+cap la var m7covq10__3 ""
+cap la var m7covq10__4 ""
+cap la var m7covq10__5 ""
+cap la var m7covq10__6 ""
+cap la var m7covq10__7 ""
+cap la var m7covq10__8 ""
+cap la var m7covq10__9 ""
+cap la var m7covq10__10 ""
+cap la var m7covq10__97 ""
+cap la var m7covq10_other ""
+
+cap la var m1sbq16_infr__1 "Children difficulty in - seeing (even with glasses)"
+cap la var m1sbq16_infr__2 "Children difficulty in - hearing (even with aid)"
+cap la var m1sbq16_infr__3 "Children difficulty in - walking/climbing steps"
+cap la var m1sbq16_infr__4 "Children difficulty in - communicating"
+cap la var m1sbq16_infr__5 "Children difficulty in - learning bc of learning disability"
+cap la var m1sbq17_infr__1 "Student screening for - seeing (even with glasses)"
+cap la var m1sbq17_infr__2 "Student screening for - hearing (even with aid)"
+cap la var m1sbq17_infr__3 "Student screening for - learning disability"
+cap la var m1sbq17_infr__97 "Student screening for - other"
+cap la var m1sbq17_infr__98 "Student screening for - none of the above"
+
+cap la var m1scq4_imon__1 "Input monitored - functioning blackboard and chalks"
+cap la var m1scq4_imon__2 "Input monitored - textbooks"
+cap la var m1scq4_imon__3 "Input monitored - exercise books"
+cap la var m1scq4_imon__4 "Input monitored - basic classroom furniture"
+cap la var m1scq4_imon__5 "Input monitored - computers"
+cap la var m1scq4_imon__6 "Input monitored - pens and pencils"
+cap la var m1scq4_imon__7 "Input monitored - "
+cap la var m1scq6_imon__1 "schl inventory monitor - blackboard and chalk"
+cap la var m1scq6_imon__2 "schl inventory monitor - textbooks"
+cap la var m1scq6_imon__3 "schl inventory monitor - exercise books"
+cap la var m1scq6_imon__4 "schl inventory monitor - basic classroom furniture"
+cap la var m1scq6_imon__5 "schl inventory monitor - computers"
+cap la var m1scq6_imon__6 "schl inventory monitor - pens and pencils"
+
+cap la var m1scq9_imon__1 "Infra monitored - toilets"
+cap la var m1scq9_imon__2 "Infra monitored - electricity"
+cap la var m1scq9_imon__3 "Infra monitored - drinking water"
+cap la var m1scq9_imon__4 "Infra monitored - accessibility for people with disabilities"
+cap la var m1scq9_imon__5 "Infra monitored - "
+
+cap la var m1scq12_imon__1 "Schl inventory monitor - functioning toilets"
+cap la var m1scq12_imon__2 "Schl inventory monitor - electricity"
+cap la var m1scq12_imon__3 "Schl inventory monitor - drinking water"
+cap la var m1scq12_imon__4 "Schl inventory monitor - accessibility for people with disabilities"
+
+cap la var m1scq13_imon__1 "Student access requirement - blackboard and chalk"
+cap la var m1scq13_imon__2 "Student access requirement - textbooks"
+cap la var m1scq13_imon__3 "Student access requirement - exercise books"
+cap la var m1scq13_imon__4 "Student access requirement - basic classroom furniture"
+cap la var m1scq13_imon__5 "Student access requirement - computers"
+cap la var m1scq13_imon__6 "Student access requirement - pens and pencils"
+
+cap la var m1scq14_imon__1 "School requirement - toilets"
+cap la var m1scq14_imon__2 "School requirement - electricity"
+cap la var m1scq14_imon__3 "School requirement - drinking water"
+cap la var m1scq14_imon__4 "School requirement - accessibility for people with disabilities"
+cap la var m1scq14_imon__5 "School requirement - internet connectivity"
+
+cap la var m7saq5__1 "Grades taught - grade 1"
+cap la var m7saq5__2 "Grades taught - grade 2"
+cap la var m7saq5__3 "Grades taught - grade 3"
+cap la var m7saq5__4 "Grades taught - grade 4"
+cap la var m7saq5__5 "Grades taught - grade 5"
+cap la var m7saq5__6 "Grades taught - grade 6"
+cap la var m7saq5__7 "Grades taught - grade 7"
+cap la var m7saq5__8 "Grades taught - pre school"
+cap la var m7saq5__9 "Grades taught - special needs"
+
+cap la var m7saq6__1 "Subject taught -  Language"
+cap la var m7saq6__2 "Subject taught - Mathematics"
+cap la var m7saq6__3 "Subject taught - All subjects"
+cap la var m7saq6__97 "Subject taught - Other"
+
+cap la var m7scq5_opmn__1 "Textbook access - school budget to buy textbooks"
+cap la var m7scq5_opmn__2 "Textbook access - asked donors/community for help"
+cap la var m7scq5_opmn__3 "Textbook access - students shared textbooks"
+cap la var m7scq5_opmn__4 "Textbook access - textbook lending program"
+cap la var m7scq5_opmn__5 "Textbook access - teachers copy relevant parts of textbook"
+cap la var m7scq5_opmn__97 "Textbook access - other"
+
+cap la var m7sdq3_pman__1 "Clear school goal - school director"
+cap la var m7sdq3_pman__2 "Clear school goal - school teachers"
+cap la var m7sdq3_pman__3 "Clear school goal - students"
+cap la var m7sdq3_pman__4 "Clear school goal - parents"
+cap la var m7sdq3_pman__5 "Clear school goal - other members of schl community"
+ 
+cap la var m7sdq4_pman__1 "School goal - improve stu scores on std tests"
+cap la var m7sdq4_pman__2 "School goal - improve exam passing rate"
+cap la var m7sdq4_pman__3 "School goal - reduce stu absence"
+cap la var m7sdq4_pman__4 "School goal - reduce student drop out"
+cap la var m7sdq4_pman__5 "School goal - reduce teacher absence"
+cap la var m7sdq4_pman__6 "School goal - support teacher in pedagogical practices"
+cap la var m7sdq4_pman__7 "School goal - get more financial resources for schl infra"
+cap la var m7sdq4_pman__8 "School goal - get more financial resources for learning materials"
+cap la var m7sdq4_pman__97 "School goal - Other"
+
+cap la var m7seq2_pman__1 "Collect info - talk to parents"
+cap la var m7seq2_pman__2 "Collect info - talk to students"
+cap la var m7seq2_pman__3 "Collect info - talk to local authorities"
+cap la var m7seq2_pman__4 "Collect info - talk to teachers/staff"
+cap la var m7seq2_pman__97 "Collect info - other"
+
+cap la var m7sfq15a_pknw__0 "policy implementing maintenance and school infra - no responsibility"
+cap la var m7sfq15a_pknw__1 "policy implementing maintenance and school infra - national"
+cap la var m7sfq15a_pknw__2 "policy implementing maintenance and school infra - state"
+cap la var m7sfq15a_pknw__3 "policy implementing maintenance and school infra - local"
+cap la var m7sfq15a_pknw__4 "policy implementing maintenance and school infra - school"
+cap la var m7sfq15a_pknw__98 "policy implementing maintenance and school infra - don't know"
+
+cap la var m7sfq15b_pknw__0 "policy implementing procurement of materials - no responsibility"
+cap la var m7sfq15b_pknw__1 "policy implementing procurement of materials - national"
+cap la var m7sfq15b_pknw__2 "policy implementing procurement of materials - state"
+cap la var m7sfq15b_pknw__3 "policy implementing procurement of materials - local"
+cap la var m7sfq15b_pknw__4 "policy implementing procurement of materials - school"
+cap la var m7sfq15b_pknw__98 "policy implementing procurement of materials - don't know"
+
+cap la var m7sfq15c_pknw__0 "policy teacher hiring and assessment - no responsibility"
+cap la var m7sfq15c_pknw__1 "policy teacher hiring and assessment - national"
+cap la var m7sfq15c_pknw__2 "policy teacher hiring and assessment - state"
+cap la var m7sfq15c_pknw__3 "policy teacher hiring and assessment - local"
+cap la var m7sfq15c_pknw__4 "policy teacher hiring and assessment - school"
+cap la var m7sfq15c_pknw__98 "policy teacher hiring and assessment - don't know"
+
+cap la var m7sfq15d_pknw__0 "policy teacher supervision, training, coaching - no responsibility"
+cap la var m7sfq15d_pknw__1 "policy teacher supervision, training, coaching - national"
+cap la var m7sfq15d_pknw__2 "policy teacher supervision, training, coaching - state"
+cap la var m7sfq15d_pknw__3 "policy teacher supervision, training, coaching - local"
+cap la var m7sfq15d_pknw__4 "policy teacher supervision, training, coaching - school"
+cap la var m7sfq15d_pknw__98 "policy teacher supervision, training, coaching - don't know"
+
+cap la var m7sfq15e_pknw__0 "policy student learning assessments - no responsibility"
+cap la var m7sfq15e_pknw__1 "policy student learning assessments - national"
+cap la var m7sfq15e_pknw__2 "policy student learning assessments - state"
+cap la var m7sfq15e_pknw__3 "policy student learning assessments - local"
+cap la var m7sfq15e_pknw__4 "policy student learning assessments - school"
+cap la var m7sfq15e_pknw__98 "policy student learning assessments - don't know"
+
+cap la var m7sfq15f_pknw__0 "policy principal hiring and assignment - no responsibility"
+cap la var m7sfq15f_pknw__1 "policy principal hiring and assignment - national"
+cap la var m7sfq15f_pknw__2 "policy principal hiring and assignment - state"
+cap la var m7sfq15f_pknw__3 "policy principal hiring and assignment - local"
+cap la var m7sfq15f_pknw__4 "policy principal hiring and assignment - school"
+cap la var m7sfq15f_pknw__98 "policy principal hiring and assignment - don't know"
+
+cap la var m7sfq15g_pknw__0 "policy principal supervision and training - no responsibility"
+cap la var m7sfq15g_pknw__1 "policy principal supervision and training - national"
+cap la var m7sfq15g_pknw__2 "policy principal supervision and training - state"
+cap la var m7sfq15g_pknw__3 "policy principal supervision and training - local"
+cap la var m7sfq15g_pknw__4 "policy principal supervision and training - school"
+cap la var m7sfq15g_pknw__98 "policy principal supervision and training - don't know"
+
+cap la var m7sgq1_ssld__1 "Selecting a principal - Years of experience"
+cap la var m7sgq1_ssld__2 "Selecting a principal - Quality if teaching"
+cap la var m7sgq1_ssld__3 "Selecting a principal - Demonstrated management qualities"
+cap la var m7sgq1_ssld__4 "Selecting a principal - Good relationship with school owner"
+cap la var m7sgq1_ssld__5 "Selecting a principal - Good relationship with education dept"
+cap la var m7sgq1_ssld__6 "Selecting a principal - Political affiliations"
+cap la var m7sgq1_ssld__7 "Selecting a principal - Ethnic group"
+cap la var m7sgq1_ssld__8 "Selecting a principal - Knowledge of the local community"
+cap la var m7sgq1_ssld__9 "M7Sgq1 ssld 9"
+cap la var m7sgq1_ssld__97 "Selecting a principal - Other"
+
+
+cap la var m7sgq4_ssup__1 "Training - management training for new principals"
+cap la var m7sgq4_ssup__2 "Training - In0service training for principals"
+cap la var m7sgq4_ssup__3 "Training - Mentoring/coaching by experienced principals"
+cap la var m7sgq4_ssup__4 "Training - Other"
+cap la var m7sgq4_ssup__97 "M7Sgq4 ssup 97"
+
+cap la var m7sgq6_ssup__1 "Skill used - prepare a budget"
+cap la var m7sgq6_ssup__2 "Skill used - manage financial resources"
+cap la var m7sgq6_ssup__3 "Skill used - manage relationship with parents/community"
+cap la var m7sgq6_ssup__4 "Skill used - provide feedback to teachers"
+cap la var m7sgq6_ssup__5 "Skill used - motivate teachers"
+cap la var m7sgq6_ssup__6 "Skill used - develop a lesson plan"
+cap la var m7sgq6_ssup__7 "Skill used - pedagogical skills"
+cap la var m7sgq6_ssup__8 "Skill used - reporting data on school"
+cap la var m7sgq6_ssup__9 "Skill used - how to ask for materials needed at school"
+cap la var m7sgq6_ssup__97 "Skill used - other"
+cap la var m7sgq6_ssup__98 "Skill used - don't know"
+
+cap la var m7sgq9_sevl__1 "Evaluated by - ministry of education central level"
+cap la var m7sgq9_sevl__2 "Evaluated by ministry of education in province"
+cap la var m7sgq9_sevl__3 "Evaluated by district education office"
+cap la var m7sgq9_sevl__4 "Evaluated by heads of subject departments"
+cap la var m7sgq9_sevl__5 "Evaluated by parents' association"
+cap la var m7sgq9_sevl__6 "M7Sgq9 sevl 6"
+cap la var m7sgq9_sevl__7 "M7Sgq9 sevl 7"
+
+cap la var m7sgq10_sevl__1 "Evaluated on - teaching material availability"
+cap la var m7sgq10_sevl__10 "Evaluated on - "
+cap la var m7sgq10_sevl__2 "Evaluated on - student discipline or classroom management"
+cap la var m7sgq10_sevl__3 "Evaluated on - teacher's knowledge"
+cap la var m7sgq10_sevl__4 "Evaluated on - teaching methods"
+cap la var m7sgq10_sevl__5 "Evaluated on - teacher attendance"
+cap la var m7sgq10_sevl__6 "Evaluated on - student attendance"
+cap la var m7sgq10_sevl__7 "Evaluated on - school facilities and equipment"
+cap la var m7sgq10_sevl__8 "Evaluated on - student assessment results"
+cap la var m7sgq10_sevl__9 "Evaluated on - parent assessment"
+cap la var m7sgq10_sevl__97 "Evaluated on - other"
+cap la var m7sgq10_sevl__98 "Evaluated on - don't know"
+
+cap la var m7sgq11_sevl__1 "Principal received 2 or more negative evaluations - dismissed"
+cap la var m7sgq11_sevl__2 "Principal received 2 or more negative evaluations - salary reduced"
+cap la var m7sgq11_sevl__3 "Principal received 2 or more negative evaluations - professional dev required"
+cap la var m7sgq11_sevl__4 "Principal received 2 or more negative evaluations - monitored"
+cap la var m7sgq11_sevl__7 "Principal received 2 or more negative evaluations - no consequences"
+cap la var m7sgq11_sevl__97 "Principal received 2 or more negative evaluations - other"
+cap la var m7sgq11_sevl__98 "Principal received 2 or more negative evaluations - don't know"
+
+cap la var m7sgq12_sevl__1 "Principal received 2 or more positive evaluations - promoted"
+cap la var m7sgq12_sevl__2 "Principal received 2 or more positive evaluations - salary increased"
+cap la var m7sgq12_sevl__3 "Principal received 2 or more positive evaluations - professional dev offered"
+cap la var m7sgq12_sevl__4 "Principal received 2 or more negative evaluations - public recognition"
+cap la var m7sgq12_sevl__7 "Principal received 2 or more positive evaluations - no consequences"
+cap la var m7sgq12_sevl__97 "Principal received 2 or more positive evaluations - other"
+cap la var m7sgq12_sevl__98 "Principal received 2 or more positive evaluations - don't know"
+
+cap la var modules__1 "Modules 1"
+cap la var modules__2 "Modules 2"
+cap la var modules__3 "Modules 3"
+cap la var modules__4 "Modules 4"
+cap la var modules__5 "Modules 5"
+cap la var modules__6 "Modules 6"
+cap la var modules__7 "Modules 7"
+cap la var modules__8 "Modules 8"
+cap la var modules__9 "Modules 9"
+
+cap la var has__errors "Has errors"
+
+
 *----- teachers add                        
 cap la var in_questionnaire  "observation in the teachers questionnaire data"
 cap la var in_assessment     "observation in the teachers assessment data"
@@ -1829,7 +2107,19 @@ cap la var g1_class_weight "g1_class_weight "
 cap la var g1_stud_weight  "g1_stud_weight"               
 			
 			
-			
-			
-			
+*----- Adding additional variables 
 
+ 
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
