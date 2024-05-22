@@ -2052,7 +2052,6 @@ cap la var modules__9 "Modules 9"
 
 cap la var has__errors "Has errors"
 
-
 *----- teachers add                        
 cap la var in_questionnaire  "observation in the teachers questionnaire data"
 cap la var in_assessment     "observation in the teachers assessment data"
@@ -2094,19 +2093,45 @@ cap la var SE_PRM_TINM_7 "(De Facto) % teachers agree/strongly agree (Students h
 cap la var SE_PRM_TINM_8 "(De Facto) % teachers agree/strongly agree (To be honest, students can't really change how inte~)"
 cap la var SE_PRM_TINM_9 "(De Facto) % teachers agree/strongly agree (Students can always substantially change how intell~)"
 cap la var SE_PRM_TINM_10 "(De Facto) % teachers agree/strongly agree (Students can change even their basic intelligence l~)"
-cap la var motivation_teaching_1 "teacher motivation for teaching_1"		
+cap la var motivation_teaching_1 "teacher motivation for teaching_1"	
+
+cap la var public "Public"
+purpose_observation "Purpose of the observation"
+teacher_bonus_other	"teacher bonus-Other"
 			
 *----- fourth g add                        
 cap la var g4_class_weight  "g4_class_weight"
 cap la var g4_stud_weight    "g4_stud_weight"
 cap la var m8sbq1_number_sense	"Please put these numbers intherightorder, from lower tohigher:2-17-55-117-123-987"		
+
+cap la var m8sbq3b_arithmetic ""
+cap la var m8sbq3c_arithmetic ""
+cap la var m8sbq3d_arithmetic ""
+cap la var m8sbq3e_arithmetic ""
+cap la var m8sbq3f_arithmetic ""
+cap la var m8sbq3h_arithmetic ""
+cap la var m8sbq3i_arithmetic ""
+cap la var m8sbq3j_arithmetic ""
+cap la var m8sbq4_arithmetic ""
+cap la var m8sbq5_word_problem "" 
+cap la var m8sbq6_sequences ""
 			
 *----- first g add       
 cap la var g1_class_weight "g1_class_weight "
-cap la var g1_stud_weight  "g1_stud_weight"               
+cap la var g1_stud_weight  "g1_stud_weight"  
+
+cap la var m6s2q13prac_backward_digit ""
+cap la var m6s2q13prac2_backward_digit ""
+cap la var m6s2q14prac1_head_shoulders ""
+cap la var m6s2q14prac2_head_shoulders ""
+cap la var m6s2q14prac3_head_shoulders ""
+cap la var m6s2q14prac1b_head_shoulders ""
+cap la var m6s2q14prac2b_head_shoulders ""
+cap la var m6s2q14prac3b_head_shoulders ""
+cap la var soc_length "Soc length"
+cap la var exec_length "Exec length"            
 			
 			
-*----- Adding additional variables 
 
  
 
