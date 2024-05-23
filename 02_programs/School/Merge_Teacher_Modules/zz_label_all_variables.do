@@ -2095,8 +2095,8 @@ cap la var SE_PRM_TINM_10 "(De Facto) % teachers agree/strongly agree (Students 
 cap la var motivation_teaching_1 "teacher motivation for teaching_1"	
 
 cap la var public "Public"
-purpose_observation "Purpose of the observation"
-teacher_bonus_other	"teacher bonus-Other"
+cap la var purpose_observation "Purpose of the observation"
+cap la var teacher_bonus_other	"teacher bonus-Other"
 			
 *----- fourth g add                        
 cap la var g4_class_weight  "g4_class_weight"
