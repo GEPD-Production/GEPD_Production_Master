@@ -984,9 +984,9 @@ indicators <-   list(
   #(De Facto) Pe,rcent of teachers that report salary delays in the past 12 months	
   c("SE.PRM.TATT.8 ", "100*m3seq6_tatt		", "teacher_questionnaire", "TATT",  "All"),  
   #(De Facto) Po,licy Lever (Teaching) - Attraction	
-  c("SE.PRM.TATT.DF", "teacher_attraction", "policy_survey", "NA","NA"),
+  c("SE.PRM.TATT.DJ", "teacher_attraction", "policy_survey", "NA","NA"),
   #(De Jure) Pol,icy Lever (Teaching) - Attraction	
-  c("SE.PRM.TATT.DJ", "teacher_attraction		", "teacher_questionnaire", "TATT",  "All"),
+  c("SE.PRM.TATT.DF", "teacher_attraction		", "teacher_questionnaire", "TATT",  "All"),
   
   
   #######################################
