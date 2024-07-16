@@ -816,8 +816,8 @@ indicators <-   list(
   
   c("SE.PRM.ATTD    ", "student_attendance	", "school", "ATTD",  "All"),
   c("SE.PRM.ATTD.1  ", "student_attendance	", "school", "ATTD",  "All"),
-  c("SE.PRM.ATTD.1.F", "student_attendance	", "school", "ATTD",  "Female"),
-  c("SE.PRM.ATTD.1.M", "student_attendance	", "school", "ATTD",  "Male"),
+  c("SE.PRM.ATTD.1.F", "student_attendance_female	", "school", "ATTD",  "All"),
+  c("SE.PRM.ATTD.1.M", "student_attendance_male	", "school", "ATTD",  "All"),
   c("SE.PRM.ATTD.1.R", "student_attendance	", "school", "ATTD",  "Rural"),
   c("SE.PRM.ATTD.1.U", "student_attendance	", "school", "ATTD",  "Urban"),
   
