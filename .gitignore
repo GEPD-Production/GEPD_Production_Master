@@ -80,7 +80,7 @@
 !/**/*_rawdata/*/*.csv
 !/**/GEPD_indicator_template.csv
 
-
+!/**/04_GEPD_Indicators/*.csv
 
 # image files in documentation folders
 !/00_documentation/*/*/*.png
