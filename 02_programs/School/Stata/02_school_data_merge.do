@@ -316,7 +316,91 @@ ds, has(type string)
 local stringvars "`r(varlist)'"
 local stringvars : list stringvars- not
 
+* Store variable labels:
+
+ foreach v of var * {
+	local l`v' : variable label `v'
+       if `"`l`v''"' == "" {
+ 	local l`v' "`v'"
+ 	}
+ }
+ 
+ * Store value labels: 
+ 
+label dir 
+return list
+
+
+local list_of_valuelables = r(names)  // specify labels you want to keep
+* local list_of_valuelables =  "m7saq7 m7saq10 teacher_obs_gender"
+
+// save the label values in labels.do file to be executed after the collapse:
+label save using "${clone}/02_programs/School/labels.do", replace
+// note the names of the label values for each variable that has a label value attached to it: need the variable name - value label correspodence
+   local list_of_vars_w_valuelables
+ * foreach var of varlist m7saq10 teacher_obs_gender m7saq7 {
+   
+   foreach var of varlist * {
+   
+   local templocal : value label `var'
+   if ("`templocal'" != "") {
+      local varlabel_`var' : value label `var'
+      di "`var': `varlabel_`var''"
+      local list_of_vars_w_valuelables "`list_of_vars_w_valuelables' `var'"
+   }
+}
+di "`list_of_vars_w_valuelables'"
+
+
+********************************************************************************
+*drop labels and then reattach
+label drop _all
 collapse (mean) `numvars' (firstnm) `stringvars', by(school_code)
+********************************************************************************
+* Comment_AR: After the collpase above the variable type percision changes from byte to double 
+
+
+/*
+fre m1*
+fre m2*
+fre m3*
+fre m4*
+fre m5*
+fre m6*
+fre m7*
+fre m8*
+fre s1*
+fre s2*
+*/
+
+
+
+/*
+// Round variables to convert them from a new variable with byte precision
+
+local lab_issue "s1_c7_2 s1_c9_3 s1_c9_1 s1_c9 s1_c8_3 s1_c8_2 s1_c8_1 s1_c8 s1_c7_3 s1_c7_2 s1_b6_3 s1_b6_2 s1_b6_1 s1_b6 s1_b5_2 s1_b5_1 s1_b4_3 s1_b4_2 s1_b4_1 s1_b4 s1_b3_4 s1_b3_3 s1_b3_1 s1_b3 s1_a2_3 s1_a2_2 s1_a2_1 s1_a2 s1_a1_3 s1_a1_2 s1_a1_1 s1_a1 s1_0_3_2 s1_0_2_2 s1_0_2_1 s1_0_1_2 s1_0_1_1"
+
+foreach var of local lab_issue {	
+replace `var' = round(`var')
+}
+*/
+
+
+* Redefine var labels:  
+  foreach v of var * {
+	label var `v' `"`l`v''"'
+ }
+ 
+// Run labels.do to redefine the label values in collapsed file
+do "${clone}/02_programs/School/labels.do"
+// reattach the label values
+foreach var of local list_of_vars_w_valuelables {
+   cap label values `var' `varlabel_`var''
+}
+
+
+fre s1_c7_2 s1_c9_3 s1_c9_1 s1_c9 s1_c8_3 s1_c8_2 s1_c8_1 s1_c8 s1_c7_3 s1_c7_2 s1_b6_3 s1_b6_2 s1_b6_1 s1_b6 s1_b5_2 s1_b5_1 s1_b4_3 s1_b4_2 s1_b4_1 s1_b4 s1_b3_4 s1_b3_3 s1_b3_1 s1_b3 s1_a2_3 s1_a2_2 s1_a2_1 s1_a2 s1_a1_3 s1_a1_2 s1_a1_1 s1_a1 s1_0_3_2 s1_0_2_2 s1_0_2_1 s1_0_1_2 s1_0_1_1
+
 
 
 save "${processed_dir}\\School\\Confidential\\Merged\\school.dta" , replace
