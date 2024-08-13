@@ -382,7 +382,7 @@ expert_dta_learners_final <- expert_dta_learners_final %>%
          developmental_standards=read_var(D11),
          ece_qualifications=read_var(D12),
          ece_in_service=read_var(D13)) %>%
-  mutate(ece_programs=1+pre_primary_free_some + developmental_standards + ece_qualifications/3 + ece_in_service)
+  mutate(ece_programs=1+pre_primary_free_some + developmental_standards + ece_qualifications/5 + ece_in_service)
 
 # financial capacity
 expert_dta_learners_final <- expert_dta_learners_final %>%
