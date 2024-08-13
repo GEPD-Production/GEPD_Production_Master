@@ -425,6 +425,18 @@ expert_dta_teachers_final <- expert_dta_teachers_final %>%
 expert_dta_learners_final <- expert_dta_learners_final %>%
   select(-starts_with("D", ignore.case=FALSE))
 
+#learner rules
+learner_rules <- validator(
+  nutrition_programs=in_range(nutrition_programs,1,5),
+  health_programs=in_range(health_programs,1,5),
+  ece_programs=in_range(ece_programs,1,5),
+  financial_capacity=in_range(financial_capacity,1,5),
+  caregiver_skills=in_range(caregiver_skills,1,5)
+)
+
+out <- confront(expert_dta_learners_final, learner_rules)
+summary(out)
+plot(out)
 
   #select(-all_of(learners_drop))
 expert_dta_learners_final %>% 
