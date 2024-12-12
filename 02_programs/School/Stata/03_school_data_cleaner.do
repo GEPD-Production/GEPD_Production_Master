@@ -1,6 +1,7 @@
 *Clean data files for GEPD school indicators
 *Written originally by Kanika Verma
 *Updated by Brian Stacy on December 8, 2023.
+*Last updated by Mohammed Eldesouky on December 11, 2024.
 
 clear all
 
@@ -202,7 +203,7 @@ bysort school_code: egen m5_teach_count_math=count(math_content_knowledge) if ty
 
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_content_weight)
-foreach var in content_proficiency  {
+foreach var in content_proficiency literacy_content_proficiency math_content_proficiency  {
 svy: mean `var'
 }
 
@@ -216,6 +217,106 @@ foreach var in content_proficiency  {
 svy: mean `var' if m2saq3 == 2
 }
 
+*Urban
+foreach var in content_proficiency  {
+svy: mean `var' if urban_rural=="Urban"
+}
+
+*Rural
+foreach var in content_proficiency  {
+svy: mean `var' if urban_rural=="Rural"
+}
+
+
+**********************************************************
+* Teacher pedagogical skills -- TEACH
+*********************************************************
+gl low_medium_high s1_0_1_2 s1_0_2_2 s1_0_3_2 s1_a2_1 s1_a2_2 s1_a2_3 s1_b3_1 s1_b3_2 s1_b3_3 s1_b3_4 s1_b5_1 s1_b5_2 s1_b6_1 s1_b6_2 s1_b6_3 s1_c7_1 s1_c7_2 s1_c7_3  s1_c8_1 s1_c8_2 s1_c8_3 s1_c9_1 s1_c9_2 s1_c9_3
+
+  
+gl low_medium_high_na s1_a1_1 s1_a1_2 s1_a1_3 s1_a1_4a s1_a1_4b s1_b4_2 s1_b4_3
+
+
+gl yes_no s1_0_1_1 s1_0_2_1 s1_0_3_1
+
+gl overall s1_a1 s1_a2 s1_b3 s1_b4 s1_b5 s1_b6 s1_c7 s1_c8 s1_c9
+
+
+** Verfying that the teach vars have observations
+**# Bookmark #1
+
+foreach var in $overall $yes_no $low_medium_high $low_medium_high_na {
+sum `var'
+}
+
+
+** encoding the string responses into numeric -- Read below to understnad how the loop works 
+	/*
+	a- we define value lables to be used for encoding
+	b- the loop first execute a test to confirm the varibales are coded as string:
+		- if it is string (rc==0), the loop will execute and encode them into factor/numerical and labled vars
+		- if it is numeric(rc==7), the loop will stop executing with an error -- already encoded into factor (do nothing more).
+
+	*/
+
+foreach var of global overall {
+capture confirm string varibale `v'
+if (_rc == 7) continue 
+	*these aggregate vars must be numeric -- if they are, the loop would do nothing
+
+	destring `var', replace
+		tab `var'
+}
+
+
+** create sub-indicators from TEACH and calculating Teach score
+
+*  a- first, create an average score var of the sub-componenets  
+
+*combine segment 1 and segment 2
+foreach var in a1 a2 b3 b4 b5 b6 c7 c8 c9 {
+	egen s_`var'=rowmean(s1_`var' s2_`var')
+}
+
+egen classroom_culture = rowmean(s_a1 s_a2)
+	
+egen instruction = rowmean(s_b3 s_b4 s_b5 s_b6)
+
+egen socio_emotional_skills = rowmean(s_c7 s_c8 s_c9)
+			
+* TEACH score
+egen teach_score=rowmean(classroom_culture instruction socio_emotional_skills)
+
+* TEACH proficiency
+gen teacher_pedg_comb_weight = school_weight * teacher_pedagogy_weight
+gen teach_prof = 100*(teach_score>=3) if !missing(teach_score)
+
+*Estimation
+svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)  || teachers_id, weight(teacher_pedagogy_weight)
+ 
+*For overall TEACH Scores
+foreach var in teach_score teach_prof  {
+svy: mean `var' 
+}
+ 
+*For male teachers
+foreach var in teach_score teach_prof  {
+svy: mean `var' if m2saq3 == 1 
+} 
+ 
+*For female teachers
+foreach var in teach_score teach_prof   {
+svy: mean `var' if m2saq3 == 2
+}
+ 
+*For rural teachers
+foreach var in teach_score teach_prof  {
+svy: mean `var' if urban_rural == "Rural" 
+}
+ 
+foreach var in teach_score teach_prof  {
+svy: mean `var' if urban_rural == "Urban" 
+}
 
 ************
 *4th grade assessment
@@ -338,6 +439,15 @@ svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   ||
 foreach var in student_knowledge student_proficient {
 svy: mean `var'
 }
+
+foreach var in literacy_student_proficient math_student_proficient {
+svy: mean `var'
+}
+
+foreach var in student_knowledge literacy_student_knowledge math_student_knowledge {
+svy: mean `var' 
+}
+
 *For male students
 foreach var in student_knowledge student_proficient {
 svy: mean `var' if m8s1q3==1
@@ -347,6 +457,27 @@ svy: mean `var' if m8s1q3==1
 
 foreach var in student_knowledge student_proficient  {
 svy: mean `var' if m8s1q3==2
+}
+
+*For urban
+foreach var in student_proficient student_knowledge literacy_student_knowledge math_student_knowledge {
+svy: mean `var' if urban_rural=="Urban"
+}
+
+
+*For rural
+foreach var in student_proficient student_knowledge literacy_student_knowledge math_student_knowledge {
+svy: mean `var' if urban_rural=="Rural"
+}
+
+* m8saq3_id - could identify basic words
+* m8saq7b_gir - successfully answered multiple choice 4th grade level reading comprehension question
+* m8sbq3a_arithmetic - successfully answered 8+7
+* m8sbq3f_arithmetic - successfully answered 7x8
+* m8sbq3j_arithmetic - successfully answered 75/5
+
+foreach var in m8saq3_id m8saq7b_gir m8sbq3a_arithmetic m8sbq3f_arithmetic m8sbq3j_arithmetic {
+svy: mean `var' 
 }
 
 *******************
@@ -430,6 +561,11 @@ replace `var' = `var'*100
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || ecd_assessment__id, weight(g1_stud_weight)
 svy: mean ecd_student_proficiency
 
+foreach var in ecd_student_knowledge ecd_literacy_student_knowledge ecd_math_student_knowledge ecd_exec_student_knowledge ecd_soc_student_knowledge {
+svy: mean `var' 
+}
+
+
 *For male students
 
 svy: mean ecd_student_proficiency if m6s1q3==1
@@ -485,6 +621,68 @@ gen inputs = textbooks+blackboard_functional + pens_etc + share_desk +  0.5*used
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)
 svy: mean inputs
+
+
+gen pencil = (share_pencil>=0.9) if !missing(share_pencil)
+gen exbook = (share_exbook>=0.9) if !missing(share_exbook)
+foreach var in  textbooks blackboard_functional exbook pencil{
+svy: mean `var' 
+}
+
+*Urban Rural
+foreach var in  textbooks {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  textbooks {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+    
+foreach var in  blackboard_functional {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  blackboard_functional {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  pens_etc {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  pens_etc {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  share_desk {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  share_desk {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+foreach var in  used_ict {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  used_ict {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  access_ict {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  access_ict {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
 
 
 *********************************************
@@ -560,7 +758,55 @@ gen infrastructure = drinking_water+ functioning_toilet+ internet + class_electr
 
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)
-svy: mean drinking_water functioning_toilet internet class_electricity disability_accessibility infrastructure
+foreach var in  drinking_water functioning_toilet internet class_electricity disability_accessibility infrastructure {
+svy: mean `var'
+}
+
+
+foreach var in  drinking_water {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  drinking_water {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  functioning_toilet {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  functioning_toilet {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  internet  {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  internet  {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  class_electricity {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  class_electricity {
+svy: mean `var' if urban_rural == "Rural"
+}
+
+
+foreach var in  disability_accessibility {
+svy: mean `var' if urban_rural == "Urban"
+}
+
+foreach var in  disability_accessibility {
+svy: mean `var' if urban_rural == "Rural"
+}
+
 
 *********************************************
 **********School Operational Management *********
@@ -925,7 +1171,11 @@ gen teacher_selection_deployment=1+teacher_selection+teacher_deployment
 
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
-svy: mean teacher_selection_deployment teacher_selection teacher_deployment
+foreach var in teacher_selection_deployment teacher_selection teacher_deployment {
+svy: mean `var'
+}
+
+
 
 *********************************************
 ***** Teacher Teaching Support ***********
@@ -1002,7 +1252,9 @@ gen teacher_support=1+pre_service+practicum+in_service+opportunities_teachers_sh
 
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
-svy: mean teacher_support pre_service practicum in_service opportunities_teachers_share
+foreach var in teacher_support pre_service practicum in_service opportunities_teachers_share {
+svy: mean `var'
+}
 
 *********************************************
 ***** Teacher Teaching Evaluation ***********
@@ -1034,7 +1286,9 @@ replace positive_consequences = 1 if (m3bq10_tmna__1==1 | m3bq10_tmna__2==1 | m3
 gen teaching_evaluation=1+formally_evaluated+evaluation_content+negative_consequences+positive_consequences
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
-svy: mean teaching_evaluation formally_evaluated evaluation_content negative_consequences positive_consequences
+foreach var in teaching_evaluation formally_evaluated evaluation_content negative_consequences positive_consequences {
+svy: mean `var'
+}
 
 *********************************************
 ***** Teacher  Monitoring and Accountability ***********
@@ -1071,7 +1325,11 @@ gen teacher_monitoring=1+attendance_evaluated + 1*attendance_rewarded + 1*attend
 
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
-svy: mean teacher_monitoring attendance_evaluated attendance_rewarded attendence_sanctions miss_class_admin
+
+foreach var in teacher_monitoring attendance_evaluated attendance_rewarded attendence_sanctions miss_class_admin {
+svy: mean `var'
+}
+
 
 *********************************************
 ***** Teacher  Intrinsic Motivation ***********
@@ -1153,7 +1411,10 @@ replace motivation_teaching_1 = 1 if m3sdq2_tmna==1
 gen intrinsic_motivation=1+0.8*(0.2*acceptable_absent + 0.2*students_deserve_attention + 0.2*growth_mindset + motivation_teaching+motivation_teaching_1)
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)   || teachers_id, weight(teacher_questionnaire_weight)
-svy: mean intrinsic_motivation acceptable_absent students_deserve_attention growth_mindset motivation_teaching motivation_teaching_1
+foreach var in intrinsic_motivation acceptable_absent students_deserve_attention growth_mindset motivation_teaching motivation_teaching_1 {
+svy: mean `var'
+}
+
 
 *********************************************
 ***** School  Inputs and Infrastructure Standards ***********
@@ -1330,7 +1591,10 @@ gen principal_offered = (m7sgq7_ssup==2 | m7sgq7_ssup==3 | m7sgq7_ssup==4 | m7sg
 gen sch_support=1+principal_trained+principal_training+principal_used_skills+principal_offered
 
 svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)
-svy: mean sch_support principal_trained principal_training principal_used_skills principal_offered
+
+foreach var in sch_support principal_trained principal_training principal_used_skills principal_offered {
+svy: mean `var'
+}
 
 *********************************************
 ***** School School Management Evaluation  ***********
@@ -1368,551 +1632,32 @@ svyset school_code, strata(strata) singleunit(scaled) weight(school_weight)
 svy: mean principal_evaluation
 
 
-
-*********************************************
-***** Pedagogical skills (TEACH)  ***********
-*********************************************
-
-*chnage to the frame where teach data exist (school or teachers)
-frame change school  /// frame copy- then add this to teachers data
-
-
-** grouping teach variables and storing them into globals 
-
-gl low_medium_high s1_0_1_2 s1_0_2_2 s1_0_3_2 s1_a2_1 s1_a2_2 s1_a2_3 s1_b3_1 s1_b3_2 s1_b3_3 s1_b3_4 s1_b5_1 s1_b5_2 s1_b6_1 ///
-  s1_b6_2 s1_b6_3 s1_c7_1 s1_c7_2 s1_c7_3 s1_c8_1 s1_c8_2 s1_c8_3 s1_c9_1 s1_c9_2 s1_c9_3
-  
-gl low_medium_high_na s1_a1_1 s1_a1_2 s1_a1_3 s1_a1_4a s1_a1_4b s1_b4_1 s1_b4_2 s1_b4_3
-
-gl yes_no s1_0_1_1 s1_0_2_1 s1_0_3_1	
-
-gl overall s1_a1 s1_a2 s1_b3 s1_b4 s1_b5 s1_b6 s1_c7 s1_c8 s1_c9
-
-** Verfying that the teach vars have observations
-
-foreach var in $yes_no $low_medium_high $low_medium_high_na {
- sum `var'
-}
-
-** encoding the string responses into numeric -- Read below to understnad how the loop works 
-	/*
-	a- we define value lables to be used for encoding
-	b- the loop first execute a test to confirm the varibales are coded as string:
-		- if it is string (rc==0), the loop will execute and encode them into factor/numerical and labled vars
-		- if it is numeric(rc==7), the loop will stop executing with an error -- already encoded into factor (do nothing more).
-
-	*/
-
-foreach var of global overall {
-capture confirm string varibale `v'
-if (_rc == 7) continue 
-	*these aggregate vars must be numeric -- if they are, the loop would do nothing
-
-	destring `var', replace
-		codebook `var'
-}
-
-
-
-label define low_medium_high_lbl 1 "NA" 2 "L" 3 "M" 4 "H"
-foreach var of global low_medium_high {
-capture confirm string varibale `{$low_medium_high}'
- if _rc  {
- 	* if numeric do the following
- 	codebook `var'
-	label val `var' low_medium_high_lbl
-	codebook `var'
-}
-
-else {
-	* if string do the follwoing
-	replace `var'= upper(`var')								//Making all upper
-	replace `var'= subinstr(`var', " ", "", .)				//Trimming spaces
-	replace `var'= substr(`var' , 1, 1) if `var' !="NA"	    //for Yes, No; we extract only first letters
-
-	replace `var' ="1" if (`var'=="NA" | `var'=="")
-	replace `var' ="2" if `var'=="L"
-	replace `var' ="3" if `var'=="M"
-	replace `var' ="4" if `var'=="H"
-	
-	destring `var', replace
-	label val `var' low_medium_high_lbl
-		
-		tab `var'
-
-	
-}
-}
-
-	
-
-foreach var of global low_medium_high_na {
-capture confirm string varibale `{$low_medium_high_na}'
- if _rc  {
- 	* if numeric do the following
- 	codebook `var'
-	label val `var' low_medium_high_lbl
-	codebook `var'
-}
-else {
-	* if string do the follwoing
-	replace `var'= upper(`var')								//Making all upper
-	replace `var'= subinstr(`var', " ", "", .)				//Trimming spaces
-	replace `var'= substr(`var' , 1, 1) if `var' !="NA"	    //for Yes, No; we extract only first letters
-
-	replace `var' ="1" if (`var'=="NA" | `var'=="")
-	replace `var' ="2" if `var'=="L"
-	replace `var' ="3" if `var'=="M"
-	replace `var' ="4" if `var'=="H"
-	
-	destring `var', replace
-	label val `var' low_medium_high_lbl
-		
-		tab `var'
-
-	
-}
-}
-	
-
-
-label define yes_no_lbl 0 "N" 1 "Y"
-foreach var of global yes_no {
- capture confirm string varibale `{$yes_no}'
- if _rc  {
- 	* if numeric do the following
- 	codebook `var'
-	label val `var' yes_no_lbl
-	codebook `var'
-}
-
-else {
-	* if string do the follwoing
-	replace `var'= upper(`var')								//Making all upper
-	replace `var'= subinstr(`var', " ", "", .)				//Trimming spaces
-	replace `var'= substr(`var' , 1, 1) if `var' !="NA"	    //for Yes, No; we extract only first letters
-
-	replace `var' =""  if `var'=="NA"
-	replace `var' ="0" if `var'=="N"
-	replace `var' ="1" if `var'=="Y"
-
-	destring `var', replace
-	label val `var' yes_no_lbl
-		
-		tab `var'
-
-	
-}
-}
-
-
-** create sub-indicators from TEACH and calculating Teach score
-
-*  a- first, create an average score var of the sub-componenets  
-*  b- second, we creat an indicator varibale "counter", to know on how many of the sub componenets the
-*		teacher scored above 3. -- these varibales will be used to calculate the proficiency scores. 
-
-egen classroom_culture = rowmean(s1_a1 s1_a2)
-	foreach var of varlist s1_a1 s1_a2 {
-	
-	gen     `var'_pro =.
-	replace `var'_pro =1 if (`var' >=3 & `var'<=5)
-	replace `var'_pro =0 if (`var' <3)
-	
-		tab `var'_pro
-		}
-		egen cc_counter= rowtotal(s1_a1_pro s1_a2_pro), m
-			tab cc_counter
-	
-	
-egen instruction = rowmean(s1_b3 s1_b4 s1_b5 s1_b6)
-	foreach var of varlist s1_b3 s1_b4 s1_b5 s1_b6 {
-	
-	gen     `var'_pro =.
-	replace `var'_pro =1 if (`var' >=3 & `var'<=5)
-	replace `var'_pro =0 if (`var' <3)
-	
-		tab `var'_pro
-		}
-		egen i_counter= rowtotal(s1_b3_pro s1_b4_pro s1_b5_pro s1_b6_pro), m
-			tab i_counter
-
-			
-egen socio_emotional_skills = rowmean(s1_c7 s1_c8 s1_c9)
-	foreach var of varlist s1_c7 s1_c8 s1_c9 {
-	
-	gen     `var'_pro =.
-	replace `var'_pro =1 if (`var' >=3 & `var'<=5)
-	replace `var'_pro =0 if (`var' <3)
-	
-		tab `var'_pro
-		}
-		egen se_counter= rowtotal(s1_c7_pro s1_c8_pro s1_c9_pro), m
-			tab se_counter
-
-			
-egen teach_score=rowmean(classroom_culture instruction socio_emotional_skills)
-	foreach var of varlist classroom_culture instruction socio_emotional_skills {
-	
-	gen     `var'_pro =.
-	replace `var'_pro =1 if (`var' >=3 & `var'<=5)
-	replace `var'_pro =0 if (`var' <3)
-	
-		tab `var'_pro
-		}
-		egen tch_counter= rowtotal(classroom_culture_pro instruction_pro socio_emotional_skills_pro), m
-			tab tch_counter
-		
-
-** estimate teach proficiency: 
-*			(100% if all teach score components>=3;) 
-*					teacher scoring 3 or more on each of the subcomponents
-*			(50% if at least one teach score compenents >=3;) if a teacher is proficient on 
-*					at least one of the components and the overall teach_score is <3. 
-*			(0% if all teach score components <3;) 
-*					teacher scoring below 3 on all of the subcomponents
-
-
-*-- First component proficiency (classroom culture)
-gen classroom_culture_prof=.
-	replace classroom_culture_prof=1*100    if (classroom_culture >=3 & classroom_culture<=5)
-	replace classroom_culture_prof=0	    if (classroom_culture <3)
-	replace classroom_culture_prof=0.5*100  if cc_counter==1
-
-*-- Second component proficiency  (instruction)
-gen instruction_prof=.
-	replace instruction_prof=1*100  	  if (instruction >=3 & instruction<=5)
-	replace instruction_prof=0	     	  if (instruction <3)
-	replace instruction_prof=0.5*100      if (i_counter==2 | i_counter==3)
-
-*-- Third component proficiency (socio-emotional)
-gen socio_emotional_skills_prof=.
-	replace socio_emotional_skills_prof=1*100  	if (socio_emotional_skills >=3 & socio_emotional_skills<=5)
-	replace socio_emotional_skills_prof=0	   	if (socio_emotional_skills <3)
-	replace socio_emotional_skills_prof=0.5*100 if se_counter==2
-
-*--Overall teach proficiency
-gen teacher_pedg_comb_weight = school_weight * teacher_pedagogy_weight
-gen teach_prof = 100*(teach_score>=3)
-
-
-drop s1_a1_pro s1_a2_pro s1_b3_pro s1_b4_pro s1_b5_pro s1_b6_pro ///
-s1_c7_pro s1_c8_pro s1_c9_pro classroom_culture_pro instruction_pro ///
-socio_emotional_skills_pro cc_counter i_counter se_counter tch_counter
-
-/*some useful disaagregations that could be run -- 
-frame change teachers 
-
-svyset school_code, strata($strata) singleunit(scaled) weight(school_weight)  || teacher_unique_id, weight(teacher_pedagogy_weight)
-
-foreach var in teach_score teach_prof {
-svy: mean `var' if grade==4
-}
-
-foreach var in teach_score teach_prof {
-svy: mean `var' if m2saq7_2==1 
-}
-
-
-*For male teachers
-foreach var in teach_score teach_prof  {
-svy: mean `var' if m2saq3 == 0 & m2saq7_4==1
-}
-
-foreach var in teach_score teach_prof {
-svy: mean `var' if m2saq3 == 0 & m2saq7_2==1
-}
-
-
-*For female teachers
-foreach var in teach_score teach_prof   {
-svy: mean `var' if m2saq3 == 1 & m2saq7_4==1
-}
-
-
-foreach var in teach_score teach_prof  {
-svy: mean `var' if m2saq3 == 1 & m2saq7_2==1
-}
-
-
-*For rural teachers
-foreach var in teach_score teach_prof  {
-svy: mean `var' if urban_rural == "Rural" & m2saq7_4==1
-}
-
-foreach var in teach_score teach_prof  {
-svy: mean `var' if urban_rural == "Rural" & m2saq7_2==1
-}
-
-*For urban teachers
-foreach var in teach_score teach_prof  {
-svy: mean `var' if urban_rural == "Urban" & m2saq7_4==1
-}
-
-
-foreach var in teach_score teach_prof  {
-svy: mean `var' if urban_rural == "Urban" & m2saq7_2==1
-}
-*/
-
-
-*********************************************
-* Assigning varibales lables to varibales calculated in the process
-*********************************************
-
-frame change school 
-codebook, compact 
-cap la var student_attendance "Student attendance"
-cap la var boys_num_attending "Number of boys attending"
-cap la var boys_on_list "Number of boys on list"
-cap la var student_attendance_male "Student attendance (male)"
-cap la var student_attendance_female "Student attendance (female)"
-cap la var share_textbook "Textbook shared"
-cap la var share_pencil "Pencil shared"
-cap la var share_exbook "excercise book shared"
-cap la var  textbooks "Textbooks"
-cap la var  used_ict_num "Number of used ICT"
-cap la var  toilet_exists "Toilet exists"
-cap la var  toilet_separate "Toilet separate"
-cap la var  toilet_private "Toilet private"
-cap la var  toilet_usable "Toilet usable"
-cap la var  toilet_handwashing "Toilet (place for handwashing)"
-cap la var  toilet_soap "Toilet (Soap)"
-cap la var  visibility "visibility"
-cap la var  internet "Internet"
-cap la var  infrastructure "Infrastructure"
-cap la var  principal_knowledge_avg "Principal knowledge .avg"
-cap la var  school_goals_exist "School goals exist"
-cap la var  school_goals_clear "School goals clear"
-cap la var  school_goals_relevant "School goals relevant"
-cap la var  school_goals_measured "School goals measured"
-cap la var  problem_solving "Problem solving"
-cap la var  standards_monitoring_input "Standards for monitoring inputs"
-cap la var  principal_salary "Principal's salary"
-cap la var  principal_salary_score "Principal's salary score"
-cap la var  principal_trained "Principal trained"
-cap la var blackboard_functional "Blackboard functional"
-cap la var blackboard_pknw "Blackboard pknw"
-cap la var class_electricity "Class electricity"
-cap la var functioning_toilet "Functioning toilet"
-cap la var disab_class_entr "Disab class entr"
-cap la var disab_class_ramp "Disab class ramp"
-cap la var disab_road_access "Disab road access"
-cap la var disab_school_entr "Disab school entr"
-cap la var disab_school_ramp "Disab school ramp"
-cap la var disab_screening "Disab screening"
-cap la var disability_accessibility "Disability accessibility"
-cap la var vignette_1 "Vignette 1"
-cap la var vignette_1_address "Vignette 1_address"
-cap la var vignette_1_finance "Vignette 1_finance"
-cap la var vignette_1_resp "Vignette 1_resp"
-cap la var vignette_2 "Vignette 2"
-cap la var vignette_2_address "Vignette 2_address"
-cap la var vignette_2_finance "Vignette 2_finance"
-cap la var vignette_2_resp "Vignette 2_resp"
-cap la var  principal_knowledge_avg "Principal knowledge .avg"
-cap la var  school_goals_exist "School goals exist"
-cap la var  school_goals_clear "School goals clear"
-cap la var  school_goals_relevant "School goals relevant"
-cap la var  school_goals_measured "School goals measured"
-cap la var  problem_solving "Problem solving"
-cap la var  standards_monitoring_input "Standards for monitoring inputs"
-cap la var  principal_salary "Principal's salary"
-cap la var  principal_salary_score "Principal's salary score"
-cap la var  principal_trained "Principal trained"
-cap la var principal_evaluation "Principal evaluation"
-cap la var principal_evaluation_multiple "Principal evaluation multiple"
-cap la var principal_formally_evaluated "Principal formally evaluated"
-cap la var principal_hiring_scfn "Principal hiring scfn"
-cap la var principal_knowledge_score "Principal knowledge score"
-cap la var principal_management "Principal management"
-cap la var principal_negative_consequences "Principal negative consequences"
-cap la var principal_offered "Principal offered"
-cap la var principal_positive_consequences "Principal positive consequences"
-cap la var principal_satisfaction "Principal satisfaction"
-cap la var principal_supervision_scfn "Principal supervision scfn"
-cap la var principal_training "Principal training"
-cap la var principal_used_skills "Principal used skills"
-cap la var principalcode "rowcode principal"
-cap la var prinicipal_trained "Prinicipal trained"
-cap la var add_triple_digit_pknw "Add triple digit pknw"
-cap la var blackboard_pknw "Blackboard pknw"
-cap la var complete_sentence_pknw "Complete sentence pknw"
-cap la var experience_pknw "Experience pknw"
-cap la var textbooks_pknw "Textbooks pknw"
-cap la var multiply_double_digit_pknw "Multiply double digit pknw"
-cap la var m7sfq7_pknw "M7Sfq7 pknw"
-cap la var m7sfq6_pknw "M7Sfq6 pknw"
-cap la var m7sfq5_pknw "M7Sfq5 pknw"
-cap la var pknw_actual_exper "pknw_actual_exper"
-cap la var pknw_actual_cont "pknw_actual_cont"
-cap la var socio_emotional_skills "Socio emotional skills"
-cap la var socio_emotional_skills_prof "Socio emotional skills prof"
-cap la var instruction "Instruction"
-cap la var instruction_prof "Instruction prof"
-cap la var instructional_leadership "Instructional leadership"
-cap la var teach_prof "Teach prof"
-cap la var teach_score "Teach score"
-cap la var classroom_culture_prof "Classroom culture prof"
-cap la var classroom_culture "Classroom culture"
-cap la var classroom_culture_prof "Classroom culture prof"
-cap la var sch_goals_relevant "Sch goals relevant"
-cap la var sch_management_attraction "Sch management attraction"
-cap la var sch_management_clarity "Sch management clarity"
-cap la var sch_monitoring "Sch monitoring"
-cap la var sch_owner "Sch owner"
-cap la var sch_selection_deployment "Sch selection deployment"
-cap la var sch_support "Sch support"
-cap la var inputs "School Inputs score"
-cap la var goal_setting  "goal setting score"
-cap la var problem_solving_proactive "Problem solving-Proactive"
-cap la var problem_solving_info_collect "Problem_solving-Info_collect"
-cap la var problem_solving_stomach  "Problem solving-Stomach"
-cap la var standards_monitoring_infra "Standards for monitoring_infra"
-cap la var standards_monitoring "Standards monitoring"
-cap la var  principal_knowledge_avg "Principal knowledge .avg"
-cap la var  school_goals_exist "School goals exist"
-cap la var  school_goals_clear "School goals clear"
-cap la var  school_goals_relevant "School goals relevant"
-cap la var  school_goals_measured "School goals measured"
-cap la var  problem_solving "Problem solving"
-cap la var  standards_monitoring_input "Standards for monitoring inputs"
-cap la var  principal_salary "Principal's salary"
-cap la var  principal_salary_score "Principal's salary score"
-cap la var  principal_trained "Principal trained"
-cap la var monitoring_infrastructure "Monitoring infrastructure"
-cap la var monitoring_inputs "Monitoring inputs"
-cap la var principal_hiring_scfn "Principal hiring scfn"
-cap la var principal_supervision_scfn "Principal supervision scfn"
-cap la var student_scfn "Student scfn"
-cap la var supervision_scfn "Supervision scfn"
-cap la var infrastructure_scfn "Infrastructure scfn"
-cap la var hiring_scfn "Hiring scfn"
-cap la var materials_scfn "Materials scfn"
-cap la var operational_management "Operational management"
-cap la var drinking_water "Drinking water"
-cap la var used_ict "Used ict"
-cap la var access_ict "Access ict"
-cap la var public "Public"
-cap la var school_code "School code"
-
-
-frame change teachers
-codebook, compact 
-cap la var in_questionnaire  "observation in the teachers questionnaire data"
-cap la var in_assessment     "observation in the teachers assessment data"
-cap la var in_pedagogy  	  "observation in the teachers observation/teach data"
-cap la var school_weight 	  "School_weight"
-cap la var g4_teacher_count  "Grade 4 teacher count"
-cap la var g1_teacher_count  "Grade 1 teacher count"
-cap la var teacher_abs_weight "Teacher abs weight"
-cap la var teacher_questionnaire_weight "Teacher questionnaire weight"
-cap la var teacher_content_weight  "Teacher content weight"
-cap la var teacher_pedagogy_weight "Teacher_pedagogy_weight"
-cap la var principal_absence "Principal absence_rate"
-cap la var m5_teach_count "Count of non missing content knowledge obs by school"
-cap la var m5_teach_count_math "Count of non missing math content knowledge obs by school"
-cap la var discussion_30_min  "discussion 30 min "
-cap la var lesson_plan 	   "lesson plan"
-cap la var teacher_bonus_attend  "teacher bonus_attendance"
-cap la var teacher_bonus_student_perform "teacher bonus_student performance"
-cap la var teacher_bonus_extra_duty  "teacher bonus_extra duty"
-cap la var teacher_bonus_hard_staff  "teacher bonus_hard staff"
-cap la var teacher_bonus_subj_shortages "teacher bonus-subj shortages"
-cap la var teacher_bonus_add_qualif "teacher bonus-add qualif"
-cap la var teacher_bonus_school_perform "teacher bonus-school perform "
-cap la var pre_training_exists  "pre training-exists"
-cap la var pre_training_useful  "pre training-useful"
-cap la var pre_training_practicum "pre training-practicum"
-cap la var pre_training_practicum_lngth "pre training-practicum length"
-cap la var in_service_exists "in service training- exists"
-cap la var in_servce_lngth "in service training- length"
-cap la var in_service_classroom "in service training- classroom"
-cap la var practicum "Practicum"
-cap la var SE_PRM_TINM_1 "(De Facto) % teachers agree/strongly agree (acceptable teacher to be absent if curriculum~)"
-cap la var SE_PRM_TINM_2 "(De Facto) % teachers agree/strongly agree (acceptable teacher to be absent if stud~)"
-cap la var SE_PRM_TINM_3 "(De Facto) % teachers agree/strongly agree (acceptable teacher to be absent if useful community~)"
-cap la var SE_PRM_TINM_4 "(De Facto) % teachers agree/strongly agree (Students deserve more attention if they attend scho~)"
-cap la var SE_PRM_TINM_5 "(De Facto) % teachers agree/strongly agree (Students deserve more attention if they come to sch~)"
-cap la var SE_PRM_TINM_6 "(De Facto) % teachers agree/strongly agree (Students deserve more attention if they are motivat~)"
-cap la var SE_PRM_TINM_7 "(De Facto) % teachers agree/strongly agree (Students have a certain amount of intelligence and~)"
-cap la var SE_PRM_TINM_8 "(De Facto) % teachers agree/strongly agree (To be honest, students can't really change how inte~)"
-cap la var SE_PRM_TINM_9 "(De Facto) % teachers agree/strongly agree (Students can always substantially change how intell~)"
-cap la var SE_PRM_TINM_10 "(De Facto) % teachers agree/strongly agree (Students can change even their basic intelligence l~)"
-cap la var motivation_teaching_1 "teacher motivation for teaching_1"	
-cap la var public "Public"
-cap la var purpose_observation "Purpose of the observation"
-cap la var teacher_bonus_other	"teacher bonus-Other"
-cap la var public "Public"
-cap la var school_code "School code"
-
-
-frame change fourth_grade_assessment
-codebook, compact 
-cap la var g4_class_weight  "g4_class_weight"
-cap la var g4_stud_weight    "g4_stud_weight"
-cap la var m8sbq1_number_sense	"Please put these numbers intherightorder, from lower tohigher:2-17-55-117-123-987"		
-cap la var m8sbq3b_arithmetic "double digit addition"
-cap la var m8sbq3c_arithmetic "triple digit addition"
-cap la var m8sbq3d_arithmetic "single digit subtraction"
-cap la var m8sbq3e_arithmetic "double digit subtraction"
-cap la var m8sbq3f_arithmetic "single digit multiplication"
-cap la var m8sbq3g_arithmetic "double digit multiplication"
-cap la var m8sbq3h_arithmetic "triple digit multiplication"
-cap la var m8sbq3i_arithmetic "single digit division"
-cap la var m8sbq3j_arithmetic "double digit division"
-cap la var m8sbq4_arithmetic " Which gives smallest answer? a)81:5"
-cap la var m8sbq5_word_problem "A box contains 26 oranges. How many oranges are contained in 10boxes?260" 
-cap la var m8sbq6_sequences "Number series"
-cap la var public "Public"
-cap la var school_code "School code"
-
-
-
-frame change first_grade_assessment
-codebook, compact 
-cap la var g1_class_weight "g1_class_weight "
-cap la var g1_stud_weight  "g1_stud_weight"  
-cap la var m6s2q13prac_backward_digit "1.1,2"
-cap la var m6s2q13prac2_backward_digit "2.4,8,3"
-cap la var m6s2q14prac1_head_shoulders "1 Touch your head"
-cap la var m6s2q14prac2_head_shoulders "2 Now touchyour toes"
-cap la var m6s2q14prac3_head_shoulders "3 Now touchyour toes"
-cap la var m6s2q14prac1b_head_shoulders "1b Touchyour shoulders"
-cap la var m6s2q14prac2b_head_shoulders "2b Touchyour knees"
-cap la var m6s2q14prac3b_head_shoulders "3b Touchyour knees"
-cap la var soc_length "Soc length"
-cap la var exec_length "Exec length"            
-cap la var public "Public"
-cap la var school_code "School code"
-
-
-frame change second_grade_assessment
-codebook, compact 
-cap la var g2_class_weight "g2_class_weight "
-cap la var g2_stud_weight  "g2_stud_weight"  
-cap la var public "Public"
-cap la var school_code "School code"
-
 *********************************************
 * Save school, teachers, fourth_grade, and first_grade dataframe to stata data files in processed_dir
 *********************************************
 
 frame change school
+*Format school code:
+format school_code %12.0f
 save "$save_dir/school_Stata.dta", replace
 
 frame change teachers
+*Format school code:
+format school_code %12.0f
 save "$save_dir/teachers_Stata.dta", replace
 
 frame change fourth_grade_assessment
+*Format school code:
+format school_code %12.0f
 save "$save_dir/fourth_grade_Stata.dta", replace
 
 frame change first_grade_assessment
+*Format school code:
+format school_code %12.0f
 save "$save_dir/first_grade_Stata.dta", replace
 
 ****************************************************************************END**************************************************************************************************
-cap  log close
- clear all
+
 
 
 
