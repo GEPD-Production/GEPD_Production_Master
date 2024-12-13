@@ -1015,7 +1015,7 @@ indicators <- list(
   c("SE.PRM.TINM   ", "intrinsic_motivation		", "teacher_questionnaire", "TINM", "All"), # Policy Lever (Teaching) - Intrinsic Motivation
   c("SE.PRM.TINM.1 ", "SE_PRM_TINM_1		", "teacher_questionnaire", "TINM", "All"), # (De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if the ~
   c("SE.PRM.TINM.10", "SE_PRM_TINM_10		", "teacher_questionnaire", "TINM", "All"), # (De Facto) Percent of teachers that agree or strongly agrees with \"Students can change even their basic intelligence l~
-  c("SE.PRM.TINM.11", "motivation_teaching		", "teacher_questionnaire", "TINM", "All"), # (De Facto) Percent of teachers who state that intrinsic motivation was the main reason to become teachers
+  c("SE.PRM.TINM.11", "100*motivation_teaching		", "teacher_questionnaire", "TINM", "All"), # (De Facto) Percent of teachers who state that intrinsic motivation was the main reason to become teachers
   c("SE.PRM.TINM.12", "m3sdq2_tmna		", "teacher_questionnaire", "TMNA", "All"), # (De Facto) New teachers are required to undergo a probationary period
   c("SE.PRM.TINM.13", "probationary_period", "policy_survey", "NA", "NA"), # (De Jure) New teachers are required to undergo a probationary period
   c("SE.PRM.TINM.2 ", "SE_PRM_TINM_2		", "teacher_questionnaire", "TINM", "All"), # (De Facto) Percent of teachers that agree or strongly agrees with It is acceptable for a teacher to be absent if stud~
