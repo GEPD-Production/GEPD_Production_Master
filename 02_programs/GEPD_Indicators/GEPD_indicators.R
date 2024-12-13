@@ -34,11 +34,15 @@ options(survey.lonely.psu = "adjust")
 GEPD_template <- read_csv(here("04_GEPD_Indicators", "GEPD_indicator_template.csv"))
 
 # load main files
-school_dta <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("school_", software, ".dta")))
+school_dta <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("school_", software, ".dta")))%>% 
+  mutate(strata = factor(strata))
 teachers_dta <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("teachers_", software, ".dta"))) %>%
-  filter(!is.na(teachers_id))
-first_grade <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("first_grade_", software, ".dta")))
-fourth_grade <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("fourth_grade_", software, ".dta")))
+  filter(!is.na(teachers_id))%>% 
+  mutate(strata = factor(strata))
+first_grade <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("first_grade_", software, ".dta")))%>% 
+  mutate(strata = factor(strata))
+fourth_grade <- read_dta(here(processed_dir, "School", "Confidential", "Cleaned", paste0("fourth_grade_", software, ".dta")))%>% 
+  mutate(strata = factor(strata))
 public_officials_dta <- read_dta(here(processed_dir, "Public_Officials", "Confidential", "public_officials.dta"))
 expert_df <- read_dta(here(processed_dir, "Policy_Survey", "expert_dta_final.dta"))
 defacto_dta_learners <- read_excel(here(processed_dir, "Other_Indicators", "Learners_defacto_indicators.xlsx"))
@@ -117,7 +121,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       mutate(
         VALUE = eval(parse(text = indicator))
       ) %>%
-      mutate(strata = factor(strata)) %>%
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       select(VALUE, one_of(strata), school_weight) %>%
@@ -166,7 +169,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_abs_weight)) %>%
       select(VALUE, one_of(strata), school_weight, teacher_abs_weight, school_code, teachers_id) %>%
-      mutate(strata = factor(strata)) %>%
       pivot_longer(
         cols = "VALUE",
         names_to = "indicators",
@@ -212,7 +214,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_questionnaire_weight)) %>%
-      mutate(strata = factor(strata)) %>%
       select(VALUE, one_of(strata), school_weight, teacher_questionnaire_weight, school_code, teachers_id) %>%
       pivot_longer(
         cols = "VALUE",
@@ -259,7 +260,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.na(teacher_content_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
-      mutate(strata = factor(strata)) %>%
       select(VALUE, one_of(strata), school_weight, teacher_content_weight, school_code, teachers_id) %>%
       pivot_longer(
         cols = "VALUE",
@@ -306,7 +306,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
       filter(!is.na(teacher_pedagogy_weight)) %>%
-      mutate(strata = factor(strata)) %>%
       select(VALUE, one_of(strata), school_weight, teacher_pedagogy_weight, school_code, teachers_id) %>%
       pivot_longer(
         cols = "VALUE",
@@ -353,7 +352,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.na(g4_stud_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
-      mutate(strata = factor(strata)) %>%
       select(VALUE, one_of(strata), school_weight, g4_stud_weight, school_code, fourth_grade_assessment__id) %>%
       pivot_longer(
         cols = "VALUE",
@@ -400,7 +398,6 @@ indicator_stats <- function(name, indicator, dataset, tag, unit) {
       filter(!is.na(school_weight)) %>%
       filter(!is.na(g1_stud_weight)) %>%
       filter(!is.infinite(school_weight)) %>%
-      mutate(strata = factor(strata)) %>%
       select(VALUE, one_of(strata), school_weight, g1_stud_weight, school_code, ecd_assessment__id) %>%
       pivot_longer(
         cols = "VALUE",
